@@ -18,6 +18,14 @@
 /game/[Ll]ogs/
 /game/[Mm]emoryCaptures/
 
+game/Library/
+game/Temp/
+game/Obj/
+game/Build/
+game/Builds/
+game/Logs/
+game/MemoryCaptures/
+
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
 
