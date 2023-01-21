@@ -5,8 +5,9 @@ using UnityEngine;
 public class EmpireCore : Building {
     
     void Start() {
-        Debug.Log(this.GetType().Name + " component starting with parent game object " + gameObject);
-        Debug.Log(this.GetType().Name + " started.");
+        Debug.Log(this.GetType().Name + " started");
+        base.setMaterial("green");
+        base.addMeshCollider();
     }
 
     void Update() {

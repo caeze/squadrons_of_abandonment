@@ -5,8 +5,7 @@ using UnityEngine;
 public class InitSceneManager : MonoBehaviour {
     
 	void Start() {
-        Debug.Log(this.GetType().Name + " component starting with parent game object " + name);
-        Debug.Log(this.GetType().Name + " started.");
+        Debug.Log(this.GetType().Name + " started");
     }
 
     void Update() {

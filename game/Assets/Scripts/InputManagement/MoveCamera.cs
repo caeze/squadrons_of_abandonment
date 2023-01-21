@@ -17,14 +17,11 @@ public class MoveCamera : MonoBehaviour {
 	private float cameraLerpSpeed = 20.0f;
     
     void Start() {
-        Debug.Log(this.GetType().Name + " component starting with parent game object " + name);
-        
-		mainCameraParent = GameObject.Find("MainCameraParent");
+        mainCameraParent = GameObject.Find("MainCameraParent");
 		mainCamera = GameObject.Find("MainCamera");
         mainCamera.transform.parent = mainCameraParent.transform;
         mainCamera.transform.position = mainCameraTargetZoom;
-        
-        Debug.Log(this.GetType().Name + " started.");
+        Debug.Log(this.GetType().Name + " started");
     }
     
     void Update() {

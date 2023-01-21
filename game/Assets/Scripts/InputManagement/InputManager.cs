@@ -20,6 +20,7 @@ public class InputManager {
         currentInputManager.Add(InputManager.CAMERA_RIGHTWARD, "a");
         currentInputManager.Add(InputManager.CAMERA_LEFTWARD, "d");
         currentInputManager.Add(InputManager.CAMERA_ROTATE, "mouse 2");
+        Debug.Log(this.GetType().Name + " started");
     }
     
     /*
@@ -79,6 +80,10 @@ public class InputManager {
         lastMousePos = Input.mousePosition;
     }
     
+    /*
+     * Handles keyboard events to figure out if keys were pressed, held or
+     * released in the last frame.
+     */
     private bool handleKeyEvents(string actionName, int type) {
         string keyName = "";
         if (currentInputManager.TryGetValue(actionName, out keyName)) {
