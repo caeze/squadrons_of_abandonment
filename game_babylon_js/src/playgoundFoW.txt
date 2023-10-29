@@ -1,0 +1,161 @@
+BABYLON.Effect.ShadersStore["customVertexShader"]=`
+precision highp float;
+
+attribute vec3 position;
+attribute vec2 uv;
+
+uniform mat4 world;
+uniform mat4 worldViewProjection;
+
+varying vec2 vUV;
+varying vec3 vPositionW;
+
+void main() {
+    gl_Position = worldViewProjection * vec4(position, 1.0);
+    vUV = uv;
+    vPositionW = vec3(world * vec4(position, 1.0));
+}
+`
+BABYLON.Effect.ShadersStore["customFragmentShader"]=`
+precision highp float;
+
+uniform vec2 screenSize;
+uniform int nbSelecteds;
+uniform float circlesX[MAXSELECTEDS];
+uniform float circlesY[MAXSELECTEDS];
+uniform float circlesZ[MAXSELECTEDS];
+uniform float circlesR[MAXSELECTEDS];
+uniform float circlesG[MAXSELECTEDS];
+uniform float circlesB[MAXSELECTEDS];
+uniform float circlesMax[MAXSELECTEDS];
+uniform float circlesMin[MAXSELECTEDS];
+uniform sampler2D diffuseTextureR;
+uniform sampler2D diffuseTextureG;
+uniform sampler2D diffuseTextureB;
+
+varying vec2 vUV;
+varying vec3 vPositionW;
+
+bool circle(out vec4 FragColor) {
+    for(int i=0; i<MAXSELECTEDS; i++) {
+        if(i >= nbSelecteds) {
+            return true;
+        }
+        float dist = length(vPositionW.xz - vec3(circlesX[i],circlesY[i],circlesZ[i]).xz);
+        if(dist <= circlesMax[i] && dist >= circlesMin[i]) {
+            FragColor = vec4(circlesR[i],circlesG[i],circlesB[i],1.);
+            //FragColor = vec4(1000. * ((1. - clamp(dist/circlesMax[i], 0., 1.))-pow( 1. - clamp(dist/circlesMin[i], 0., 1.) , .8)) * vec3(circlesR[i], circlesG[i], circlesB[i]),1.) * texture2D(diffuseTextureB, vUV);
+            return false;
+        }
+    }
+}
+
+void main() {
+    vec4 fragColor = texture2D(diffuseTextureB, vUV);
+    fragColor.rgb *= vec3(0.999);
+    gl_FragColor = fragColor;
+
+    //bool notCircle = circle(gl_FragColor);
+    
+    //gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    //if(!notCircle) {
+    //    gl_FragColor = texture2D(diffuseTextureB, vUV) - vec4(0.1, 0.1, 0.1, 0.5);
+    //}
+}`
+
+ var createScene = function() {
+    var scene = new BABYLON.Scene(engine);
+    var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 40, BABYLON.Vector3.Zero(), scene);
+    camera.attachControl(canvas, true);
+    const light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), scene)
+
+    const unitSize = 2;
+    const spawns = [new BABYLON.Vector3(2, 0, 2), new BABYLON.Vector3(-2, 0, -2)]
+    const entitys = []
+
+    var ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap("ground", "textures/heightMap.png", {width:100, height:100, subdivisions:100, minHeight:0, maxHeight:10, updatable:false}, scene)
+    ground.material = new BABYLON.ShaderMaterial("shader", scene, {
+        vertex: "custom",
+        fragment: "custom",
+	    },
+        {attributes: ["position", "normal", "uv"],
+        uniforms: ["world", "worldView", "worldViewProjection", "screenSize", "nbSelecteds", "circlesX", "circlesY", "circlesZ", "circlesMax", "circlesMin", "circlesR", "circlesG", "circlesB" ],
+        samplers: ["diffuseTextureR", "diffuseTextureG", "diffuseTextureB"],
+        defines: ["#define MAXSELECTEDS " + 127],
+        /*needAlphaTesting:true,
+        needAlphaBlending:true*/}
+    );
+    ground.material.setVector2("screenSize", new BABYLON.Vector2(engine.getRenderWidth(), engine.getRenderHeight()))
+    const diffuseTextureR = new BABYLON.Texture("textures/rock.png", scene);
+    diffuseTextureR.uScale = diffuseTextureR.vScale = 10;
+    ground.material.setTexture("diffuseTextureR", diffuseTextureR);
+    const diffuseTextureG = new BABYLON.Texture("textures/ground.jpg", scene);
+    diffuseTextureG.uScale = diffuseTextureG.vScale = 10;
+    ground.material.setTexture("diffuseTextureG", diffuseTextureG);
+    const diffuseTextureB = new BABYLON.Texture("textures/grass.png", scene);
+    diffuseTextureB.uScale = diffuseTextureB.vScale = 10;
+    ground.material.setTexture("diffuseTextureB", diffuseTextureB);
+
+    let isMeshesMatrixUpdated = false;
+    function updateCircles() {
+        isMeshesMatrixUpdated = false;
+        const circlesX = []
+        const circlesY = []
+        const circlesZ = []
+        const circlesR = []
+        const circlesG = []
+        const circlesB = []
+        const circlesMin = []
+        const circlesMax = []
+        for(let i=0; i<entitys.length; ++i) {
+            circlesMin.push(0);
+            circlesMax.push(1.2*entitys[i].maxRadius);
+            circlesX.push(entitys[i].root.position.x);
+            circlesY.push(entitys[i].root.position.y);
+            circlesZ.push(entitys[i].root.position.z);
+            circlesR.push(entitys[i].color.r);
+            circlesG.push(entitys[i].color.g);
+            circlesB.push(entitys[i].color.b);
+        }
+        ground.material.setFloats('circlesMin', circlesMin);
+        ground.material.setFloats('circlesMax', circlesMax);
+        ground.material.setFloats('circlesX', circlesX);
+        ground.material.setFloats('circlesY', circlesY);
+        ground.material.setFloats('circlesZ', circlesZ);
+        ground.material.setFloats('circlesR', circlesR);
+        ground.material.setFloats('circlesG', circlesG);
+        ground.material.setFloats('circlesB', circlesB);
+    }
+    for(let i=0; i<spawns.length; ++i) {
+        entitys.push({root:BABYLON.MeshBuilder.CreateBox('box'+i, {size:unitSize}, scene),
+            maxRadius: .5*Math.sqrt(Math.pow(unitSize, 2) + Math.pow(unitSize, 2)),
+            color: [BABYLON.Color3.Red(), BABYLON.Color3.Yellow()][i]
+        })
+        
+        entitys[i].root.onAfterWorldMatrixUpdateObservable.add(() => {
+            isMeshesMatrixUpdated = true;
+        })
+    }
+
+    scene.registerBeforeRender(() => {
+        if(isMeshesMatrixUpdated) {
+            updateCircles();
+        }
+    })
+
+    ground.onMeshReadyObservable.add(() => {
+        for(let i=0; i<entitys.length; ++i) {
+            entitys[i].root.position.set(spawns[i].x, ground.getHeightAtCoordinates(spawns[i].x,spawns[i].z)+.5*unitSize, spawns[i].z);
+        }
+
+        scene.onBeforeRenderObservable.add(() => {
+            entitys[0].root.position.x += .01
+        })
+
+        ground.material.setInt('nbSelecteds', entitys.length);
+    })
+
+    camera.lockedTarget = ground
+
+    return scene;
+};

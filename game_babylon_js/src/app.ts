@@ -1,7 +1,7 @@
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
+import { Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
 
 // How to run:
@@ -18,322 +18,182 @@ import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
 
 // switch scenes: https://doc.babylonjs.com/features/featuresDeepDive/scene/multiScenes
 
+// Squadrons of abandonement https://youtu.be/qxrV2pqroDY
+// FoW https://playground.babylonjs.com/#BRXZVE#8
+// FoW2 https://playground.babylonjs.com/#8WJTJG#9
+// Fow3 https://playground.babylonjs.com/#8WJTJG
+// Entity selection https://playground.babylonjs.com/#GCNNPT#36
+
+// https://app.meshy.a
+
 // custom handling of materials for render target pass
 var createScene = function (engine: Engine, canvas: any): Scene {
-    const showRobots = true;
-    const showSpheres = true;
-    const showGround = true;
-    const animate = true;
+    Effect.ShadersStore["customVertexShader"]=`
+    precision highp float;
+
+    attribute vec3 position;
+    attribute vec2 uv;
+
+    uniform mat4 world;
+    uniform mat4 worldViewProjection;
+
+    varying vec2 vUV;
+    varying vec3 vPositionW;
+
+    void main() {
+        gl_Position = worldViewProjection * vec4(position, 1.0);
+        vUV = uv;
+        vPositionW = vec3(world * vec4(position, 1.0));
+    }
+    `
+    Effect.ShadersStore["customFragmentShader"]=`
+    precision highp float;
+
+    uniform vec2 screenSize;
+    uniform int nbSelecteds;
+    uniform float circlesX[MAXSELECTEDS];
+    uniform float circlesY[MAXSELECTEDS];
+    uniform float circlesZ[MAXSELECTEDS];
+    uniform float circlesR[MAXSELECTEDS];
+    uniform float circlesG[MAXSELECTEDS];
+    uniform float circlesB[MAXSELECTEDS];
+    uniform float circlesMax[MAXSELECTEDS];
+    uniform float circlesMin[MAXSELECTEDS];
+    uniform sampler2D diffuseTextureR;
+    uniform sampler2D diffuseTextureG;
+    uniform sampler2D diffuseTextureB;
+
+    varying vec2 vUV;
+    varying vec3 vPositionW;
+
+    bool circle(vec4 FragColor) {
+        for(int i=0; i<MAXSELECTEDS; i++) {
+            if(i >= nbSelecteds) {
+                return true;
+            }
+            float dist = length(vPositionW.xz - vec3(circlesX[i],circlesY[i],circlesZ[i]).xz);
+            if(dist <= circlesMax[i] && dist >= circlesMin[i]) {
+                FragColor = vec4(circlesR[i],circlesG[i],circlesB[i],1.);
+                //FragColor = vec4(1000. * ((1. - clamp(dist/circlesMax[i], 0., 1.))-pow( 1. - clamp(dist/circlesMin[i], 0., 1.) , .8)) * vec3(circlesR[i], circlesG[i], circlesB[i]),1.) * texture2D(diffuseTextureB, vUV);
+                return false;
+            }
+        }
+    }
+
+    float getDarkness() {
+        for(int i=0; i<MAXSELECTEDS; i++) {
+            float dist = length(vPositionW.xz - vec3(circlesX[i],circlesY[i],circlesZ[i]).xz) / 5.0;
+            if(dist <= circlesMax[i] && dist >= circlesMin[i]) {
+                return 5.0 - dist;
+            }
+        }
+        return 0.2;
+    }
+
+    void main() {
+        float darkness = getDarkness();
+        vec4 fragColor = texture2D(diffuseTextureB, vUV);
+        fragColor.rgb *= vec3(darkness);
+        gl_FragColor = fragColor;
+    }`
     
-    // TODO: define not constant
+    // get current URL
     var currentUrl = "http://localhost:8080";
 
-    // This creates a basic Babylon Scene object (non-mesh)
     var scene = new Scene(engine);
-
-    // This creates and positions a free camera (non-mesh)
-    var camera = new FreeCamera("camera1", new Vector3(0, 3, -7), scene);
-
-    // This targets the camera to scene origin
-    camera.setTarget(Vector3.Zero());
-
-    // This attaches the camera to the canvas
+    var camera = new ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 40, Vector3.Zero(), scene);
     camera.attachControl(canvas, true);
+    const light = new HemisphericLight('', new Vector3(0, 1, 0), scene)
 
-    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-    var light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
+    const unitSize = 2;
+    const spawns = [new Vector3(2, 0, 2), new Vector3(-2, 0, -2)];
+    var entitys = new Array<any>;
 
-    // Default intensity is 1. Let's dim the light a small amount
-    light.intensity = 0.7;
-
-    // first pass, render scene with original materials
-    var imagePass = new PassPostProcess("imagePass", 1.0, camera, Texture.NEAREST_SAMPLINGMODE, engine);
-
-    // second pass with a shader material. Let's make some fake caustic
-    Effect.ShadersStore.causticVertexShader = `
-precision highp float;
-
-attribute vec3 position;
-attribute vec3 normal;
-
-uniform mat4 view;
-uniform mat4 projection;
-uniform mat4 worldViewProjection;
-
-varying vec3 vNormal;
-varying vec3 vPosition;
-
-#include<bonesDeclaration>
-#include<instancesDeclaration>
-
-void main() {
-    vec3 positionUpdated = position;
-
-    // include shaders to calculate instances and bones
-    #include<instancesVertex>
-    #include<bonesVertex>
-
-    // return normal, uv and position
-    vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
-    vNormal = normalize(vec3(finalWorld * vec4(normal, 0.0)));
-    vPosition = worldPos.xyz;
-
-    gl_Position = projection * view * worldPos;
-}
-        `;
-    Effect.ShadersStore.causticFragmentShader = `
-#ifdef GL_ES
-precision highp float;
-#endif
-
-#define TAU 6.28318530718
-#define MAX_ITER 5
-#define SPEED 0.3
-#define SCALE 10.0
-
-uniform float time;
-
-varying vec3 vNormal;
-varying vec3 vPosition;
-
-// nice caustic function
-vec4 caustic(vec2 uv) {
-  vec2 p = mod(uv*TAU, TAU)-250.0;
-  float t = time * SPEED + 23.0;
-
-  vec2 i = vec2(p);
-  float c = 1.0;
-  float inten = .005;
-
-  for (int n = 0; n < MAX_ITER; n++) {
-    float t = t * (1.0 - (3.5 / float(n+1)));
-    i = p + vec2(cos(t - i.x) + sin(t + i.y), sin(t - i.y) + cos(t + i.x));
-    c += 1.0/length(vec2(p.x / (sin(i.x+t)/inten),p.y / (cos(i.y+t)/inten)));
-  }
-
-  c /= float(MAX_ITER);
-  c = 1.17-pow(c, 1.4);
-  vec3 color = vec3(pow(abs(c), 8.0));
-  color = clamp(color + vec3(0.0, 0.0, 0.0), 0.0, 1.0);
-
-  float contrast=0.0;
-  color = mix(color, vec3(1.0,1.0,1.0),contrast);
-  vec4 color4 = vec4(color,0.0);
-
-  return color4;
-}
-
-void main(void)
-{
-    vec4 baseLight = vec4(0.3, 0.3, 0.3, 1.0);
-    // if fragment points at least a bit up
-    if (vNormal.y > 0.0) {
-        // use world coordinates as the uv caustic coordinates
-        vec2 coord = vec2(fract(vPosition.x/SCALE), fract(vPosition.z/SCALE));
-        // compensate by y angle
-        gl_FragColor = clamp(caustic(coord), 0.0, 0.7)*vNormal.y + baseLight;
-    }
-    else {
-        // otjtherwise just a little bit of color
-        gl_FragColor = baseLight;
-    }
-}
-    `;
-    const causticMaterial = new ShaderMaterial(
-        'caustic shader material', // human name
-        scene,
-        'caustic', // shader path
-        {
-            attributes: ['position', 'normal', 'uv'],
-            uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection', 'time', 'direction']
-        }
+    var ground = MeshBuilder.CreateGroundFromHeightMap("ground", currentUrl + "/assets/img/heightMap.png", {width:100, height:100, subdivisions:100, minHeight:0, maxHeight:10, updatable:false}, scene)
+    var ground_shader_material = new ShaderMaterial("shader", scene, {
+        vertex: "custom",
+        fragment: "custom",
+	    },
+        {attributes: ["position", "normal", "uv"],
+        uniforms: ["world", "worldView", "worldViewProjection", "screenSize", "nbSelecteds", "circlesX", "circlesY", "circlesZ", "circlesMax", "circlesMin", "circlesR", "circlesG", "circlesB" ],
+        samplers: ["diffuseTextureR", "diffuseTextureG", "diffuseTextureB"],
+        defines: ["#define MAXSELECTEDS " + 127],
+        /*needAlphaTesting:true,
+        needAlphaBlending:true*/}
     );
+    
+    ground_shader_material.setVector2("screenSize", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()))
+    const diffuseTextureR = new Texture(currentUrl + "/assets/img/rock.png", scene);
+    diffuseTextureR.uScale = diffuseTextureR.vScale = 10;
+    ground_shader_material.setTexture("diffuseTextureR", diffuseTextureR);
+    const diffuseTextureG = new Texture(currentUrl + "/assets/img/ground.png", scene);
+    diffuseTextureG.uScale = diffuseTextureG.vScale = 10;
+    ground_shader_material.setTexture("diffuseTextureG", diffuseTextureG);
+    const diffuseTextureB = new Texture(currentUrl + "/assets/img/grass.png", scene);
+    diffuseTextureB.uScale = diffuseTextureB.vScale = 10;
+    ground_shader_material.setTexture("diffuseTextureB", diffuseTextureB);
 
-    // the render texture. We'll render the scene with caustic shader to this texture.
-    const renderTarget = new RenderTargetTexture('caustic texture', 512, scene);
-    scene.customRenderTargets.push(renderTarget);
-
-    // third pass: merge two previous passes
-    Effect.ShadersStore.finalFragmentShader = `
-        #ifdef GL_ES
-        precision mediump float;
-        #endif
-
-        varying vec2 vUV;
-                
-        uniform sampler2D textureSampler;
-        uniform sampler2D causticTexture;
-
-        void main(void)
-        {
-            vec4 first = texture2D(textureSampler, vUV);
-            vec4 caustic = texture2D(causticTexture, vUV);
-            // mixes colors
-            if (vUV.x <= 0.333) { // show only base texture
-                gl_FragColor = first;
-            }
-            else if (vUV.x <= 0.666) { // show only caustic texture
-                gl_FragColor.rgb = caustic.rgb - vec3(0.1, 0.1, 0.2);
-                gl_FragColor.a = 0.5;
-            }
-            else { // mix both
-                gl_FragColor = clamp(mix(first, caustic, 0.5), 0.0, 1.0);
-                gl_FragColor.a = 1.0;
-            }
+    let isMeshesMatrixUpdated = false;
+    function updateCircles() {
+        isMeshesMatrixUpdated = false;
+        const circlesX = []
+        const circlesY = []
+        const circlesZ = []
+        const circlesR = []
+        const circlesG = []
+        const circlesB = []
+        const circlesMin = []
+        const circlesMax = []
+        for(let i=0; i<entitys.length; ++i) {
+            circlesMin.push(0);
+            circlesMax.push(5.0*entitys[i].maxRadius);
+            circlesX.push(entitys[i].root.position.x);
+            circlesY.push(entitys[i].root.position.y);
+            circlesZ.push(entitys[i].root.position.z);
+            circlesR.push(entitys[i].color.r);
+            circlesG.push(entitys[i].color.g);
+            circlesB.push(entitys[i].color.b);
         }
-    `;
-    // create the final pass
-    var finalPass = new PostProcess(
-        'Final compose shader',
-        'final',  // shader
-        null, // attributes
-        ['causticTexture'], // textures
-        1.0,  // options
-        camera, // camera
-        Texture.BILINEAR_SAMPLINGMODE, // sampling
-        engine // engine
-    );
-    finalPass.onApply = (effect) => {
-        // update the caustic texture with what we just rendered.
-        effect.setTexture('causticTexture', renderTarget);
-    };
-
-    // helper function to create clones of the caustic material
-    // we need that because we'll have different transforms on the shaders
-    let rttMaterials: ShaderMaterial[] = [];
-    const getCausticMaterial = () => {
-        let c = causticMaterial.clone("causticMaterialClone");
-        c.freeze(); // freeze because we'll only update uniforms
-        rttMaterials.push(c);
-        return c;
-    };
-
-    // some material for the ground.
-    var grass0 = new StandardMaterial("grass0", scene);
-    grass0.diffuseTexture = new Texture(currentUrl + "/assets/img/ground_plane_grid/ground_plane_grid.png", scene);
-    grass0.freeze();
-
-    // Our built-in 'ground' shape.
-    var ground;
-    if (showGround) {
-        ground = MeshBuilder.CreateGround("ground", { width: 6, height: 6 }, scene);
-        ground.material = grass0;
-        // add caustics
-        renderTarget.setMaterialForRendering(ground, getCausticMaterial());
-        if (renderTarget.renderList != null) {
-            renderTarget.renderList.push(ground);
-        }
+        ground_shader_material.setFloats('circlesMin', circlesMin);
+        ground_shader_material.setFloats('circlesMax', circlesMax);
+        ground_shader_material.setFloats('circlesX', circlesX);
+        ground_shader_material.setFloats('circlesY', circlesY);
+        ground_shader_material.setFloats('circlesZ', circlesZ);
+        ground_shader_material.setFloats('circlesR', circlesR);
+        ground_shader_material.setFloats('circlesG', circlesG);
+        ground_shader_material.setFloats('circlesB', circlesB);
     }
-    
-    // grid
-    var mat = new StandardMaterial("mat", scene);
-    var texture = new Texture(currentUrl + "/assets/img/ground_plane_grid/ground_plane_grid.png", scene);
-    texture.uScale = 400;
-    texture.vScale = 200;
-    texture.hasAlpha = true;
-    mat.diffuseTexture = texture;
-    mat.useAlphaFromDiffuseTexture = true;
-    mat.alpha = 0.5;
-    
-    /*const f = new Vector4(0, 0, 0.5, 1); // front image = half the whole image along the width 
-    const b = new Vector4(0.5, 0, 1, 1); // back image = second half along the width
-    
-    const plane = MeshBuilder.CreatePlane("plane", {frontUVs: f, backUVs: b, sideOrientation: Mesh.DOUBLESIDE, size: 1000, width: 200, height: 200});
-    plane.rotation = new Vector3(Math.PI / 2, 0, 0);
-    plane.material = mat;
-    renderTarget.setMaterialForRendering(plane, getCausticMaterial());
-    renderTarget.renderList.push(plane);*/
-    const f = new Vector4(0, 0, 0.5, 1); // front image = half the whole image along the width 
-    const b = new Vector4(0.5, 0, 1, 1); // back image = second half along the width
-    const plane = MeshBuilder.CreatePlane("plane", {frontUVs: f, backUVs: b, sideOrientation: Mesh.DOUBLESIDE, size: 1000, width: 200, height: 200});
-    plane.material = mat;
-    plane.rotation = new Vector3(Math.PI / 2, 0, 0);
-    renderTarget.setMaterialForRendering(plane, getCausticMaterial());
-    if (renderTarget.renderList != null) {
-        renderTarget.renderList.push(plane);
+    for(let i=0; i<spawns.length; ++i) {
+        entitys.push({root:MeshBuilder.CreateBox('box'+i, {size:unitSize}, scene),
+            maxRadius: .5*Math.sqrt(Math.pow(unitSize, 2) + Math.pow(unitSize, 2)),
+            color: [Color3.Red(), Color3.Yellow()][i]
+        })
+        
+        entitys[i].root.onAfterWorldMatrixUpdateObservable.add(() => {
+            isMeshesMatrixUpdated = true;
+        })
     }
 
-    /*// an animated object and its multiple instances
-    if (showRobots) {
-        const assetsManager = new AssetsManager(scene);
-        const modelTask = assetsManager.addMeshTask('model', null, "/scenes/BrainStem/", "BrainStem.gltf");
-        //const modelTask = assetsManager.addMeshTask('model', null, "/scenes/Dude/", "dude.babylon");
-        modelTask.onSuccess = (task) => {
-            task.loadedMeshes.forEach((mesh) => {
-                mesh.material?.freeze();
-                renderTarget.setMaterialForRendering(mesh, getCausticMaterial());
-                mesh.isVisible = false; // the main mesh is not rendered, we'll render the instances
-                if (renderTarget.renderList != null) {
-                    renderTarget.renderList.push(mesh); // but we add it to the RTT
-                }
-            });
-
-            const rootMesh = task.loadedMeshes[0];
-            for (let i = 0; i < 5; i++) {
-                const instance = rootMesh.instantiateHierarchy();
-                if (instance != null) {
-                    instance.scaling.setAll(0.5);
-                    instance.position.x += i - 2;
-                    instance.getChildMeshes().forEach((mesh) => {
-                        if (renderTarget.renderList != null) {
-                            renderTarget.renderList.push(mesh); // add them to the RTT
-                        }
-                    });
-                }
-            }
-
-            scene.animationsEnabled = animate;
-        };
-        assetsManager.onTaskErrorObservable.add(function (task) {
-            console.error('task failed', task.errorObject.message, task.errorObject.exception);
-        });
-        assetsManager.load();
-    }*/
-
-    // Our built-in 'sphere' shape, with several instances
-    let spheres: InstancedMesh[] = [];
-    if (showSpheres) {
-        let sphereBase = MeshBuilder.CreateSphere("sphere", { diameter: 2, segments: 32 }, scene);
-        sphereBase.material = grass0.clone("grass0Clone");
-        sphereBase.setEnabled(false);
-        renderTarget.setMaterialForRendering(sphereBase, getCausticMaterial());
-        if (renderTarget.renderList != null) {
-            renderTarget.renderList.push(sphereBase);
+    scene.registerBeforeRender(() => {
+        if(isMeshesMatrixUpdated) {
+            updateCircles();
+            console.log("ASD");
         }
-        for (let i = 0; i < 20; i++) {
-            for (let j = 0; j < 4; j++) {
-                let sphere = sphereBase.createInstance("sphere" + i + "x" + j);
-                //sphere._base_x = 2 * j - 3;
-                sphere.position.x = 2 * j - 3;
-                sphere.position.y = 1;
-                sphere.position.z = 2 * i + 4;
-                spheres.push(sphere);
-                if (renderTarget.renderList != null) {
-                    renderTarget.renderList.push(sphere);
-                }
-            }
-        }
-    }
+    })
 
-    // update time on shader
-    if (animate) {
-        const startTime = new Date().getTime();
+    ground.onMeshReadyObservable.add(() => {
+        for(let i=0; i<entitys.length; ++i) {
+            entitys[i].root.position.set(spawns[i].x, ground.getHeightAtCoordinates(spawns[i].x,spawns[i].z)+.5*unitSize, spawns[i].z);
+        }
+
         scene.onBeforeRenderObservable.add(() => {
-            const endTime = new Date().getTime();
-            const timeDiff = (endTime - startTime) / 1000.0; // in s
+            entitys[0].root.position.x += .01
+        })
 
-            // animate caustic
-            rttMaterials.forEach((c) => c.setFloat('time', timeDiff));
-
-            // move spheres around
-            if (showSpheres) {
-                let deltaX = Math.sin(endTime / 1000.0) / 100.0;
-                spheres.forEach((s) => {
-                    s.position.x = s.position.x + deltaX;
-                })
-            }
-        });
-    }
+        ground_shader_material.setInt('nbSelecteds', entitys.length);
+    })
+    ground.material = ground_shader_material;
+    camera.lockedTarget = ground
 
     return scene;
 };
@@ -673,8 +533,8 @@ class KeyboardPanningInput extends ArcRotateCameraKeyboardMoveInput {
 
 function buildLevelMeshes() {
 	const ground = Mesh.CreateGround("ground", 10, 10, 0);
-    ground.material = new StandardMaterial("groundMat");
-    ground.material.diffuseColor = new Color3(0.5,0,5,0.5);	
+    ground_shader_material = new StandardMaterial("groundMat");
+    ground_shader_material.diffuseColor = new Color3(0.5,0,5,0.5);	
 	
 	const player = MeshBuilder.CreateBox("p", {size: 1});	
 	player.position = new Vector3(-2,0.5,-2);
