@@ -1,0 +1,145 @@
+{
+  "name": "particles",
+  "id": "particles",
+  "capacity": 1000,
+  "disposeOnStop": false,
+  "manualEmitCount": -1,
+  "emitterId": "exaust",
+  "particleEmitterType": {
+    "type": "SphereParticleEmitter",
+    "radius": 0.1,
+    "radiusRange": 0.81,
+    "directionRandomizer": 0
+  },
+  "texture": {
+    "tags": null,
+    "url": "",
+    "uOffset": 0,
+    "vOffset": 0,
+    "uScale": 1,
+    "vScale": 1,
+    "uAng": 0,
+    "vAng": 0,
+    "wAng": 0,
+    "uRotationCenter": 0.5,
+    "vRotationCenter": 0.5,
+    "wRotationCenter": 0.5,
+    "homogeneousRotationInUVTransform": false,
+    "isBlocking": true,
+    "name": "./assets/img/particles/flare.png",
+    "hasAlpha": false,
+    "getAlphaFromRGB": false,
+    "level": 1,
+    "coordinatesIndex": 0,
+    "coordinatesMode": 0,
+    "wrapU": 1,
+    "wrapV": 1,
+    "wrapR": 1,
+    "anisotropicFilteringLevel": 4,
+    "isCube": false,
+    "is3D": false,
+    "is2DArray": false,
+    "gammaSpace": true,
+    "invertZ": false,
+    "lodLevelInAlpha": false,
+    "lodGenerationOffset": 0,
+    "lodGenerationScale": 0,
+    "linearSpecularLOD": false,
+    "isRenderTarget": false,
+    "animations": [],
+    "invertY": true,
+    "samplingMode": 3
+  },
+  "isLocal": true,
+  "animations": [],
+  "beginAnimationOnStart": false,
+  "beginAnimationFrom": 0,
+  "beginAnimationTo": 60,
+  "beginAnimationLoop": false,
+  "startDelay": 0,
+  "renderingGroupId": 0,
+  "isBillboardBased": true,
+  "billboardMode": 7,
+  "minAngularSpeed": 0,
+  "maxAngularSpeed": 0,
+  "minSize": 0.9,
+  "maxSize": 2.0,
+  "minScaleX": 0.301,
+  "maxScaleX": 0.30094,
+  "minScaleY": 0.2842766666666666,
+  "maxScaleY": 0.25095,
+  "minEmitPower": 0.0068,
+  "maxEmitPower": 0.0068,
+  "minLifeTime": 0.401,
+  "maxLifeTime": 2,
+  "emitRate": 10000,
+  "gravity": [
+    0,
+    -2,
+    0
+  ],
+  "noiseStrength": [
+    10,
+    10,
+    10
+  ],
+  "color1": [
+    0.0549019607843137,
+    0.93529411764705882,
+    0.03529411764705882,
+    1
+  ],
+  "color2": [
+    0.19489132402859297,
+    0.4116116523516815,
+    0.4116116523516815,
+    1
+  ],
+  "colorDead": [
+    0.00001,
+    0.000009999946981635125,
+    0.0000099999,
+    1
+  ],
+  "updateSpeed": 0.0248,
+  "targetStopDuration": 0,
+  "blendMode": 0,
+  "preWarmCycles": 0,
+  "preWarmStepOffset": 1,
+  "minInitialRotation": 0,
+  "maxInitialRotation": 0,
+  "startSpriteCellID": 0,
+  "endSpriteCellID": 0,
+  "spriteCellChangeSpeed": 1,
+  "spriteCellWidth": 0,
+  "spriteCellHeight": 0,
+  "spriteRandomStartCell": false,
+  "isAnimationSheetEnabled": false,
+  "rampGradients": [
+    {
+      "gradient": 0.04,
+      "color": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "gradient": 0.04,
+      "color": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "useRampGradients": false,
+  "textureMask": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "customShader": null,
+  "preventAutoStart": true
+}
