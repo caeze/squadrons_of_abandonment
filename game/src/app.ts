@@ -4,143 +4,15 @@ import "@babylonjs/loaders/glTF";
 import { Sun } from "./Sun";
 import { Gui } from "./Gui";
 import { Minimap } from "./Minimap";
+import { MouseSelectionBox } from "./MouseSelectionBox";
 import { Matrix, HighlightLayer, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
 
-// How to run:
-// https://doc.babylonjs.com/guidedLearning/createAGame/gettingSetUp
-// npm run build
-// npm run start
-// npm update  - after updating dependencies in package.json
-// http://localhost:8080/
-
-
-// How to run:
-// https://doc.babylonjs.com/guidedLearning/createAGame/gettingSetUp
-// install from https://github.com/coreybutler/nvm-windows
-// nvm install 14
-// npm run build
-// npm run start
-// http://localhost:8080/
-
-// Things to check:
-// minimap
-// fog of WAR
-// audio
-// load assets and textures
-// explosions and particles
-// load map from file (JSON?)
-// 2D UI rescale window
-// GIZMOS
-// multiple source files
-// multi scenes for settings and main menu
-// settings overlay?
-// ai
-// animations of buildings etc
-// multiplayer
-// camera movement
-// 2d unit health bars and icons in 3D view
-// unit selection circle and unit surrounding circle (via shader)
-// shaders must work on asteroids and on ground plane? or just on ground plane?
-// navmesh and multi unit (squad) navigation
-
-// sound playback : https://www.babylonjs-playground.com/#PCY1J#8
-
-// select objects with box: https://playground.babylonjs.com/#2SA7J8#7
-
-// mouse control: https://forum.babylonjs.com/t/arcrotatecamera-and-right-click/4901
-
-// switch scenes: https://doc.babylonjs.com/features/featuresDeepDive/scene/multiScenes
-
-// Squadrons of abandonement music idea lily's theme https://youtu.be/qxrV2pqroDY
-// FoW https://playground.babylonjs.com/#BRXZVE#8
-// FoW2 https://playground.babylonjs.com/#8WJTJG#9
-// Fow3 https://playground.babylonjs.com/#8WJTJG
-// Entity selection https://playground.babylonjs.com/#GCNNPT#36
-
-// https://app.meshy.a
-
-// IMPORTANT: GIZMOS
-// https://playground.babylonjs.com/#31M2AP#9
-
-
-// sound playback : https://www.babylonjs-playground.com/#PCY1J#8
-
-// select objects with box: https://playground.babylonjs.com/#2SA7J8#7
-
-// mouse control: https://forum.babylonjs.com/t/arcrotatecamera-and-right-click/4901
-
-// switch scenes: https://doc.babylonjs.com/features/featuresDeepDive/scene/multiScenes
-
-// trail for spaceship: https://playground.babylonjs.com/#Z07JE1#2
-
-// explosions: https://playground.babylonjs.com/#VS5XS7#0
-
-// Squadrons of abandonement music Lily's Theme https://youtu.be/qxrV2pqroDY
-// FoW https://playground.babylonjs.com/#BRXZVE#8
-// FoW2 https://playground.babylonjs.com/#8WJTJG#9
-// Fow3 https://playground.babylonjs.com/#8WJTJG
-// Entity selection https://playground.babylonjs.com/#GCNNPT#36
-
-// sun with sun flares: https://github.com/jelster/space-truckers/blob/develop/src/systems/solar-flare.json
-
-// supernova explosion: https://playground.babylonjs.com/#QZTX7A#5
-
-// https://app.meshy.a
-
-// blue orb effect https://playground.babylonjs.com/#MVPZHQ
-
-// wave effect with pixels https://playground.babylonjs.com/#UI95UC#2011
-
-// three lava rock balls https://playground.babylonjs.com/#DFQVK5
-// How to run:
-// https://doc.babylonjs.com/guidedLearning/createAGame/gettingSetUp
-// install from https://github.com/coreybutler/nvm-windows
-// nvm install 14
-// npm run build
-// npm run start
-// http://localhost:8080/
-
-// Things to check:
-// minimap
-// fog of WAR
-// audio
-// load assets and textures
-// explosions and particles
-// load map from file (JSON?)
-// 2D UI rescale window
-// GIZMOS
-// multiple source files
-// multi scenes for settings and main menu
-// settings overlay?
-// ai
-// animations of buildings etc
-// multiplayer
-// camera movement
-// 2d unit health bars and icons in 3D view
-// unit selection circle and unit surrounding circle (via shader)
-// shaders must work on asteroids and on ground plane? or just on ground plane?
-// navmesh and multi unit (squad) navigation
-
-// sound playback : https://www.babylonjs-playground.com/#PCY1J#8
-
-// select objects with box: https://playground.babylonjs.com/#2SA7J8#7
-
-// mouse control: https://forum.babylonjs.com/t/arcrotatecamera-and-right-click/4901
-
-// switch scenes: https://doc.babylonjs.com/features/featuresDeepDive/scene/multiScenes
-
-// Squadrons of abandonement music idea lily's theme https://youtu.be/qxrV2pqroDY
-// FoW https://playground.babylonjs.com/#BRXZVE#8
-// FoW2 https://playground.babylonjs.com/#8WJTJG#9
-// Fow3 https://playground.babylonjs.com/#8WJTJG
-// Entity selection https://playground.babylonjs.com/#GCNNPT#36
-
-// https://app.meshy.a
 
 
 var renderingGroupId_everything = 3;
 var renderingGroupId_ground = 0;
+var keyboard = 0;
 
 // custom handling of materials for render target pass
 var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamera] {
@@ -321,6 +193,8 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
     gui.createGui(currentUrl);
     var minimap = new Minimap();
     minimap.createMinimap(scene, camera, engine);
+    var mouseSelectionBox = new MouseSelectionBox();
+    mouseSelectionBox.createMouseSelectionBox(scene, gui.getGui());
     
     
     /*ParticleHelper.CreateAsync("explosion", scene).then((a) => {
@@ -783,7 +657,9 @@ class App {
             }
         };
         
-        // hide/show the Inspector
+        
+        
+        // handle all keyboard input
         window.addEventListener("keydown", (ev) => {
             if (ev.key === "i") {
                 if (scene.debugLayer.isVisible()) {
@@ -824,6 +700,8 @@ class App {
         // run the main render loop
         engine.runRenderLoop(() => {
             // here all updating stuff must be updated
+            
+            
             scene.render();
         });
     }

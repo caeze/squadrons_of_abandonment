@@ -1,0 +1,212 @@
+TODO:
+=====
+
+
+
+Find out size of Angoville
+Find out unit speed, capping times, build times, costs
+Compile unit and tech trees
+Find out unit abilities and upgrades
+
+
+
+
+
+
+// Things to check:
+// minimap
+// fog of WAR
+// audio
+// load assets and textures
+// explosions and particles
+// load map from file (JSON?)
+// 2D UI rescale window
+// GIZMOS
+// multiple source files
+// multi scenes for settings and main menu
+// settings overlay?
+// ai
+// animations of buildings etc
+// multiplayer
+// camera movement
+// 2d unit health bars and icons in 3D view
+// unit selection circle and unit surrounding circle (via shader)
+// shaders must work on asteroids and on ground plane? or just on ground plane?
+// navmesh and multi unit (squad) navigation
+
+
+
+// sound playback : https://www.babylonjs-playground.com/#PCY1J#8
+
+// select objects with box: https://playground.babylonjs.com/#2SA7J8#7
+
+// mouse control: https://forum.babylonjs.com/t/arcrotatecamera-and-right-click/4901
+
+// switch scenes: https://doc.babylonjs.com/features/featuresDeepDive/scene/multiScenes
+
+// Squadrons of abandonement music idea lily's theme https://youtu.be/qxrV2pqroDY
+// FoW https://playground.babylonjs.com/#BRXZVE#8
+// FoW2 https://playground.babylonjs.com/#8WJTJG#9
+// Fow3 https://playground.babylonjs.com/#8WJTJG
+// Entity selection https://playground.babylonjs.com/#GCNNPT#36
+
+// https://app.meshy.a
+
+// IMPORTANT: GIZMOS
+// https://playground.babylonjs.com/#31M2AP#9
+
+
+// sound playback : https://www.babylonjs-playground.com/#PCY1J#8
+
+// select objects with box: https://playground.babylonjs.com/#2SA7J8#7
+
+// mouse control: https://forum.babylonjs.com/t/arcrotatecamera-and-right-click/4901
+
+// switch scenes: https://doc.babylonjs.com/features/featuresDeepDive/scene/multiScenes
+
+// trail for spaceship: https://playground.babylonjs.com/#Z07JE1#2
+
+// explosions: https://playground.babylonjs.com/#VS5XS7#0
+
+// Squadrons of abandonement music Lily's Theme https://youtu.be/qxrV2pqroDY
+// FoW https://playground.babylonjs.com/#BRXZVE#8
+// FoW2 https://playground.babylonjs.com/#8WJTJG#9
+// Fow3 https://playground.babylonjs.com/#8WJTJG
+// Entity selection https://playground.babylonjs.com/#GCNNPT#36
+
+// sun with sun flares: https://github.com/jelster/space-truckers/blob/develop/src/systems/solar-flare.json
+
+// supernova explosion: https://playground.babylonjs.com/#QZTX7A#5
+
+// https://app.meshy.a
+
+// blue orb effect https://playground.babylonjs.com/#MVPZHQ
+
+// wave effect with pixels https://playground.babylonjs.com/#UI95UC#2011
+
+// three lava rock balls https://playground.babylonjs.com/#DFQVK5
+
+
+// Things to check:
+// minimap
+// fog of WAR
+// audio
+// load assets and textures
+// explosions and particles
+// load map from file (JSON?)
+// 2D UI rescale window
+// GIZMOS
+// multiple source files
+// multi scenes for settings and main menu
+// settings overlay?
+// ai
+// animations of buildings etc
+// multiplayer
+// camera movement
+// 2d unit health bars and icons in 3D view
+// unit selection circle and unit surrounding circle (via shader)
+// shaders must work on asteroids and on ground plane? or just on ground plane?
+// navmesh and multi unit (squad) navigation
+
+// sound playback : https://www.babylonjs-playground.com/#PCY1J#8
+
+// select objects with box: https://playground.babylonjs.com/#2SA7J8#7
+
+// mouse control: https://forum.babylonjs.com/t/arcrotatecamera-and-right-click/4901
+
+// switch scenes: https://doc.babylonjs.com/features/featuresDeepDive/scene/multiScenes
+
+// Squadrons of abandonement music idea lily's theme https://youtu.be/qxrV2pqroDY
+// FoW https://playground.babylonjs.com/#BRXZVE#8
+// FoW2 https://playground.babylonjs.com/#8WJTJG#9
+// Fow3 https://playground.babylonjs.com/#8WJTJG
+// Entity selection https://playground.babylonjs.com/#GCNNPT#36
+
+// https://app.meshy.a
+
+
+// camera collision: https://playground.babylonjs.com/#CTCSWQ#945
+
+
+Map border
+https://forum.babylonjs.com/t/how-do-i-make-an-rts-camera-move-along-the-yz-plane/21546
+https://forum.babylonjs.com/t/soft-map-borders/8915/3
+https://playground.babylonjs.com/#UY32I2
+https://doc.babylonjs.com/guidedLearning/videos/RTSGameDev
+
+
+3D models:
+https://www.blendswap.com/search?page=11&keyword=spaceship
+
+Physics (there are even better examples like the newton cradle)
+https://playground.babylonjs.com/#Z8HTUN
+
+Many very good snippets and projects
+https://github.com/Symbitic/awesome-babylonjs
+
+Multiple render passes
+https://playground.babylonjs.com/#TG2B18#60
+
+Particle system sources https://github.com/BabylonJS/Assets/tree/master/particles/systems
+
+Skull dust effect post processing https://www.babylonjs-playground.com/#TZJ0HQ#18
+
+Multiple render passes
+https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/renderTargetTextureMultiPass
+
+stars warp jump https://playground.babylonjs.com/#J5JYZB
+
+black and white plugin https://playground.babylonjs.com/#22HT5Z#15
+
+fog of war on plane https://playground.babylonjs.com/#S3U25D#3
+https://playground.babylonjs.com/#S3U25D
+
+three js implementation https://github.com/Usnul/meep/tree/844a2cc05482b682d8766879f76b05d1514b18dc/src/model/level/fow
+
+explosion https://playground.babylonjs.com/#0K3AQ2#609
+
+https://forum.babylonjs.com/t/rts-fog-of-war/35479
+
+graph nav https://www.babylonjs-playground.com/#7RRC76#2
+
+https://forum.babylonjs.com/t/dynamictexture-performance-drops-over-time/21705
+
+Check if point is inside mesh
+https://playground.babylonjs.com/#XJEG9A#4
+
+
+
+https://playground.babylonjs.com/#8WJTJG#9
+
+Re color mesh
+https://playground.babylonjs.com/#ZRZIIZ#2
+
+Update vertices manually
+https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/custom/updatingVertices
+
+Mesh slicer
+https://www.babylonjs-playground.com/#B2DP5I#7
+
+Other mesh slicer
+https://doc.babylonjs.com/features/featuresDeepDive/particles/solid_particle_system/sps_digest
+
+Mesh shattering
+https://babylonjs.medium.com/mesh-shattering-with-baked-physics-5b3f8f381743
+https://playground.babylonjs.com/#1BGGDU
+
+graph nav and see-through objects shader https://www.babylonjs-playground.com/#7RRC76#5
+
+graph nav and see-through objects shader https://www.babylonjs-playground.com/#7RRC76#6
+
+explosion shader https://www.babylonjs-playground.com/#1ETKI6
+
+many snippets https://forum.babylonjs.com/t/examples-from-the-playground/3175/1214
+
+spaceship trail effect https://playground.babylonjs.com/#DMRE33#218
+
+rocket exhaust https://playground.babylonjs.com/#8PAT2J#3
+
+behaviour trees for ai https://www.npmjs.com/package/mistreevous
+
+graphnav ai trying to escape player https://www.babylonjs-playgjround.com/#R9C0T6#38
+

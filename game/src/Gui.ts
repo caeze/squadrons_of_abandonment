@@ -5,12 +5,21 @@ import { BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractM
 import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
 
 export class Gui {
+    private advancedTexture: AdvancedDynamicTexture;
+
+    public constructor() {
+        this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("Gui");
+    }
+    
+    public getGui(): AdvancedDynamicTexture {
+        return this.advancedTexture;
+    }
+    
     // TODO: minimap is part of this
     // define necessary buttons as blanks
     // place them correctly and update on window resize
     public createGui(currentUrl: string) {
-        var advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("Gui");
-        advancedTexture.isForeground = true;
+        this.advancedTexture.isForeground = true;
         
         var button = Button.CreateImageWithCenterTextButton("but", "Click me!", "textures/grass.png");
             button.width = 0.2;
@@ -34,7 +43,7 @@ export class Gui {
                     button.image.source = currentUrl + "/assets/img/grass.png";
                 }
             });
-        advancedTexture.addControl(button); 
+        this.advancedTexture.addControl(button); 
         
         
 
@@ -49,6 +58,6 @@ export class Gui {
         button1.onPointerUpObservable.add(function() {
             alert("you did it!");
         });
-        advancedTexture.addControl(button1); 
+        this.advancedTexture.addControl(button1); 
     }
 }

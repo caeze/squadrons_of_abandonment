@@ -1,0 +1,32 @@
+Squadrons of Abandonment
+
+Name:
+ - Interplanetary Mind (subtitle: Game Studio)
+ - Logo: human brain with stars and planet inside
+
+Resources:
+ - Energy (Manpower) -> from Solar Collectors
+ - Antimatter (Oil) -> from Quantum Wells
+ - Nanites (Ammunition) -> from Replication Facilities
+ - Unit Count (Popcap)
+
+Factions
+
+https://www.hq-coh.com/stats/coh-stats.com/Faction_American.html
+
+ - Emerald Empire (green) - vicious surveillance state, indoctrinated soldiers that rather die than flee, fewer units but strong (like CoH Wehrmacht)
+ - Red Republic (red) - misdirected deteriorated communists, soldiers forced to serve that flee easily, many weak units (like CoH America)
+ - Golden Garrison (yellow) - makeshift ruthless rebellion, idealists that are trained well and are experts in guerilla tactics, units fragile but high damage output (like CoH Panzer Elite)
+ - Cyan Conglomerate (blue) - corrupt uncompassionate bankers, mercenary army with diverse abilities but morale issues, medium amount of medium strong units (like CoH Britain)
+
+Core ships (space stations) spawn and come with two minigun defense towers and one pioneer scout
+
+Unit names
+Marauders
+Enforcers
+Imperial Warriors
+Valkyries
+Republican Hunters
+Bird names for units (Hawk, Falcon, ...)
+
+Inspiration: Star Wars, CoH, Star Fox, Stargate, Star Trek
