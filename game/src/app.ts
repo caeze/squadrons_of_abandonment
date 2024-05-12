@@ -1,8 +1,10 @@
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Sun } from "./SunEffect";
-import { BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
+import { Sun } from "./Sun";
+import { Gui } from "./Gui";
+import { Minimap } from "./Minimap";
+import { Matrix, HighlightLayer, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
 
 // How to run:
@@ -11,6 +13,56 @@ import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
 // npm run start
 // npm update  - after updating dependencies in package.json
 // http://localhost:8080/
+
+
+// How to run:
+// https://doc.babylonjs.com/guidedLearning/createAGame/gettingSetUp
+// install from https://github.com/coreybutler/nvm-windows
+// nvm install 14
+// npm run build
+// npm run start
+// http://localhost:8080/
+
+// Things to check:
+// minimap
+// fog of WAR
+// audio
+// load assets and textures
+// explosions and particles
+// load map from file (JSON?)
+// 2D UI rescale window
+// GIZMOS
+// multiple source files
+// multi scenes for settings and main menu
+// settings overlay?
+// ai
+// animations of buildings etc
+// multiplayer
+// camera movement
+// 2d unit health bars and icons in 3D view
+// unit selection circle and unit surrounding circle (via shader)
+// shaders must work on asteroids and on ground plane? or just on ground plane?
+// navmesh and multi unit (squad) navigation
+
+// sound playback : https://www.babylonjs-playground.com/#PCY1J#8
+
+// select objects with box: https://playground.babylonjs.com/#2SA7J8#7
+
+// mouse control: https://forum.babylonjs.com/t/arcrotatecamera-and-right-click/4901
+
+// switch scenes: https://doc.babylonjs.com/features/featuresDeepDive/scene/multiScenes
+
+// Squadrons of abandonement music idea lily's theme https://youtu.be/qxrV2pqroDY
+// FoW https://playground.babylonjs.com/#BRXZVE#8
+// FoW2 https://playground.babylonjs.com/#8WJTJG#9
+// Fow3 https://playground.babylonjs.com/#8WJTJG
+// Entity selection https://playground.babylonjs.com/#GCNNPT#36
+
+// https://app.meshy.a
+
+// IMPORTANT: GIZMOS
+// https://playground.babylonjs.com/#31M2AP#9
+
 
 // sound playback : https://www.babylonjs-playground.com/#PCY1J#8
 
@@ -41,6 +93,51 @@ import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
 // wave effect with pixels https://playground.babylonjs.com/#UI95UC#2011
 
 // three lava rock balls https://playground.babylonjs.com/#DFQVK5
+// How to run:
+// https://doc.babylonjs.com/guidedLearning/createAGame/gettingSetUp
+// install from https://github.com/coreybutler/nvm-windows
+// nvm install 14
+// npm run build
+// npm run start
+// http://localhost:8080/
+
+// Things to check:
+// minimap
+// fog of WAR
+// audio
+// load assets and textures
+// explosions and particles
+// load map from file (JSON?)
+// 2D UI rescale window
+// GIZMOS
+// multiple source files
+// multi scenes for settings and main menu
+// settings overlay?
+// ai
+// animations of buildings etc
+// multiplayer
+// camera movement
+// 2d unit health bars and icons in 3D view
+// unit selection circle and unit surrounding circle (via shader)
+// shaders must work on asteroids and on ground plane? or just on ground plane?
+// navmesh and multi unit (squad) navigation
+
+// sound playback : https://www.babylonjs-playground.com/#PCY1J#8
+
+// select objects with box: https://playground.babylonjs.com/#2SA7J8#7
+
+// mouse control: https://forum.babylonjs.com/t/arcrotatecamera-and-right-click/4901
+
+// switch scenes: https://doc.babylonjs.com/features/featuresDeepDive/scene/multiScenes
+
+// Squadrons of abandonement music idea lily's theme https://youtu.be/qxrV2pqroDY
+// FoW https://playground.babylonjs.com/#BRXZVE#8
+// FoW2 https://playground.babylonjs.com/#8WJTJG#9
+// Fow3 https://playground.babylonjs.com/#8WJTJG
+// Entity selection https://playground.babylonjs.com/#GCNNPT#36
+
+// https://app.meshy.a
+
 
 var renderingGroupId_everything = 3;
 var renderingGroupId_ground = 0;
@@ -165,11 +262,65 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
     (camera.inputs.attached.pointers as ArcRotateCameraPointersInput).buttons = [1];
     camera.inputs.remove(camera.inputs.attached.keyboard);
     camera.minZ = 0.1;*/
-    camera.attachControl(canvas, true);
+    // const camera = new ArcRotateCamera("StrategicCamera", Math.PI/3, Math.PI/3, 32, Vector3.Zero(), scene);
+	 
+	//adapt accordingly, escpecially panningSensibility
+	camera.allowUpsideDown = false;
+	camera.lowerBetaLimit = 0.0;
+	camera.upperBetaLimit = Math.PI / 2.0 - 0.01;
+	camera.lowerRadiusLimit = 1.0;
+	camera.upperRadiusLimit = 100.0;
+	camera.angularSensibilityX = 2500.0; // mouse camera rotate speed
+	camera.angularSensibilityY = 2500.0;
+	camera.panningSensibility = 4000.0; // mouse move camera speed
+    camera.wheelDeltaPercentage = 0.0;
+    camera.inertia = 0.7;
     camera.checkCollisions = true;
+    camera.setTarget(Vector3.Zero());
+    (camera.inputs.attached.pointers as ArcRotateCameraPointersInput).buttons = [1];
+    camera.inputs.remove(camera.inputs.attached.keyboard);
+    
+    
+    var prevRadius = camera.radius;
+    
+    camera.wheelPrecision = 20.0;
+
+    scene.beforeRender = () => {
+        if (prevRadius != camera.radius) {
+            let ratio = prevRadius / camera.radius;
+            prevRadius = camera.radius;
+
+            camera.panningSensibility *= ratio;
+            camera.wheelPrecision *= ratio;
+        }
+    };
+	//-
+	
+	//IMPORTANT
+	//camera.inputs.removeByType("ArcRotateCameraKeyboardMoveInput");
+	//camera.inputs.add(new KeyboardPanningInput(new Matrix(), Vector3.Zero()));	 	
+	//-
+	
+	const w = 87;
+	const s = 83;
+	const d = 68;
+	const a = 65;
+	
+	camera.keysUp.push(w); 
+	camera.keysDown.push(s);            
+	camera.keysRight.push(d);
+	camera.keysLeft.push(a);
+	
+	camera.attachControl(canvas, true);
+    camera.checkCollisions = true;
+    //camera.lockedTarget = ground;
     
     var sun = new Sun("ASD");
     sun.createSun(scene, camera, engine);
+    var gui = new Gui();
+    gui.createGui(currentUrl);
+    var minimap = new Minimap();
+    minimap.createMinimap(scene, camera, engine);
     
     
     /*ParticleHelper.CreateAsync("explosion", scene).then((a) => {
@@ -340,7 +491,6 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
     ground.material.alpha = 0.5;
 	//ground.material.wireframe = true;
     //ground.transparent.isEnabled = true;
-    camera.lockedTarget = ground
     
     
     
@@ -404,7 +554,6 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
     let t = 0.0;
     postProcess.onApply = function (effect) {
         t += 0.001;
-        console.log(t);
         effect.setFloat("time", t);
         let centerX = Math.sin(3.14 / 2 + t * 100.0) / 2.0 + 0.5;
         let centerY = Math.cos(3.14 / 2 + t * 100.0) / 2.0 + 0.5;
@@ -417,7 +566,6 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
     let t2 = 0.3;
     postProcess.onApply = function (effect) {
         t2 += 0.001;
-        console.log(t2);
         effect.setFloat("time", t2);
         let centerX = 0.5;
         let centerY = 0.5;
@@ -528,20 +676,8 @@ class App {
                     objects[i].renderingGroupId = renderingGroupId_everything;
                 }
             }
-        );
-        var jupiter: AbstractMesh;
-        SceneLoader.ImportMesh(
-            "",
-            currentUrl + "/assets/models/",
-            "jupiter.glb",
-            scene,
-            function(objects: AbstractMesh[]) {
-                for(let i=0; i<objects.length; ++i) {
-                    objects[i].renderingGroupId = renderingGroupId_everything;
-                }
-            }
-        );
-        var spheresMeshGlb: AbstractMesh;
+        );*/
+        var spheresMeshGlb = MeshBuilder.CreateSphere("spheresMeshGlb", { diameter: 0.1 }, scene);
         SceneLoader.ImportMesh(
             "",
             currentUrl + "/assets/models/",
@@ -552,7 +688,64 @@ class App {
                     objects[i].renderingGroupId = renderingGroupId_everything;
                 }
             }
+        );
+        /*var jupiter = MeshBuilder.CreateSphere("jupiter", { diameter: 3 }, scene);
+        SceneLoader.ImportMesh(
+            "",
+            currentUrl + "/assets/models/",
+            "jupiter.glb",
+            scene,
+            function(objects: AbstractMesh[]) {
+                console.log(objects);
+                jupiter = (<Mesh> objects[1]);
+                for(let i=0; i<objects.length; ++i) {
+                    objects[i].renderingGroupId = renderingGroupId_everything;
+                }
+            }
         );*/
+        
+        // Highlight layer blinking:
+        // https://playground.babylonjs.com/#1KUJ0A#1905
+        // https://playground.babylonjs.com/#S47Z83
+        // https://playground.babylonjs.com/#1KUJ0A#436
+        
+        // make a area light (self lit mesh) glow:
+        // https://endoc.cnbabylon.com/how_to/glow_layer
+        var highlightLayer = new HighlightLayer("SphereHighlight", scene,
+        { 
+            // alphaBlendingMode: 0, 
+            blurTextureSizeRatio : 0.25
+        });
+        highlightLayer.addMesh(zSphere, Color3.Blue());
+        
+        const importPromise = SceneLoader.ImportMeshAsync(
+            null,
+            currentUrl + "/assets/models/",
+            "jupiter.glb",
+            scene
+        );
+        importPromise.then((result: any) => {
+            highlightLayer.addMesh(result.meshes[1], Color3.Blue());
+            result.meshes[1].renderingGroupId = renderingGroupId_everything;
+        });
+        
+        const importPromiseFlag = SceneLoader.ImportMeshAsync(
+            null,
+            currentUrl + "/assets/models/",
+            "flag.glb",
+            scene
+        );
+        importPromiseFlag.then((result: any) => {
+            console.log(result);
+            for(let i = 0; i < result.meshes.length; i++) {
+                result.meshes[i].renderingGroupId = renderingGroupId_everything;
+                result.meshes[i].scaling.x = 0.25;
+                result.meshes[i].scaling.y = 0.25;
+                result.meshes[i].scaling.z = 0.25;
+            }
+            //highlightLayer.addMesh(result.meshes[1], Color3.Blue());
+            //result.meshes[1].renderingGroupId = renderingGroupId_everything;
+        });
 
 
         
@@ -592,14 +785,6 @@ class App {
         
         // hide/show the Inspector
         window.addEventListener("keydown", (ev) => {
-            // Shift+Ctrl+Alt+I
-            if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.key === "i") {
-                if (scene.debugLayer.isVisible()) {
-                    scene.debugLayer.hide();
-                } else {
-                    scene.debugLayer.show();
-                }
-            }
             if (ev.key === "i") {
                 if (scene.debugLayer.isVisible()) {
                     scene.debugLayer.hide();
@@ -608,7 +793,10 @@ class App {
                 }
             }
             if (ev.key === "j") {
-                camera.setTarget(new Vector3(camera.getTarget().x, camera.getTarget().y + 0.01, camera.getTarget().z));
+                let cameraPosition = camera.position;
+                let cameraTarget = camera.getTarget();
+                camera.position = new Vector3(cameraPosition.x, cameraPosition.y, cameraPosition.z + 0.01);
+                camera.setTarget(new Vector3(cameraTarget.x, cameraTarget.y, cameraTarget.z + 0.01));
             }
             if (ev.key === "w") {
                 camera.setTarget(new Vector3(camera.getTarget().x + 0.01, camera.getTarget().y, camera.getTarget().z));
@@ -631,23 +819,7 @@ class App {
             canvas.style.width = window.innerWidth + "px";
             canvas.style.height = window.innerHeight + "px";
             engine.resize();
-        });
-
-        // GUI
-        var advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
-        var button1 = Button.CreateSimpleButton("but1", "Click Me");
-        button1.left = "1000px";
-        button1.top = "500px";
-        button1.width = "150px";
-        button1.height = "40px";
-        button1.color = "white";
-        button1.cornerRadius = 20;
-        button1.background = "green";
-        button1.onPointerUpObservable.add(function() {
-            alert("you did it!");
-        });
-        advancedTexture.addControl(button1);  
+        }); 
         
         // run the main render loop
         engine.runRenderLoop(() => {
@@ -829,52 +1001,6 @@ function buildLevelMeshes() {
 	enemy.material.diffuseColor = new Color3(1,0,0);	
 	
 	return {ground, player, enemy};
-}
-
-function babylonInit() {
-    var scene = new Scene(engine);
-	
-    var light = new HemisphericLight("light1", new Vector3(0, 1, 0), scene);
-    light.intensity = 0.7;
-
-	return {scene};
-}
-
-var createScene = function () {
-	const {scene} = babylonInit();
-	const {ground, player, enemy} = buildLevelMeshes();
-	
-
-	const camera = new ArcRotateCamera("StrategicCamera", Math.PI/3, Math.PI/3, 32, Vector3.Zero(), scene);
-	 
-	//adapt accordingly, escpecially panningSensibility
-	camera.allowUpsideDown = false;
-	camera.lowerBetaLimit = 0
-	camera.upperBetaLimit = Math.PI/3		
-	camera.lowerRadiusLimit = 2;
-	camera.upperRadiusLimit = 48;
-	camera.angularSensibility = 16000;
-	camera.panningSensibility = 4000;   	
-	//-
-	
-	//IMPORTANT
-	camera.inputs.removeByType("ArcRotateCameraKeyboardMoveInput");
-	camera.inputs.add(new KeyboardPanningInput(new Matrix(), Vector3.Zero()));	 	
-	//-
-	
-	const w = 87;
-	const s = 83;
-	const d = 68;
-	const a = 65;
-	
-	camera.keysUp.push(w); 
-	camera.keysDown.push(s);            
-	camera.keysRight.push(d);
-	camera.keysLeft.push(a);
-	
-	camera.attachControl(canvas, true);
-	
-	return scene;
 }
 
 
