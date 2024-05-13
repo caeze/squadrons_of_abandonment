@@ -2,6 +2,16 @@ TODO:
 =====
 
 
+// Z flickering
+https://forum.babylonjs.com/t/what-is-the-best-way-to-set-cameras-near-plane-as-far-as-possible-without-clipping-the-scene/46154
+
+
+LOOK AT THIS PROJECT!!!! (or maybe not so good?)
+https://github.com/RaananW/babylonjs-webpack-es6
+
+// loading screen and animations controller
+https://www.babylonjs-playground.com/#5Y2GIC#6
+
 
 Find out size of Angoville
 Find out unit speed, capping times, build times, costs
@@ -9,7 +19,13 @@ Compile unit and tech trees
 Find out unit abilities and upgrades
 
 
-
+// Highlight layer blinking:
+        // https://playground.babylonjs.com/#1KUJ0A#1905
+        // https://playground.babylonjs.com/#S47Z83
+        // https://playground.babylonjs.com/#1KUJ0A#436
+        
+        // make a area light (self lit mesh) glow:
+        // https://endoc.cnbabylon.com/how_to/glow_layer
 
 
 

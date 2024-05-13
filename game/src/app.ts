@@ -1,12 +1,15 @@
-import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
-import "@babylonjs/loaders/glTF";
 import { Sun } from "./Sun";
 import { Gui } from "./Gui";
 import { Minimap } from "./Minimap";
 import { MouseSelectionBox } from "./MouseSelectionBox";
-import { Matrix, HighlightLayer, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
+import { LoadingScreen } from "./LoadingScreen";
+import { KeyboardInputManager } from "./KeyboardInputManager";
+
+import "@babylonjs/core/Debug/debugLayer";
+import "@babylonjs/inspector";
+import "@babylonjs/loaders/glTF";
 import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
+import { Quaternion, Tools, WebGPUEngine, Matrix, HighlightLayer, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
 
 
 
@@ -15,7 +18,7 @@ var renderingGroupId_ground = 0;
 var keyboard = 0;
 
 // custom handling of materials for render target pass
-var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamera] {
+var createScene = function (engine: Engine, canvas: any, currentUrl: string): [Scene, ArcRotateCamera] {
     Effect.ShadersStore["fowVertexShader"]=`
     precision highp float;
 
@@ -56,20 +59,6 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
     varying vec3 vPositionW;
     varying vec4 fragmentPosition;
 
-    //bool circle(vec4 FragColor) {
-    //    for(int i=0; i<MAXSELECTEDS; i++) {
-    //        if(i >= nbSelecteds) {
-    //            return true;
-    //        }
-    //        float dist = length(vPositionW.xz - vec3(circlesX[i],circlesY[i],circlesZ[i]).xz);
-    //        if(dist <= circlesMax[i] && dist >= circlesMin[i]) {
-    //            FragColor = vec4(circlesR[i],circlesG[i],circlesB[i],1.);
-    //            //FragColor = vec4(1000. * ((1. - clamp(dist/circlesMax[i], 0., 1.))-pow( 1. - clamp(dist/circlesMin[i], 0., 1.) , .8)) * vec3(circlesR[i], circlesG[i], circlesB[i]),1.) * texture2D(diffuseTextureB, vUV);
-    //            return false;
-    //        }
-    //    }
-    //}
-
     float get_alpha() {
         float revealed_alpha = 0.0;
         float fow_alpha = 0.5;
@@ -102,41 +91,21 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
  
     void main() {
         vec4 frag_color = vec4(0.0, 0.0, 0.0, 1.0);
-        frag_color.a = get_alpha();
-        frag_color.r = get_alpha() / 3.0;
+        float alpha = get_alpha();
+        float gray = get_alpha() / 3.0;
+        frag_color.a = alpha;
+        frag_color.r = gray;
+        frag_color.g = gray;
+        frag_color.b = gray;
         if (int(vUV.x * 2000.0) % 2 == int(vUV.y * 1000.0) % 2) {
-            frag_color.r = 0.0;
+            discard;
         }
         gl_FragColor = frag_color;
     }`
-    
-    // get current URL
-    var currentUrl = "http://localhost:8080";
 
     var scene = new Scene(engine);
-    //var camera = new ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2 - Math.PI / 4, 10, Vector3.Zero(), scene);
-    //camera.attachControl(canvas, true);
-    //camera.checkCollisions = true;
-    //camera.maxZ = 100000.0;
-    //camera.minZ = 1.0;
-    // const light = new PointLight("sunLight", new Vector3(1, 10, 1), scene);
-    //const ligh1 = new HemisphericLight("light1", new Vector3(1, 1, 0), scene);
-
+    
     var camera: ArcRotateCamera = new ArcRotateCamera("MainCamera", -Math.PI / 2, Math.PI / 4, 4, Vector3.Zero(), scene);
-    /*camera.upperRadiusLimit = 10;
-    camera.lowerRadiusLimit = 0.01;
-    camera.angularSensibilityX = 1000;
-    camera.angularSensibilityY = 1000;
-    camera.wheelDeltaPercentage = 0.1;
-    camera.checkCollisions = true;
-    camera.inertia = 0.6;
-    camera.allowUpsideDown = false;
-    (camera.inputs.attached.pointers as ArcRotateCameraPointersInput).buttons = [1];
-    camera.inputs.remove(camera.inputs.attached.keyboard);
-    camera.minZ = 0.1;*/
-    // const camera = new ArcRotateCamera("StrategicCamera", Math.PI/3, Math.PI/3, 32, Vector3.Zero(), scene);
-	 
-	//adapt accordingly, escpecially panningSensibility
 	camera.allowUpsideDown = false;
 	camera.lowerBetaLimit = 0.0;
 	camera.upperBetaLimit = Math.PI / 2.0 - 0.01;
@@ -166,22 +135,7 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
             camera.wheelPrecision *= ratio;
         }
     };
-	//-
 	
-	//IMPORTANT
-	//camera.inputs.removeByType("ArcRotateCameraKeyboardMoveInput");
-	//camera.inputs.add(new KeyboardPanningInput(new Matrix(), Vector3.Zero()));	 	
-	//-
-	
-	const w = 87;
-	const s = 83;
-	const d = 68;
-	const a = 65;
-	
-	camera.keysUp.push(w); 
-	camera.keysDown.push(s);            
-	camera.keysRight.push(d);
-	camera.keysLeft.push(a);
 	
 	camera.attachControl(canvas, true);
     camera.checkCollisions = true;
@@ -189,12 +143,6 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
     
     var sun = new Sun("ASD");
     sun.createSun(scene, camera, engine);
-    var gui = new Gui();
-    gui.createGui(currentUrl);
-    var minimap = new Minimap();
-    minimap.createMinimap(scene, camera, engine);
-    var mouseSelectionBox = new MouseSelectionBox();
-    mouseSelectionBox.createMouseSelectionBox(scene, gui.getGui());
     
     
     /*ParticleHelper.CreateAsync("explosion", scene).then((a) => {
@@ -271,32 +219,6 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
         ground_shader_material.setFloats('circlesG', circlesG);
         ground_shader_material.setFloats('circlesB', circlesB);
     }
-    /*for(let i=0; i<spawns.length; ++i) {
-        var box_mesh=MeshBuilder.CreateBox('box'+i, {size:unitSize}, scene);
-        entitys.push({root:box_mesh,
-            maxRadius: .5*Math.sqrt(Math.pow(unitSize, 2) + Math.pow(unitSize, 2)),
-            color: [Color3.Red(), Color3.Yellow()][i]
-        })
-        
-        
-        
-        var particleSystem = ParticleSystem.Parse("rocket_exhaust.json", scene, '', true);
-
-        var exhaust = new TransformNode('exaust');
-        exhaust.parent = box_mesh;
-        exhaust.position.y = -1.1;
-
-
-        particleSystem.emitter = box_mesh;
-        particleSystem.isLocal = true;
-        particleSystem.start();
-            
-        entitys[i].root.onAfterWorldMatrixUpdateObservable.add(() => {
-            isMeshesMatrixUpdated = true;
-        })
-    }*/
-    
-    
     
     
     for(let i=0; i<spawns.length; ++i) {
@@ -448,9 +370,112 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
     
     
     
+
+    
+    const skybox = MeshBuilder.CreateBox("skyBox", { size: 10000.0 }, scene);
+    const skyboxMaterial = new StandardMaterial("skyBox", scene);
+    skyboxMaterial.backFaceCulling = false;
+    skyboxMaterial.reflectionTexture = new CubeTexture(currentUrl + "/assets/img/skybox/skybox", scene);
+    skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+    skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
+    skyboxMaterial.specularColor = new Color3(0, 0, 0);
+    skybox.material = skyboxMaterial;
+    
+    var originSphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: 0.1 }, scene);
+    originSphere.renderingGroupId = renderingGroupId_everything;
+    
+    var xSphere: Mesh = MeshBuilder.CreateSphere("xsphere", { diameter: 0.1 }, scene);
+    var xSphereMaterial = new StandardMaterial("mat", scene);
+    xSphereMaterial.alpha = 1;
+    xSphereMaterial.diffuseColor = new Color3(1, 0, 0);
+    xSphere.material = xSphereMaterial;
+    xSphere.position = new Vector3(1, 0, 0);
+    xSphere.isPickable = true;
+    xSphere.renderingGroupId = renderingGroupId_everything;
+    
+    var ySphere: Mesh = MeshBuilder.CreateSphere("ysphere", { diameter: 0.1 }, scene);
+    var ySphereMaterial = new StandardMaterial("mat", scene);
+    ySphereMaterial.alpha = 1;
+    ySphereMaterial.diffuseColor = new Color3(0, 1, 0);
+    ySphere.material = ySphereMaterial;
+    ySphere.position = new Vector3(0, 1, 0);
+    ySphere.isPickable = true;
+    ySphere.renderingGroupId = renderingGroupId_everything;
+    
+    var zSphere: Mesh = MeshBuilder.CreateSphere("zsphere", { diameter: 0.1 }, scene);
+    var zSphereMaterial = new StandardMaterial("mat", scene);
+    zSphereMaterial.alpha = 1;
+    zSphereMaterial.diffuseColor = new Color3(0, 0, 1);
+    zSphere.material = zSphereMaterial;
+    zSphere.position = new Vector3(0, 0, 1);
+    zSphere.isPickable = true;
+    zSphere.renderingGroupId = renderingGroupId_everything;
     
     
     
+    var spheresMeshGlb = MeshBuilder.CreateSphere("spheresMeshGlb", { diameter: 0.1 }, scene);
+    SceneLoader.ImportMesh(
+        "",
+        currentUrl + "/assets/models/",
+        "PBR_Spheres.glb",
+        scene,
+        function(objects: AbstractMesh[]) {
+            for(let i=0; i<objects.length; ++i) {
+                objects[i].renderingGroupId = renderingGroupId_everything;
+            }
+        }
+    );
+    /*var jupiter = MeshBuilder.CreateSphere("jupiter", { diameter: 3 }, scene);
+    SceneLoader.ImportMesh(
+        "",
+        currentUrl + "/assets/models/",
+        "jupiter.glb",
+        scene,
+        function(objects: AbstractMesh[]) {
+            console.log(objects);
+            jupiter = (<Mesh> objects[1]);
+            for(let i=0; i<objects.length; ++i) {
+                objects[i].renderingGroupId = renderingGroupId_everything;
+            }
+        }
+    );*/
+    
+    
+    /*var highlightLayer = new HighlightLayer("SphereHighlight", scene,
+    { 
+        // alphaBlendingMode: 0, 
+        blurTextureSizeRatio : 0.25
+    });
+    highlightLayer.addMesh(zSphere, Color3.Blue());
+    
+    const importPromise = SceneLoader.ImportMeshAsync(
+        null,
+        currentUrl + "/assets/models/",
+        "jupiter.glb",
+        scene
+    );
+    importPromise.then((result: any) => {
+        highlightLayer.addMesh(result.meshes[1], Color3.Blue());
+        result.meshes[1].renderingGroupId = renderingGroupId_everything;
+    });
+    
+    const importPromiseFlag = SceneLoader.ImportMeshAsync(
+        null,
+        currentUrl + "/assets/models/",
+        "flag.glb",
+        scene
+    );
+    importPromiseFlag.then((result: any) => {
+        console.log(result);
+        for(let i = 0; i < result.meshes.length; i++) {
+            result.meshes[i].renderingGroupId = renderingGroupId_everything;
+            //result.meshes[i].scaling.x = 0.25;
+            //result.meshes[i].scaling.y = 0.25;
+            //result.meshes[i].scaling.z = 0.25;
+        }
+        //highlightLayer.addMesh(result.meshes[1], Color3.Blue());
+        //result.meshes[1].renderingGroupId = renderingGroupId_everything;
+    });*/
     
     
     
@@ -468,13 +493,13 @@ var createScene = function (engine: Engine, canvas: any): [Scene, ArcRotateCamer
 };
 
 
-class App {
-    private name: string;
-    public constructor(name: string) {
-        // assign parameters
-        this.name = name;
+class SquadronsOfAbandonement {
+    private currentUrl: string;
+    private scene: Scene;
+    
+    public constructor() {
+        this.currentUrl = "http://localhost:8080";
         
-        // TODO: describe
         var canvas = document.createElement("canvas");
         /*var gl = canvas.getContext("webgl");
         if (gl != null) {
@@ -486,401 +511,109 @@ class App {
         document.body.appendChild(canvas);
         document.body.style.cssText = "margin: 0; padding: 0; height: 100%; overflow: hidden;";
         
-        // get current URL
-        var currentUrl = "http://localhost:8080";
-        
         ParticleHelper.BaseAssetsUrl = "./assets/particle_definitions";
         ParticleSystemSet.BaseAssetsUrl = "./assets/particle_definitions";
-        //Constants.PARTICLES_BaseAssetsUrl = "./assets/particle_definitions";
 
-        // initialize engine and scene
+        /*var engineType = "webgpu";
+        var engine: Engine;
+        if (engineType === "webgpu") {
+            var engine2 = new WebGPUEngine(canvas);
+            engine2.initAsync();
+        } else {
+            engine = new Engine(canvas, true);
+        }*/
         var engine = new Engine(canvas, true);
-        var [scene, camera] = createScene(engine, canvas);
+        
+    
+        engine.loadingScreen = new LoadingScreen();
+        engine.displayLoadingUI();
+        var [scene, camera] = createScene(engine, canvas, this.currentUrl);
+        this.scene = scene;
+        engine.hideLoadingUI();
 
-        
-        const skybox = MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
-        const skyboxMaterial = new StandardMaterial("skyBox", scene);
-        skyboxMaterial.backFaceCulling = false;
-        skyboxMaterial.reflectionTexture = new CubeTexture(currentUrl + "/assets/img/skybox/skybox", scene);
-        skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-        skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
-        skyboxMaterial.specularColor = new Color3(0, 0, 0);
-        skybox.material = skyboxMaterial;
-        
-        var originSphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: 0.1 }, scene);
-        originSphere.renderingGroupId = renderingGroupId_everything;
-        
-        var xSphere: Mesh = MeshBuilder.CreateSphere("xsphere", { diameter: 0.1 }, scene);
-        var xSphereMaterial = new StandardMaterial("mat", scene);
-        xSphereMaterial.alpha = 1;
-        xSphereMaterial.diffuseColor = new Color3(1, 0, 0);
-        xSphere.material = xSphereMaterial;
-        xSphere.position = new Vector3(1, 0, 0);
-        xSphere.isPickable = true;
-        xSphere.renderingGroupId = renderingGroupId_everything;
-        
-        var ySphere: Mesh = MeshBuilder.CreateSphere("ysphere", { diameter: 0.1 }, scene);
-        var ySphereMaterial = new StandardMaterial("mat", scene);
-        ySphereMaterial.alpha = 1;
-        ySphereMaterial.diffuseColor = new Color3(0, 1, 0);
-        ySphere.material = ySphereMaterial;
-        ySphere.position = new Vector3(0, 1, 0);
-        ySphere.isPickable = true;
-        ySphere.renderingGroupId = renderingGroupId_everything;
-        
-        var zSphere: Mesh = MeshBuilder.CreateSphere("zsphere", { diameter: 0.1 }, scene);
-        var zSphereMaterial = new StandardMaterial("mat", scene);
-        zSphereMaterial.alpha = 1;
-        zSphereMaterial.diffuseColor = new Color3(0, 0, 1);
-        zSphere.material = zSphereMaterial;
-        zSphere.position = new Vector3(0, 0, 1);
-        zSphere.isPickable = true;
-        zSphere.renderingGroupId = renderingGroupId_everything;
-        
-        
-        
-        /*var spaceShuttle: AbstractMesh;
-        SceneLoader.ImportMesh(
-            "",
-            currentUrl + "/assets/models/",
-            "spaceShuttle.glb",
-            scene,
-            function(objects: AbstractMesh[]) {
-                for(let i=0; i<objects.length; ++i) {
-                    objects[i].renderingGroupId = renderingGroupId_everything;
-                }
-            }
-        );*/
-        var spheresMeshGlb = MeshBuilder.CreateSphere("spheresMeshGlb", { diameter: 0.1 }, scene);
-        SceneLoader.ImportMesh(
-            "",
-            currentUrl + "/assets/models/",
-            "PBR_Spheres.glb",
-            scene,
-            function(objects: AbstractMesh[]) {
-                for(let i=0; i<objects.length; ++i) {
-                    objects[i].renderingGroupId = renderingGroupId_everything;
-                }
-            }
-        );
-        /*var jupiter = MeshBuilder.CreateSphere("jupiter", { diameter: 3 }, scene);
-        SceneLoader.ImportMesh(
-            "",
-            currentUrl + "/assets/models/",
-            "jupiter.glb",
-            scene,
-            function(objects: AbstractMesh[]) {
-                console.log(objects);
-                jupiter = (<Mesh> objects[1]);
-                for(let i=0; i<objects.length; ++i) {
-                    objects[i].renderingGroupId = renderingGroupId_everything;
-                }
-            }
-        );*/
-        
-        // Highlight layer blinking:
-        // https://playground.babylonjs.com/#1KUJ0A#1905
-        // https://playground.babylonjs.com/#S47Z83
-        // https://playground.babylonjs.com/#1KUJ0A#436
-        
-        // make a area light (self lit mesh) glow:
-        // https://endoc.cnbabylon.com/how_to/glow_layer
-        var highlightLayer = new HighlightLayer("SphereHighlight", scene,
-        { 
-            // alphaBlendingMode: 0, 
-            blurTextureSizeRatio : 0.25
-        });
-        highlightLayer.addMesh(zSphere, Color3.Blue());
-        
-        const importPromise = SceneLoader.ImportMeshAsync(
-            null,
-            currentUrl + "/assets/models/",
-            "jupiter.glb",
-            scene
-        );
-        importPromise.then((result: any) => {
-            highlightLayer.addMesh(result.meshes[1], Color3.Blue());
-            result.meshes[1].renderingGroupId = renderingGroupId_everything;
-        });
-        
-        const importPromiseFlag = SceneLoader.ImportMeshAsync(
-            null,
-            currentUrl + "/assets/models/",
-            "flag.glb",
-            scene
-        );
-        importPromiseFlag.then((result: any) => {
-            console.log(result);
-            for(let i = 0; i < result.meshes.length; i++) {
-                result.meshes[i].renderingGroupId = renderingGroupId_everything;
-                result.meshes[i].scaling.x = 0.25;
-                result.meshes[i].scaling.y = 0.25;
-                result.meshes[i].scaling.z = 0.25;
-            }
-            //highlightLayer.addMesh(result.meshes[1], Color3.Blue());
-            //result.meshes[1].renderingGroupId = renderingGroupId_everything;
-        });
-
-
-        
-        var mat = new StandardMaterial("mat", scene);
-        //var texture = new Texture(currentUrl + "/assets/img/ground_plane_grid/ground_plane_grid.png", scene);
-        //texture.uScale = 40;
-        //texture.vScale = 20;
-        //texture.hasAlpha = true;
-        //mat.diffuseTexture = texture;
-        //mat.useAlphaFromDiffuseTexture = true;
-        mat.alpha = 0.0;
-        
-        const f = new Vector4(0, 0, 0.5, 1); // front image = half the whole image along the width 
-        const b = new Vector4(0.5, 0, 1, 1); // back image = second half along the width
-        
-        const plane = MeshBuilder.CreatePlane("plane", {frontUVs: f, backUVs: b, sideOrientation: Mesh.DOUBLESIDE, size: 1000, width: 200, height: 200});
-        plane.rotation = new Vector3(Math.PI / 2, 0, 0);
-        plane.material = mat;
-        plane.isPickable = true;
-
-        /**
-         * INSTANTIATE FOG OF WAR PLUGIN
-         */
-        /*RegisterMaterialPlugin("FogOfWar", (material) => {
-            //material.fogofwar = new FogOfWarPluginMaterial(material);
-            //return material.fogofwar;
-            return new FogOfWarPluginMaterial(material);
-        });*/
+        var keyboardInputManager = new KeyboardInputManager(this.scene);
+        var gui = new Gui();
+        gui.createGui(this.currentUrl);
+        var minimap = new Minimap();
+        minimap.createMinimap(this.scene, camera, engine);
+        var mouseSelectionBox = new MouseSelectionBox();
+        mouseSelectionBox.createMouseSelectionBox(this.scene, gui.getGui());
         
 
-        scene.onPointerDown = function (evt, pickResult) {
+        this.scene.onPointerDown = function (evt, pickResult) {
             // We try to pick an object
             if (pickResult.hit && pickResult.pickedMesh != null) {
                 console.log(pickResult.pickedMesh.name);
             }
         };
         
-        
-        
-        // handle all keyboard input
-        window.addEventListener("keydown", (ev) => {
-            if (ev.key === "i") {
-                if (scene.debugLayer.isVisible()) {
-                    scene.debugLayer.hide();
-                } else {
-                    scene.debugLayer.show();
-                }
-            }
-            if (ev.key === "j") {
-                let cameraPosition = camera.position;
-                let cameraTarget = camera.getTarget();
-                camera.position = new Vector3(cameraPosition.x, cameraPosition.y, cameraPosition.z + 0.01);
-                camera.setTarget(new Vector3(cameraTarget.x, cameraTarget.y, cameraTarget.z + 0.01));
-            }
-            if (ev.key === "w") {
-                camera.setTarget(new Vector3(camera.getTarget().x + 0.01, camera.getTarget().y, camera.getTarget().z));
-            }
-            if (ev.key === "a") {
-                camera.setTarget(new Vector3(camera.getTarget().x - 0.01, camera.getTarget().y, camera.getTarget().z));
-            }
-            if (ev.key === "s") {
-                camera.setTarget(new Vector3(camera.getTarget().x, camera.getTarget().y, camera.getTarget().z + 0.01));
-            }
-            if (ev.key === "d") {
-                camera.setTarget(new Vector3(camera.getTarget().x, camera.getTarget().y, camera.getTarget().z - 0.01));
-            }
-            if (ev.key === "f") {
-                this.launchFullscreen();
-            }
-        });
-        
         window.addEventListener("resize", function() {
             canvas.style.width = window.innerWidth + "px";
             canvas.style.height = window.innerHeight + "px";
             engine.resize();
-        }); 
+        });
         
-        // run the main render loop
+        
         engine.runRenderLoop(() => {
             // here all updating stuff must be updated
+
+            let displacement = 0.025 * camera.radius;
+            let cameraPosition = camera.position;
+            let cameraTarget = camera.getTarget();
+            let displacementX = 0.0;
+            let displacementZ = 0.0;
+            if (keyboardInputManager.isPressed("KeyW")) {
+                displacementZ += displacement;
+            }
+            if (keyboardInputManager.isPressed("KeyA")) {
+                displacementX -= displacement;
+            }
+            if (keyboardInputManager.isPressed("KeyS")) {
+                displacementZ -= displacement;
+            }
+            if (keyboardInputManager.isPressed("KeyD")) {
+                displacementX += displacement;
+            }
+            let cameraAngleDegrees = Tools.ToDegrees(camera.alpha) % 360.0 + 90.0;
+            while (cameraAngleDegrees < 0.0) {
+                cameraAngleDegrees += 360.0;
+            }
+            var cameraQuaternion = Quaternion.FromEulerAngles(0.0, 0.0, Tools.ToRadians(cameraAngleDegrees));
+            var matrix = new Matrix();
+            cameraQuaternion.toRotationMatrix(matrix);
+            var displacementVec2 = Vector2.Transform(new Vector2(displacementX, displacementZ), matrix);
+            displacementX = displacementVec2.x;
+            displacementZ = displacementVec2.y;
+
+            /*v1.normalize();
+
+            let angle = Math.acos(BABYLON.Vector3.Dot(v0, v1));
+            let angleInDegree = BABYLON.Tools.ToDegrees(angle)*/
             
+            camera.position = new Vector3(cameraPosition.x + displacementX, cameraPosition.y, cameraPosition.z + displacementZ);
+            camera.setTarget(new Vector3(cameraTarget.x + displacementX, cameraTarget.y, cameraTarget.z + displacementZ));
             
-            scene.render();
+            this.scene.render();
         });
+        
+        keyboardInputManager.registerCallback("KeyF", "launchFullscreenCaller", this.nop, this.launchFullscreen, null);
+        keyboardInputManager.registerCallback("KeyI", "toggleDebugLayerCaller", this.nop, this.toggleDebugLayer, this.scene);
     }
     
-    private someRandomMethod(name: string): string {
-        return name;
+    private launchFullscreen(data: any) {
+        document.documentElement.requestFullscreen();
     }
     
-    private launchFullscreen() {
-        var element = document.documentElement;
-        if (element.requestFullscreen) {
-            element.requestFullscreen();
+    private toggleDebugLayer(data: any) {
+        if (data.debugLayer.isVisible()) {
+            data.debugLayer.hide();
+        } else {
+            data.debugLayer.show();
         }
+    }
+    
+    private nop(data: any) {
     }
 }
 
-/*class FogOfWarPluginMaterial extends MaterialPluginBase {
-    constructor(material) {
-        // last parameter is a priority, which lets you define the order multiple plugins are run.
-        super(material, "FogOfWar", 200, { "FogOfWar": false });
-
-        // let's enable it by default
-        this.isEnabled = true;
-    }
-
-    static fogCenter = new Vector3(1, 1, 0);
-
-    get isEnabled() {
-        return this._isEnabled;
-    }
-
-    set isEnabled(enabled) {
-        if (this._isEnabled === enabled) {
-            return;
-        }
-        this._isEnabled = enabled;
-        this.markAllDefinesAsDirty();
-        this._enable(this._isEnabled);
-    }
-
-    _isEnabled = false;
-
-    // Also, you should always associate a define with your plugin because the list of defines (and their values) 
-    // is what triggers a recompilation of the shader: a shader is recompiled only if a value of a define changes.
-    prepareDefines(defines, scene, mesh) {
-        defines["FogOfWar"] = this._isEnabled;
-    }
-
-    getClassName() {
-        return "FogOfWarPluginMaterial";
-    }
-
-    getUniforms() {
-        return {
-            "ubo": [
-                { name: "fogCenter", size: 3, type: "vec3" },
-            ],
-            "fragment":
-                `#ifdef FogOfWar
-                    uniform vec3 fogCenter;
-                #endif`,
-        };
-    }
-
-    bindForSubMesh(uniformBuffer, scene, engine, subMesh) {
-        if (this._isEnabled) {
-            uniformBuffer.updateVector3("fogCenter", FogOfWarPluginMaterial.fogCenter);
-        }
-    }
-
-    getCustomCode(shaderType) {
-        if (shaderType === "vertex") {
-            return {
-                CUSTOM_VERTEX_DEFINITIONS: `
-                    varying vec3 vWorldPos;
-                `,
-                CUSTOM_VERTEX_MAIN_END: `
-                    vWorldPos = worldPos.xyz; 
-                `
-            }
-        }
-        if (shaderType === "fragment") {
-            // we're adding this specific code at the end of the main() function
-            return {
-                CUSTOM_FRAGMENT_DEFINITIONS: `
-                    varying vec3 vWorldPos;
-                `,
-                CUSTOM_FRAGMENT_MAIN_END: `
-                    float d = length(vWorldPos.xyz - fogCenter);
-                    d = (10.0 - d)/10.0;
-                    gl_FragColor.rgb *= vec3(d);
-                `
-            };
-        }
-        // for other shader types we're not doing anything, return null
-        return null;
-    }
-}*/
-
-new App("");
-
-
-
-// move camera:
-
-
-/*
-
-
-//Scroll down to createScene() for usage
-class KeyboardPanningInput extends ArcRotateCameraKeyboardMoveInput {
-    constructor(matrix, vector) {
-        super();
-
-        this.matrix = matrix;
-        this.displacement = vector;
-    }
-
-    checkInputs() {
-        if(this._onKeyboardObserver) {
-            const camera = this.camera;
-            const m = this.matrix;
-
-            this.camera.absoluteRotation.toRotationMatrix(m);
-
-            for(let index = 0; index < this._keys.length; index++) {
-                const keyCode = this._keys[index];
-
-                if (this.keysReset.indexOf(keyCode) !== -1) {
-                    if (camera.useInputToRestoreState) {
-                        camera.restoreState();
-                        continue;
-                    }
-                }                
-				//Matrix magic see https://www.3dgep.com/understanding-the-view-matrix/ and
-				//   https://forum.babylonjs.com/t/arc-rotate-camera-panning-on-button-click/15428/6 
-                else if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    this.displacement.set(-m.m[0], -m.m[1], -m.m[2]);
-                } 
-                
-                else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    this.displacement.set(m.m[8], 0, m.m[10]);
-                } 
-                
-                else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    this.displacement.set(m.m[0], m.m[1], m.m[2]);
-                } 
-                
-                else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    this.displacement.set(-m.m[8], 0, -m.m[10]);
-                } 
-                
-                this.camera.target.addInPlace(this.displacement);
-                this.camera.position.addInPlace(this.displacement);
-                this.displacement.setAll(0);                
-            }
-        }
-    }
-}
-
-
-function buildLevelMeshes() {
-	const ground = Mesh.CreateGround("ground", 10, 10, 0);
-    ground_shader_material = new StandardMaterial("groundMat");
-    ground_shader_material.diffuseColor = new Color3(0.5,0,5,0.5);	
-	
-	const player = MeshBuilder.CreateBox("p", {size: 1});	
-	player.position = new Vector3(-2,0.5,-2);
-	player.material = new StandardMaterial("p");	
-	player.material.diffuseColor = new Color3(0,1,0);	
-	
-	const enemy = MeshBuilder.CreateBox("e", {size: 1});	
-	enemy.position = new Vector3(3,0.5,3);
-	enemy.material = new StandardMaterial("e");	
-	enemy.material.diffuseColor = new Color3(1,0,0);	
-	
-	return {ground, player, enemy};
-}
-
-
-
-*/
+new SquadronsOfAbandonement();
