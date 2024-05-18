@@ -21,7 +21,7 @@ export class Gui {
     public createGui(currentUrl: string) {
         this.advancedTexture.isForeground = true;
         
-        var button = Button.CreateImageWithCenterTextButton("but", "Click me!", currentUrl + "/assets/img/heightMap.png");
+        var button = Button.CreateImageWithCenterTextButton("but", "Click me!", "textures/grass.png");
             button.width = 0.2;
             button.height = "40px";
             button.left = "-500px";

@@ -1,14 +1,15 @@
 Squadrons of Abandonment
 
 Name:
- - Interplanetary Mind (subtitle: Game Studio)
+ - Interplanetary Mind Game Studio
  - Logo: human brain with stars and planet inside
 
 Resources:
  - Energy (Manpower) -> from Solar Collectors
- - Antimatter (Oil) -> from Quantum Wells
+ - Minerals (Oil) -> from Asteroids
  - Nanites (Ammunition) -> from Replication Facilities
  - Unit Count (Popcap)
+ - Antimatter (Victory Points) -> from Quantum Wells -> destroy enemy space station when loaded fully
 
 Factions
 

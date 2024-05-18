@@ -1,15 +1,50 @@
 TODO:
 =====
 
+ - don't show stuff that is not necessary -> spped up loading cycles
+ - click for move markers
+ - UI stub to be filled - https://playground.babylonjs.com/#HSVQL#52
 
-// Z flickering
+
+
+
+
+// show billboard and strange visibility of cubes - cool
+https://playground.babylonjs.com/#HSVQL
+https://playground.babylonjs.com/#HSVQL#52
+
+use ui for text overlays
+https://playground.babylonjs.com/#41IFI5#8
+
+use sprites in the 3d scene
+https://playground.babylonjs.com/#YCY2IL#1838
+
+
+
+
+
+
+
+
+    // https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
+
+
+
+
+
+
+// space strategie spiel Homeworld 3 anschauen
+
+
+
+// Z flickering -> DONE
 https://forum.babylonjs.com/t/what-is-the-best-way-to-set-cameras-near-plane-as-far-as-possible-without-clipping-the-scene/46154
 
 
 LOOK AT THIS PROJECT!!!! (or maybe not so good?)
 https://github.com/RaananW/babylonjs-webpack-es6
 
-// loading screen and animations controller
+// loading screen and animations controller -> DONE
 https://www.babylonjs-playground.com/#5Y2GIC#6
 
 

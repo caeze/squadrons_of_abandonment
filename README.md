@@ -6,13 +6,28 @@ A space RTS game written in `TypeScript` using `Babylon.js`.
 How to run
 ----------
 
-  * https://doc.babylonjs.com/guidedLearning/createAGame/gettingSetUp
-  * install from https://github.com/coreybutler/nvm-windows
-  * nvm install 14
-  * npm run build
-  * npm run start
-  * npm update  - after updating dependencies in package.json
-  * Open `http://localhost:8080/` in a browser
+~~~
+  https://doc.babylonjs.com/guidedLearning/createAGame/gettingSetUp
+~~~
+~~~
+  install from https://github.com/coreybutler/nvm-windows
+~~~
+~~~
+  nvm install 14
+~~~
+~~~
+  npm run build
+~~~
+~~~
+  npm run start
+  npm install spectorjs  # if webpack does not find it? Not sure why
+~~~
+~~~
+  npm update  # after updating dependencies in package.json
+~~~
+~~~
+  Open `http://localhost:8080/` in a browser
+~~~
 
 Mardown cheatsheet
 ------------------

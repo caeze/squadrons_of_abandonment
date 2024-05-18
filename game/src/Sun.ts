@@ -133,9 +133,10 @@ export class Sun {
         glareParticles.blendMode = ParticleSystem.BLENDMODE_ADD;
 
         // Set the gravity of all particles
-        surfaceParticles.gravity = new Vector3(0, 0, 0);
-        flareParticles.gravity = new Vector3(0, 0, 0);
-        glareParticles.gravity = new Vector3(0, 0, 0);
+        var gravity = Vector3.Normalize(coreSphere.position).scale(-1.0);
+        surfaceParticles.gravity = gravity;
+        flareParticles.gravity = gravity;
+        glareParticles.gravity = gravity;
 
         // Angular speed, in radians
         surfaceParticles.minAngularSpeed = -0.25927;
