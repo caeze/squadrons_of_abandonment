@@ -26,7 +26,7 @@
     "wRotationCenter": 0.5,
     "homogeneousRotationInUVTransform": false,
     "isBlocking": true,
-    "name": "./assets/img/particles/flare.png",
+    "name": "./assets/img/particles/flare1.png",
     "hasAlpha": false,
     "getAlphaFromRGB": false,
     "level": 1,

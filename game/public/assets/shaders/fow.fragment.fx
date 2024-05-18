@@ -4,12 +4,13 @@ precision highp float;
 uniform float revealersX[MAX_REVEALERS];
 uniform float revealersZ[MAX_REVEALERS];
 uniform float revealersRadius[MAX_REVEALERS];
+uniform float mapSidelength;
 
 // Varying values were created by the vertex shader and are fetched in the fragment shader.
 // They are also interpolated from the three calls made in the vertex shader.
 varying vec3 pixelWorldPosition;
 
-float get_alpha() {
+float getAlpha() {
     // Define some constants.
     float revealed_alpha = 0.0;
     float fow_alpha = 0.5;
@@ -42,19 +43,57 @@ float get_alpha() {
     return ret_val;
 }
 
+bool isInnerBorderLine(float mapBorderLineWidth, float mapBorderDashedWidth) {
+    return (pixelWorldPosition.x > mapSidelength / 2.0 - 2.0 * mapBorderLineWidth - mapBorderDashedWidth) ||
+           (pixelWorldPosition.x < -(mapSidelength / 2.0 - 2.0 * mapBorderLineWidth - mapBorderDashedWidth)) ||
+           (pixelWorldPosition.z > mapSidelength / 2.0 - 2.0 * mapBorderLineWidth - mapBorderDashedWidth) ||
+           (pixelWorldPosition.z < -(mapSidelength / 2.0 - 2.0 * mapBorderLineWidth - mapBorderDashedWidth));
+}
+
+bool isDashedBorderLine(float mapBorderLineWidth, float mapBorderDashedWidth) {
+    return (pixelWorldPosition.x > mapSidelength / 2.0 - mapBorderLineWidth - mapBorderDashedWidth) ||
+           (pixelWorldPosition.x < -(mapSidelength / 2.0 - mapBorderLineWidth - mapBorderDashedWidth)) ||
+           (pixelWorldPosition.z > mapSidelength / 2.0 - mapBorderLineWidth - mapBorderDashedWidth) ||
+           (pixelWorldPosition.z < -(mapSidelength / 2.0 - mapBorderLineWidth - mapBorderDashedWidth));
+}
+
+bool isOuterBorderLine(float mapBorderLineWidth, float mapBorderDashedWidth) {
+    return (pixelWorldPosition.x > mapSidelength / 2.0 - mapBorderLineWidth) ||
+           (pixelWorldPosition.x < -(mapSidelength / 2.0 - mapBorderLineWidth)) ||
+           (pixelWorldPosition.z > mapSidelength / 2.0 - mapBorderLineWidth) ||
+           (pixelWorldPosition.z < -(mapSidelength / 2.0 - mapBorderLineWidth));
+}
+
+// The output color of this pixel has to be written to gl_FragColor.
 void main() {
     // Define some constants.
     float gray = 0.15;
     float gridSubdivisionFactor = 1.0;
+    float mapBorderLineWidth = 0.025;
+    float mapBorderDashedWidth = 0.1;
     
     // Calculate the output color.
-    float xVal = pixelWorldPosition.x * gridSubdivisionFactor - floor(pixelWorldPosition.x * gridSubdivisionFactor);
-    float zVal = pixelWorldPosition.z * gridSubdivisionFactor - floor(pixelWorldPosition.z * gridSubdivisionFactor);
-    if (xVal < 0.5 && zVal < 0.5 || xVal > 0.5 && zVal > 0.5) {
-        discard;
+    float checkerboardX = pixelWorldPosition.x * gridSubdivisionFactor - floor(pixelWorldPosition.x * gridSubdivisionFactor);
+    float checkerboardZ = pixelWorldPosition.z * gridSubdivisionFactor - floor(pixelWorldPosition.z * gridSubdivisionFactor);
+    if (pixelWorldPosition.x > mapSidelength / 2.0) {
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    } else if (isOuterBorderLine(mapBorderLineWidth, mapBorderDashedWidth)) {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    } else if (isDashedBorderLine(mapBorderLineWidth, mapBorderDashedWidth)) {
+        if (checkerboardX < 0.5 && checkerboardZ < 0.5 || checkerboardX > 0.5 && checkerboardZ > 0.5) {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        } else {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        }
+    } else if (isInnerBorderLine(mapBorderLineWidth, mapBorderDashedWidth)) {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    } else {
+        if (checkerboardX < 0.5 && checkerboardZ < 0.5 || checkerboardX > 0.5 && checkerboardZ > 0.5) {
+            discard;
+        }
+        gl_FragColor.r = gray; 
+        gl_FragColor.g = gray;
+        gl_FragColor.b = gray;
+        gl_FragColor.a = getAlpha();
     }
-    gl_FragColor.r = gray; // The output color of this pixel has to be set.
-    gl_FragColor.g = gray;
-    gl_FragColor.b = gray;
-    gl_FragColor.a = get_alpha();
 }

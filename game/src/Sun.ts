@@ -1,17 +1,11 @@
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
+import { LensFlareSystem, LensFlare, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
 
 export class Sun {
-    private name: string;
-
-    public constructor(name: string) {
-        this.name = name;
-    }
-
-    public createSun(scene: Scene, camera: Camera, engine: Engine) {
+    public constructor(scene: Scene, camera: Camera, engine: Engine, currentUrl: string) {
         // Emitter object
         //var sunSurface = Mesh.CreateBox("emitter", 0.01, scene);
         //var sunFlares = Mesh.CreateBox("emitter", 0.01, scene);
@@ -24,9 +18,9 @@ export class Sun {
         var glareParticles = new ParticleSystem("glareParticles", 600, scene);
 
         //Texture of each particle
-        surfaceParticles.particleTexture = new Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Sun/T_SunSurface.png", scene);
-        flareParticles.particleTexture = new Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Sun/T_SunFlare.png", scene);
-        glareParticles.particleTexture = new Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Sun/T_Star.png", scene);
+        surfaceParticles.particleTexture = new Texture(currentUrl + "/assets/img/particles/sunSurface.png", scene);
+        flareParticles.particleTexture = new Texture(currentUrl + "/assets/img/particles/sunFlare.png", scene);
+        glareParticles.particleTexture = new Texture(currentUrl + "/assets/img/particles/sunGlare.png", scene);
 
         //Create core sphere
         var sunSizeFactor = 1000.0;
@@ -187,5 +181,13 @@ export class Sun {
         surfaceParticles.start();
         flareParticles.start();
         glareParticles.start();
+        
+        const lensFlareSystem = new LensFlareSystem("lensFlareSystem", coreSphere, scene);
+        var proximityToSun = 0.2;
+        var colorFactor = 0.5;
+        const flare0 = new LensFlare(0.2, 0.05 + proximityToSun, new Color3(1.0 * colorFactor, 1.0 * colorFactor, 1.0 * colorFactor), currentUrl + "/assets/img/particles/lensFlare2.png", lensFlareSystem);
+        const flare1 = new LensFlare(0.075, 0.3 + proximityToSun, new Color3(0.8 * colorFactor, 0.56 * colorFactor, 0.72 * colorFactor), currentUrl + "/assets/img/particles/lensFlare3.png", lensFlareSystem);
+        const flare2 = new LensFlare(0.1, -0.1 + proximityToSun, new Color3(0.71 * colorFactor, 0.8 * colorFactor, 0.95 * colorFactor), currentUrl + "/assets/img/particles/lensFlare1.png", lensFlareSystem);
+        const flare3 = new LensFlare(0.15, 0.2 + proximityToSun, new Color3(0.95 * colorFactor, 0.89 * colorFactor, 0.71 * colorFactor), currentUrl + "/assets/img/particles/lensFlare1.png", lensFlareSystem);
     }
 }

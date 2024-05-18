@@ -6,7 +6,11 @@ TODO:
  - UI stub to be filled - https://playground.babylonjs.com/#HSVQL#52
 
 
-
+// explosions: https://playground.babylonjs.com/#VS5XS7#0 IMPORTANT    https://playground.babylonjs.com/#X37LS1#3
+// supernova explosion: https://playground.babylonjs.com/#QZTX7A#5 IMPORTANT
+// stars warp jump https://playground.babylonjs.com/#J5JYZB
+// unit selection circle: https://playground.babylonjs.com/#GCNNPT#36
+// blue orb effect https://playground.babylonjs.com/#MVPZHQ  IMPORTANT
 
 
 // show billboard and strange visibility of cubes - cool
@@ -20,6 +24,9 @@ use sprites in the 3d scene
 https://playground.babylonjs.com/#YCY2IL#1838
 
 
+
+after effects
+https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/defaultRenderingPipeline#antialiasing
 
 
 
@@ -117,7 +124,6 @@ Find out unit abilities and upgrades
 
 // trail for spaceship: https://playground.babylonjs.com/#Z07JE1#2
 
-// explosions: https://playground.babylonjs.com/#VS5XS7#0
 
 // Squadrons of abandonement music Lily's Theme https://youtu.be/qxrV2pqroDY
 // FoW https://playground.babylonjs.com/#BRXZVE#8
@@ -127,11 +133,9 @@ Find out unit abilities and upgrades
 
 // sun with sun flares: https://github.com/jelster/space-truckers/blob/develop/src/systems/solar-flare.json
 
-// supernova explosion: https://playground.babylonjs.com/#QZTX7A#5
 
 // https://app.meshy.a
 
-// blue orb effect https://playground.babylonjs.com/#MVPZHQ
 
 // wave effect with pixels https://playground.babylonjs.com/#UI95UC#2011
 
@@ -205,7 +209,6 @@ Skull dust effect post processing https://www.babylonjs-playground.com/#TZJ0HQ#1
 Multiple render passes
 https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/renderTargetTextureMultiPass
 
-stars warp jump https://playground.babylonjs.com/#J5JYZB
 
 black and white plugin https://playground.babylonjs.com/#22HT5Z#15
 
@@ -214,7 +217,7 @@ https://playground.babylonjs.com/#S3U25D
 
 three js implementation https://github.com/Usnul/meep/tree/844a2cc05482b682d8766879f76b05d1514b18dc/src/model/level/fow
 
-explosion https://playground.babylonjs.com/#0K3AQ2#609
+very simple particle bubbles raising https://playground.babylonjs.com/#0K3AQ2#609
 
 https://forum.babylonjs.com/t/rts-fog-of-war/35479
 
@@ -226,10 +229,10 @@ Check if point is inside mesh
 https://playground.babylonjs.com/#XJEG9A#4
 
 
-
+fog of war idea not used
 https://playground.babylonjs.com/#8WJTJG#9
 
-Re color mesh
+Re color mesh -> for damage visualization on spaceship
 https://playground.babylonjs.com/#ZRZIIZ#2
 
 Update vertices manually
@@ -249,13 +252,13 @@ graph nav and see-through objects shader https://www.babylonjs-playground.com/#7
 
 graph nav and see-through objects shader https://www.babylonjs-playground.com/#7RRC76#6
 
-explosion shader https://www.babylonjs-playground.com/#1ETKI6
+explosion shader - magic shock wave https://www.babylonjs-playground.com/#1ETKI6
 
 many snippets https://forum.babylonjs.com/t/examples-from-the-playground/3175/1214
 
-spaceship trail effect https://playground.babylonjs.com/#DMRE33#218
+spaceship trail effect - not relevant anymore https://playground.babylonjs.com/#DMRE33#218
 
-rocket exhaust https://playground.babylonjs.com/#8PAT2J#3
+rocket exhaust - DONE https://playground.babylonjs.com/#8PAT2J#3
 
 behaviour trees for ai https://www.npmjs.com/package/mistreevous
 

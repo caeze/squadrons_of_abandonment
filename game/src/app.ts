@@ -1,20 +1,22 @@
-import { Sun } from "./Sun";
-import { Gui } from "./Gui";
-import { Minimap } from "./Minimap";
 // var SPECTOR = require("spectorjs");
 // var spector = new SPECTOR.Spector();
 // spector.displayUI();
 
+import { Sun } from "./Sun";
+import { Gui } from "./Gui";
+import { Minimap } from "./Minimap";
+import { RenderingPipeline } from "./RenderingPipeline";
 import { MouseSelectionBox } from "./MouseSelectionBox";
 import { LoadingScreen } from "./LoadingScreen";
 import { KeyboardInputManager } from "./KeyboardInputManager";
 import { MainCamera } from "./MainCamera";
+import { SpaceshipTrail } from "./SpaceshipTrail";
 
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { TextBlock, Control, Container, Rectangle, AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
-import { Material, DefaultLoadingScreen, Quaternion, Tools, WebGPUEngine, Matrix, HighlightLayer, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
+import { TextBlock, Control, Container, Rectangle, AdvancedDynamicTexture, Button } from "@babylonjs/gui/2D";
+import { DepthOfFieldEffectBlurLevel, DefaultRenderingPipeline, Material, DefaultLoadingScreen, Quaternion, Tools, WebGPUEngine, Matrix, HighlightLayer, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
 
 var renderingGroupId_everything = 3;
 var renderingGroupId_ground = 0;
@@ -23,8 +25,7 @@ var keyboard = 0;
 // custom handling of materials for render target pass
 function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string) {
     
-    var sun = new Sun("ASD");
-    sun.createSun(scene, camera, engine);
+    var sun = new Sun(scene, camera, engine, currentUrl);
     
     
     /*ParticleHelper.CreateAsync("explosion", scene).then((a) => {
@@ -38,39 +39,30 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
         a.start();
     });*/
 
-
-    const ground = MeshBuilder.CreatePlane("ground", {
-        frontUVs: new Vector4(0, 0, 0.5, 1),
-        backUVs: new Vector4(0.5, 0, 1, 1),
-        sideOrientation: Mesh.DOUBLESIDE,
-        size: 1000,
-        width: 200,
-        height: 200
-    });
-    var groundShadermaterial = new ShaderMaterial(
+    var mapSidelength = 1000.0;
+    var ground = MeshBuilder.CreatePlane("ground", {size: mapSidelength});
+    var groundShaderMaterial = new ShaderMaterial(
         "fowShaderMaterial",
         scene,
         currentUrl + "/assets/shaders/fow", // searches for fow.vertex.fx and fow.fragment.fx
         {
             attributes: ["position"],
-            uniforms: ["worldViewProjection", "world", "revealersX", "revealersZ", "revealersRadius" ],
+            uniforms: ["worldViewProjection", "world", "revealersX", "revealersZ", "revealersRadius", "mapSidelength"],
             defines: ["#define MAX_REVEALERS " + 2],
         }
     );
     ground.renderingGroupId = renderingGroupId_ground;
     ground.alphaIndex = 1;
     ground.rotation = new Vector3(Math.PI / 2, 0, 0);
-    ground.material = groundShadermaterial;
+    ground.material = groundShaderMaterial;
     ground.material.forceDepthWrite = true;
     ground.material.transparencyMode = Material.MATERIAL_ALPHABLEND;
     ground.material.alpha = 0.0;
     
-    
-    
     const spawns = [new Vector3(2, 0, 2), new Vector3(-1, 0, -1)];
     var entitys = new Array<any>;
     for(let i = 0; i < spawns.length; ++i) {
-        var boxMesh = MeshBuilder.CreateBox('box' + i, {size: 0.5}, scene);
+        var boxMesh = MeshBuilder.CreateBox("box" + i, {size: 0.5}, scene);
         boxMesh.renderingGroupId = renderingGroupId_everything;
         entitys.push({
             mesh: boxMesh,
@@ -95,9 +87,10 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
             revealersZ.push(entitys[i].mesh.position.z);
             revealersRadius.push(entitys[i].revealersRadius);
         }
-        groundShadermaterial.setFloats('revealersX', revealersX);
-        groundShadermaterial.setFloats('revealersZ', revealersZ);
-        groundShadermaterial.setFloats('revealersRadius', revealersRadius);
+        groundShaderMaterial.setFloats("revealersX", revealersX);
+        groundShaderMaterial.setFloats("revealersZ", revealersZ);
+        groundShaderMaterial.setFloats("revealersRadius", revealersRadius);
+        groundShaderMaterial.setFloat("mapSidelength", mapSidelength);
     });
     
     const assetsManager = new AssetsManager(scene);
@@ -115,7 +108,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
             const particleSystem = ParticleSystem.Parse(particleJSON, scene, "", false, 1000);
         
 
-            var exhaust = new TransformNode('exaust');
+            var exhaust = new TransformNode("exaust");
             exhaust.parent = entitys[i].mesh;
             exhaust.position.y = -1.1;
 
@@ -126,7 +119,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
         }
     }
     
-    /*var postProcess = new PostProcess("shockwavePostProcess", currentUrl + "/assets/shaders/shockwave", ["time", "center"], null, 1, camera);
+    var postProcess = new PostProcess("shockwavePostProcess", currentUrl + "/assets/shaders/shockwave", ["time", "center"], null, 1, camera);
 
     let t = 0.0;
     postProcess.onApply = function (effect) {
@@ -135,7 +128,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
         let centerX = Math.sin(3.14 / 2 + t * 100.0) / 2.0 + 0.5;
         let centerY = Math.cos(3.14 / 2 + t * 100.0) / 2.0 + 0.5;
         effect.setVector2("center", new Vector2(centerX, centerY));
-    };*/
+    };
     
     
     /*var postProcess2 = new PostProcess("shockwavePostProcess2", "shockwave", ["time", "center"], null, 1, camera);
@@ -309,8 +302,7 @@ class SquadronsOfAbandonement {
             mainCamera.runBeforeRender();
         });
         
-        
-        
+        var pipeline = new RenderingPipeline(scene, camera);
         
         populateScene(canvas, engine, scene, camera, this.currentUrl);
 
@@ -319,6 +311,55 @@ class SquadronsOfAbandonement {
         minimap.createMinimap(this.scene, camera, engine);
         var mouseSelectionBox = new MouseSelectionBox();
         mouseSelectionBox.createMouseSelectionBox(this.scene, gui.getGui());
+        let spaceshipTrailParent = MeshBuilder.CreateSphere("sphere", {diameter: 0.1}, scene);
+        var spaceshipTrail = new SpaceshipTrail("spaceshipTrail0", spaceshipTrailParent, scene, camera, 0.1);
+        var spaceshipTrailShaderMaterial = new ShaderMaterial(
+            "spaceshipTrailShaderMaterial",
+            scene,
+            this.currentUrl + "/assets/shaders/spaceshipTrail", // searches for spaceshipTrail.vertex.fx and spaceshipTrail.fragment.fx
+            {
+                attributes: ["position"],
+                uniforms: ["worldViewProjection", "color"],
+                defines: ["#define MAX_REVEALERS " + 2],
+            }
+        );
+        spaceshipTrailShaderMaterial.setFloats("color", [0.5, 0.0, 0.0, 0.5]);
+        spaceshipTrailShaderMaterial.forceDepthWrite = true;
+        spaceshipTrailShaderMaterial.transparencyMode = Material.MATERIAL_ALPHABLEND;
+        spaceshipTrailShaderMaterial.alpha = 0.0;
+        spaceshipTrail.renderingGroupId = renderingGroupId_everything;
+        spaceshipTrail.alphaIndex = 1;
+        spaceshipTrail.material = spaceshipTrailShaderMaterial;
+    
+        
+        
+        
+        /*let material = new StandardMaterial(
+            "material",
+            scene
+        );
+        //material.specularColor.copyFromFloats(0.2, 0.2, 0.2);
+        //material.diffuseColor.copyFromFloats(0.9, 0.9, 0.9);
+        material.disableLighting = true;
+        material.emissiveTexture = new Texture('https://i.ibb.co/FYywNM9/light-Mat-Emissive.png' , scene);*/
+        let k = 0;
+        let p = [
+            Math.random() * 180 + 20,
+            Math.random() * 180 + 20,
+            Math.random() * 180 + 20,
+            Math.random() * 180 + 20,
+            Math.random() * 180 + 20,
+            Math.random() * 180 + 20,
+        ]
+        scene.onBeforeRenderObservable.add(
+            () => {
+                spaceshipTrailParent.position.x = 5 * (Math.sin(k / p[0]) + Math.cos(k / p[3]));
+                spaceshipTrailParent.position.y = 5 * (Math.sin(k / p[1]) + Math.cos(k / p[4]));
+                spaceshipTrailParent.position.z = 5 * (Math.sin(k / p[2]) + Math.cos(k / p[5]));
+                k++;
+            }
+        )
+        
         
 
         this.scene.onPointerDown = function (evt, pickResult) {
