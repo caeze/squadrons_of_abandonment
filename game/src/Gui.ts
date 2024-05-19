@@ -71,11 +71,16 @@ WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
+import { CameraLayerMask } from "./CameraLayerMask";
+
 export class Gui {
     private advancedTexture: AdvancedDynamicTexture;
 
     public constructor() {
         this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("Gui");
+        if (this.advancedTexture._layerToDispose) {
+            this.advancedTexture._layerToDispose.layerMask = CameraLayerMask.MAIN;
+        }
     }
     
     public getGui(): AdvancedDynamicTexture {

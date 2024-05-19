@@ -84,7 +84,7 @@ import { KeyboardInputManager } from "./KeyboardInputManager";
 import { MainCamera } from "./MainCamera";
 import { SpaceshipTrail } from "./SpaceshipTrail";
 import { RenderingGroupId } from "./RenderingGroupId";
-import { FogOfWarGround } from "./FogOfWarGround";
+import { Ground } from "./Ground";
 import { Entity } from "./Entity";
 import { Unit } from "./Unit";
 import { CameraLayerMask } from "./CameraLayerMask";
@@ -95,17 +95,17 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     
     let sun = new Sun(scene, camera, engine, currentUrl);
     
-    const initialPositions = [new Vector3(2, 0, 2), new Vector3(-1, 0, -1)];
+    const initialPositions = [new Vector3(2, 0, 2), new Vector3(-1, 0, 1)];
     let units = new Array<Unit>;
     for(let i = 0; i < initialPositions.length; ++i) {
         let unit = new Unit(scene, initialPositions[i], "box" + i, 5.0, currentUrl);
         units.push(unit);
     }
     scene.registerBeforeRender(() => {
-        units[0].mesh.position.x += 0.005;
+        units[0].mesh.position.x -= 0.005;
         units[0].mesh.rotation.x += 0.005;
         units[0].mesh.rotation.y += 0.005;
-        units[1].mesh.position.x -= 0.005;
+        units[1].mesh.position.x += 0.005;
         units[1].mesh.rotation.x += 0.005;
         units[1].mesh.rotation.y += 0.005;
     });
@@ -178,69 +178,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     
     
     
-    /*let spheresMeshGlb = MeshBuilder.CreateSphere("spheresMeshGlb", { diameter: 0.1 }, scene);
-    SceneLoader.ImportMesh(
-        "",
-        currentUrl + "/assets/models/",
-        "PBR_Spheres.glb",
-        scene,
-        function(objects: AbstractMesh[]) {
-            for(let i=0; i<objects.length; ++i) {
-                objects[i].renderingGroupId = RenderingGroupId.MAIN;
-            }
-        }
-    );*/
-    /*let jupiter = MeshBuilder.CreateSphere("jupiter", { diameter: 3 }, scene);
-    SceneLoader.ImportMesh(
-        "",
-        currentUrl + "/assets/models/",
-        "jupiter.glb",
-        scene,
-        function(objects: AbstractMesh[]) {
-            console.log(objects);
-            jupiter = (<Mesh> objects[1]);
-            for(let i=0; i<objects.length; ++i) {
-                objects[i].renderingGroupId = RenderingGroupId.MAIN;
-            }
-        }
-    );*/
     
-    
-    /*let highlightLayer = new HighlightLayer("SphereHighlight", scene,
-    { 
-        // alphaBlendingMode: 0, 
-        blurTextureSizeRatio : 0.25
-    });
-    highlightLayer.addMesh(zSphere, Color3.Blue());
-    
-    const importPromise = SceneLoader.ImportMeshAsync(
-        null,
-        currentUrl + "/assets/models/",
-        "jupiter.glb",
-        scene
-    );
-    importPromise.then((result: any) => {
-        highlightLayer.addMesh(result.meshes[1], Color3.Blue());
-        result.meshes[1].renderingGroupId = RenderingGroupId.MAIN;
-    });
-    
-    const importPromiseFlag = SceneLoader.ImportMeshAsync(
-        null,
-        currentUrl + "/assets/models/",
-        "flag.glb",
-        scene
-    );
-    importPromiseFlag.then((result: any) => {
-        console.log(result);
-        for(let i = 0; i < result.meshes.length; i++) {
-            result.meshes[i].renderingGroupId = RenderingGroupId.MAIN;
-            //result.meshes[i].scaling.x = 0.25;
-            //result.meshes[i].scaling.y = 0.25;
-            //result.meshes[i].scaling.z = 0.25;
-        }
-        //highlightLayer.addMesh(result.meshes[1], Color3.Blue());
-        //result.meshes[1].renderingGroupId = RenderingGroupId.MAIN;
-    });*/
     
     return units;
 };
@@ -266,8 +204,8 @@ class SquadronsOfAbandonement {
         document.body.appendChild(canvas);
         document.body.style.cssText = "margin: 0; padding: 0; height: 100%; overflow: hidden;";
         
-        ParticleHelper.BaseAssetsUrl = "./assets/particle_definitions";
-        ParticleSystemSet.BaseAssetsUrl = "./assets/particle_definitions";
+        ParticleHelper.BaseAssetsUrl = currentUrl + "/assets/particle_definitions";
+        ParticleSystemSet.BaseAssetsUrl = currentUrl + "/assets/particle_definitions";
         DefaultLoadingScreen.DefaultLogoUrl = currentUrl + "/assets/img/squadronsOfAbandonementLogo.png";
 
         /*let engineType = "webgpu";
@@ -298,9 +236,10 @@ class SquadronsOfAbandonement {
         scene.activeCameras.push(minimap.minimapCamera);
     
         
-        let fogOfWarGround = new FogOfWarGround(scene, currentUrl, 128, mapSidelength);
+        let ground = new Ground(scene, currentUrl, 128, 128, mapSidelength);
         scene.registerBeforeRender(() => {
-            fogOfWarGround.updateRevealerPositions(revealers);
+            ground.updateRevealerPositions(revealers);
+            ground.updateSelectedPositions(revealers);
         });
 
         

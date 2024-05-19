@@ -75,31 +75,36 @@ import { RenderingGroupId } from "./RenderingGroupId";
 import { CameraLayerMask } from "./CameraLayerMask";
 import { Unit } from "./Unit";
 
-export class FogOfWarGround {
+export class Ground {
 	private _groundShaderMaterial: ShaderMaterial;
     
-    public constructor(scene: Scene, currentUrl: string, maxRevealers: number, mapSidelength: number) {
+    public constructor(scene: Scene, currentUrl: string, maxRevealers: number, maxUnits: number, mapSidelength: number) {
         let ground = MeshBuilder.CreatePlane("ground", {size: mapSidelength});
         this._groundShaderMaterial = new ShaderMaterial(
-            "fowShaderMaterial",
+            "groundShaderMaterial",
             scene,
-            currentUrl + "/assets/shaders/fow", // searches for fow.vertex.fx and fow.fragment.fx
+            currentUrl + "/assets/shaders/ground", // searches for ground.vertex.fx and ground.fragment.fx
             {
                 attributes: ["position"],
                 uniforms: [
                     "worldViewProjection",
                     "world",
+                    "mapSidelength",
                     "revealersCurrentCount",
                     "revealersX",
                     "revealersZ",
                     "revealersRadius",
-                    "mapSidelength"
-                    //"CurrentCount",
-                    //"revealersX",
-                    //"revealersZ",
-                    //"revealersRadius",
+                    "unitsCurrentCount",
+                    "unitsX",
+                    "unitsZ",
+                    "unitsRadius",
+                    "unitsType",
+                    "unitsColor",
                 ],
-                defines: ["#define MAX_REVEALERS " + maxRevealers],
+                defines: [
+                    "#define MAX_REVEALERS " + maxRevealers,
+                    "#define MAX_UNITS " + maxUnits,
+                ],
             }
         );
         ground.renderingGroupId = RenderingGroupId.GROUND;
@@ -114,9 +119,9 @@ export class FogOfWarGround {
     }
 
 	public updateRevealerPositions(units: Unit[]) {
-        const revealersX = []
-        const revealersZ = []
-        const revealersRadius = []
+        const revealersX = [];
+        const revealersZ = [];
+        const revealersRadius = [];
         for(let i = 0; i < units.length; i++) {
             revealersX.push(units[i].mesh.position.x);
             revealersZ.push(units[i].mesh.position.z);
@@ -128,7 +133,24 @@ export class FogOfWarGround {
         this._groundShaderMaterial.setFloats("revealersRadius", revealersRadius);
 	}
 
-	public updateSelectedPositions() {
-        
+	public updateSelectedPositions(units: Unit[]) {
+        const unitsX = [];
+        const unitsZ = [];
+        const unitsRadius = [];
+        const unitsType = [];
+        const unitsColor = [];
+        for(let i = 0; i < units.length; i++) {
+            unitsX.push(units[i].mesh.position.x);
+            unitsZ.push(units[i].mesh.position.z);
+            unitsRadius.push(units[i].radius / 5.0);
+            unitsType.push(1);
+            unitsColor.push(new Color4(0.5, 0.5, 0.2, 0.6));
+        }
+        this._groundShaderMaterial.setInt("unitsCurrentCount", units.length);
+        this._groundShaderMaterial.setFloats("unitsX", unitsX);
+        this._groundShaderMaterial.setFloats("unitsZ", unitsZ);
+        this._groundShaderMaterial.setFloats("unitsRadius", unitsRadius);
+        this._groundShaderMaterial.setFloats("unitsType", unitsType);
+        this._groundShaderMaterial.setColor4Array("unitsColor", unitsColor);
 	}
 }

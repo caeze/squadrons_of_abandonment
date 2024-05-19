@@ -1,11 +1,19 @@
 precision highp float;
 
 // Uniforms are defined and can be changed on runtime by the CPU.
+uniform float mapSidelength;
+
 uniform int revealersCurrentCount;
 uniform float revealersX[MAX_REVEALERS];
 uniform float revealersZ[MAX_REVEALERS];
 uniform float revealersRadius[MAX_REVEALERS];
-uniform float mapSidelength;
+
+uniform int unitsCurrentCount;
+uniform float unitsX[MAX_UNITS];
+uniform float unitsZ[MAX_UNITS];
+uniform float unitsRadius[MAX_UNITS];
+uniform float unitsType[MAX_UNITS]; // 0: hovered unit, 1: clicked unit
+uniform vec4 unitsColor[MAX_UNITS];
 
 // Varying values were created by the vertex shader and are fetched in the fragment shader.
 // They are also interpolated from the three calls made in the vertex shader.
@@ -65,6 +73,12 @@ bool isOuterBorderLine(float mapBorderLineWidth, float mapBorderDashedWidth) {
            (pixelWorldPosition.z < -(mapSidelength / 2.0 - mapBorderLineWidth));
 }
 
+void getDistancesToAllUnits(inout float thisPixelDistToUnits[MAX_UNITS]) {
+    for (int i = 0; i < unitsCurrentCount; i++) {
+        thisPixelDistToUnits[i] = length(pixelWorldPosition.xz - vec2(unitsX[i], unitsZ[i]));
+    }
+}
+
 // The output color of this pixel has to be written to gl_FragColor.
 void main() {
     // Define some constants.
@@ -72,29 +86,66 @@ void main() {
     float gridSubdivisionFactor = 1.0;
     float mapBorderLineWidth = 0.025;
     float mapBorderDashedWidth = 0.1;
+    float solidUnitRingWidth = 0.025;
+    float dottedUnitRingWidth = 0.025;
+    int dottedUnitRingSegments = 10;
+    float percentageFilledPerSegment = 0.5;
+    
+    // Calculate distances to units.
+    float thisPixelDistToUnits[MAX_UNITS];
+    getDistancesToAllUnits(thisPixelDistToUnits);
+    
+    // Calculate if unit selection coloring should be applied.
+    bool isInsideAnyUnitRadius = false;
+    bool isInsideSolidRing = false;
+    bool isInsideDottedRing = false;
+    for (int i = 0; i < unitsCurrentCount; i++) {
+        if (thisPixelDistToUnits[i] < unitsRadius[i]) {
+            isInsideAnyUnitRadius = true;
+        } else if (thisPixelDistToUnits[i] < unitsRadius[i] + solidUnitRingWidth) {
+            isInsideSolidRing = true;
+        } else if (thisPixelDistToUnits[i] < unitsRadius[i] + solidUnitRingWidth + dottedUnitRingWidth) {
+            vec2 pixelPosition = pixelWorldPosition.xz - vec2(unitsX[i], unitsZ[i]);
+            float angleFloat = atan(pixelPosition.x, pixelPosition.y);
+            float angle = degrees(angleFloat) + 180.0;
+            float positionInSegment = float(int(angle) % int(360.0 / float(dottedUnitRingSegments)));
+            if (positionInSegment < 360.0 / float(dottedUnitRingSegments) * percentageFilledPerSegment) {
+                isInsideDottedRing = true;
+            }
+        }
+    }
     
     // Calculate the output color.
-    float checkerboardX = pixelWorldPosition.x * gridSubdivisionFactor - floor(pixelWorldPosition.x * gridSubdivisionFactor);
-    float checkerboardZ = pixelWorldPosition.z * gridSubdivisionFactor - floor(pixelWorldPosition.z * gridSubdivisionFactor);
-    if (pixelWorldPosition.x > mapSidelength / 2.0) {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    } else if (isOuterBorderLine(mapBorderLineWidth, mapBorderDashedWidth)) {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    } else if (isDashedBorderLine(mapBorderLineWidth, mapBorderDashedWidth)) {
-        if (checkerboardX < 0.5 && checkerboardZ < 0.5 || checkerboardX > 0.5 && checkerboardZ > 0.5) {
+    if (isInsideAnyUnitRadius) {
+        discard;
+    } else if (isInsideSolidRing || isInsideDottedRing) {
+        gl_FragColor.r = 0.0; 
+        gl_FragColor.g = 1.0;
+        gl_FragColor.b = 0.0;
+        gl_FragColor.a = 1.0;
+    } else {
+        float checkerboardX = pixelWorldPosition.x * gridSubdivisionFactor - floor(pixelWorldPosition.x * gridSubdivisionFactor);
+        float checkerboardZ = pixelWorldPosition.z * gridSubdivisionFactor - floor(pixelWorldPosition.z * gridSubdivisionFactor);
+        if (pixelWorldPosition.x > mapSidelength / 2.0) {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        } else if (isOuterBorderLine(mapBorderLineWidth, mapBorderDashedWidth)) {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        } else if (isDashedBorderLine(mapBorderLineWidth, mapBorderDashedWidth)) {
+            if (checkerboardX < 0.5 && checkerboardZ < 0.5 || checkerboardX > 0.5 && checkerboardZ > 0.5) {
+                gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+            } else {
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            }
+        } else if (isInnerBorderLine(mapBorderLineWidth, mapBorderDashedWidth)) {
             gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
         } else {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            if (checkerboardX < 0.5 && checkerboardZ < 0.5 || checkerboardX > 0.5 && checkerboardZ > 0.5) {
+                discard;
+            }
+            gl_FragColor.r = gray; 
+            gl_FragColor.g = gray;
+            gl_FragColor.b = gray;
+            gl_FragColor.a = getAlpha();
         }
-    } else if (isInnerBorderLine(mapBorderLineWidth, mapBorderDashedWidth)) {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    } else {
-        if (checkerboardX < 0.5 && checkerboardZ < 0.5 || checkerboardX > 0.5 && checkerboardZ > 0.5) {
-            discard;
-        }
-        gl_FragColor.r = gray; 
-        gl_FragColor.g = gray;
-        gl_FragColor.b = gray;
-        gl_FragColor.a = getAlpha();
     }
 }

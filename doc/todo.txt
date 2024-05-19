@@ -1,5 +1,21 @@
 TODO:
 =====
+ - explositon shockwave effeect
+ - gui
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  - don't show stuff that is not necessary -> spped up loading cycles
  - click for move markers
