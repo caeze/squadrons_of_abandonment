@@ -77,8 +77,10 @@ enum ExplosionType {
 
 export class ExplosionEffect {
 	private _currentUrl: string;
+	private _camera: Camera;
     
-    public constructor(currentUrl: string) {
+    public constructor(camera: Camera, currentUrl: string) {
+        this._camera = camera;
         this._currentUrl = currentUrl;
     }
 
@@ -102,7 +104,7 @@ export class ExplosionEffect {
 	}
 
 	public createShockwave() {
-        let postProcess = new PostProcess("shockwavePostProcess", this._currentUrl + "/assets/shaders/shockwave", ["time", "center"], null, 1, camera);
+        let postProcess = new PostProcess("shockwavePostProcess", this._currentUrl + "/assets/shaders/shockwave", ["time", "center"], null, 1, this._camera);
 
         let t = 0.0;
         postProcess.onApply = function (effect) {

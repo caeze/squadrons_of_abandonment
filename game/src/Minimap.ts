@@ -70,7 +70,7 @@ WebGPUEngine,
 // ----------- global imports end -----------
 
 export class Minimap {
-    public createMinimap(scene: Scene, camera: Camera, engine: Engine) {
+    public constructor(scene: Scene, camera: Camera, engine: Engine) {
         /*
         
         let cameraMinimap: ArcRotateCamera = new ArcRotateCamera("MinimapCamera", 0, 0, 1, Vector3.Zero(), scene);

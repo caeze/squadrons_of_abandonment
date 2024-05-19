@@ -70,7 +70,7 @@ WebGPUEngine,
 // ----------- global imports end -----------
 
 export class MainCamera {
-    private camera: ArcRotateCamera;
+    public camera: ArcRotateCamera;
     private prevRadius: number;
 
     public constructor(canvas: HTMLElement, scene: Scene) {
@@ -94,10 +94,6 @@ export class MainCamera {
         this.camera.wheelPrecision = 20.0;
         this.camera.attachControl(canvas, true);
         this.camera.checkCollisions = true;
-    }
-    
-    public getCamera(): ArcRotateCamera {
-        return this.camera;
     }
     
     public runBeforeRender() {

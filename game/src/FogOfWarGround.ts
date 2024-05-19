@@ -69,11 +69,16 @@ WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
+import { RenderingGroupId } from "./RenderingGroupId";
+import { Unit } from "./Unit";
+
 export class FogOfWarGround {
-    public constructor(currentUrl: string, maxRevealers: number, maxRevealers: number) {
+	private _groundShaderMaterial: ShaderMaterial;
+    
+    public constructor(scene: Scene, currentUrl: string, maxRevealers: number) {
         let mapSidelength = 1000.0;
         let ground = MeshBuilder.CreatePlane("ground", {size: mapSidelength});
-        let groundShaderMaterial = new ShaderMaterial(
+        this._groundShaderMaterial = new ShaderMaterial(
             "fowShaderMaterial",
             scene,
             currentUrl + "/assets/shaders/fow", // searches for fow.vertex.fx and fow.fragment.fx
@@ -86,44 +91,41 @@ export class FogOfWarGround {
                     "revealersX",
                     "revealersZ",
                     "revealersRadius",
-                    "CurrentCount",
-                    "revealersX",
-                    "revealersZ",
-                    "revealersRadius",
                     "mapSidelength"
+                    //"CurrentCount",
+                    //"revealersX",
+                    //"revealersZ",
+                    //"revealersRadius",
                 ],
-                defines: ["#define MAX_REVEALERS " + int(maxRevealers)],
+                defines: ["#define MAX_REVEALERS " + maxRevealers],
             }
         );
-        ground.renderingGroupId = renderingGroupId_ground;
+        ground.renderingGroupId = RenderingGroupId.GROUND;
         ground.alphaIndex = 1;
         ground.rotation = new Vector3(Math.PI / 2, 0, 0);
-        ground.material = groundShaderMaterial;
+        ground.material = this._groundShaderMaterial;
         ground.material.forceDepthWrite = true;
         ground.material.transparencyMode = Material.MATERIAL_ALPHABLEND;
         ground.material.alpha = 0.0;
-        
-        
-
-        scene.registerBeforeRender(() => {
-            entitys[0].mesh.position.x += 0.005;
-            entitys[0].mesh.rotation.x += 0.005;
-            entitys[0].mesh.rotation.y += 0.005;
-            entitys[1].mesh.position.x -= 0.005;
-            entitys[1].mesh.rotation.x += 0.005;
-            entitys[1].mesh.rotation.y += 0.005;
-            
-            const revealersX = []
-            const revealersZ = []
-            const revealersRadius = []
-            for(let i=0; i<entitys.length; ++i) {
-                revealersX.push(entitys[i].mesh.position.x);
-                revealersZ.push(entitys[i].mesh.position.z);
-                revealersRadius.push(entitys[i].revealersRadius);
-            }
-            groundShaderMaterial.setFloats("revealersX", revealersX);
-            groundShaderMaterial.setFloats("revealersZ", revealersZ);
-            groundShaderMaterial.setFloats("revealersRadius", revealersRadius);
-            groundShaderMaterial.setFloat("mapSidelength", mapSidelength);
+        this._groundShaderMaterial.setFloat("mapSidelength", mapSidelength);
     }
+
+	public updateRevealerPositions(units: Unit[]) {
+        const revealersX = []
+        const revealersZ = []
+        const revealersRadius = []
+        for(let i = 0; i < units.length; i++) {
+            revealersX.push(units[i].mesh.position.x);
+            revealersZ.push(units[i].mesh.position.z);
+            revealersRadius.push(units[i].radius);
+        }
+        this._groundShaderMaterial.setInt("revealersCurrentCount", units.length);
+        this._groundShaderMaterial.setFloats("revealersX", revealersX);
+        this._groundShaderMaterial.setFloats("revealersZ", revealersZ);
+        this._groundShaderMaterial.setFloats("revealersRadius", revealersRadius);
+	}
+
+	public updateSelectedPositions() {
+        
+	}
 }

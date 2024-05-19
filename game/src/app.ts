@@ -81,29 +81,28 @@ import { MouseSelectionBox } from "./MouseSelectionBox";
 import { KeyboardInputManager } from "./KeyboardInputManager";
 import { MainCamera } from "./MainCamera";
 import { SpaceshipTrail } from "./SpaceshipTrail";
+import { RenderingGroupId } from "./RenderingGroupId";
+import { FogOfWarGround } from "./FogOfWarGround";
+import { Entity } from "./Entity";
+import { Unit } from "./Unit";
 
-function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string) {
+function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string): Unit[] {
     
     let sun = new Sun(scene, camera, engine, currentUrl);
     
-    const spawns = [new Vector3(2, 0, 2), new Vector3(-1, 0, -1)];
-    let entitys = new Array<any>;
-    for(let i = 0; i < spawns.length; ++i) {
-        let boxMesh = MeshBuilder.CreateBox("box" + i, {size: 0.5}, scene);
-        boxMesh.renderingGroupId = renderingGroupId_everything;
-        entitys.push({
-            mesh: boxMesh,
-            revealersRadius: 3.0,
-        });
-        boxMesh.position.set(spawns[i].x, spawns[i].y, spawns[i].z);
+    const initialPositions = [new Vector3(2, 0, 2), new Vector3(-1, 0, -1)];
+    let units = new Array<Unit>;
+    for(let i = 0; i < initialPositions.length; ++i) {
+        let unit = new Unit(scene, initialPositions[i], "box" + i, 5.0);
+        units.push(unit);
     }
     scene.registerBeforeRender(() => {
-        entitys[0].mesh.position.x += 0.005;
-        entitys[0].mesh.rotation.x += 0.005;
-        entitys[0].mesh.rotation.y += 0.005;
-        entitys[1].mesh.position.x -= 0.005;
-        entitys[1].mesh.rotation.x += 0.005;
-        entitys[1].mesh.rotation.y += 0.005;
+        units[0].mesh.position.x += 0.005;
+        units[0].mesh.rotation.x += 0.005;
+        units[0].mesh.rotation.y += 0.005;
+        units[1].mesh.position.x -= 0.005;
+        units[1].mesh.rotation.x += 0.005;
+        units[1].mesh.rotation.y += 0.005;
     });
 
     
@@ -113,22 +112,21 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     assetsManager.load();
     
     assetsManager.onFinish = function (task) {
-        console.log("loading particle system successful", task);
 
         // prepare to parse particle system files
         const particleJSON = JSON.parse(particleFile.text);
         
         
-        for(let i=0; i<entitys.length; ++i) {
+        for(let i=0; i<units.length; ++i) {
             const particleSystem = ParticleSystem.Parse(particleJSON, scene, "", false, 1000);
         
 
             let exhaust = new TransformNode("exaust");
-            exhaust.parent = entitys[i].mesh;
+            exhaust.parent = units[i].mesh;
             exhaust.position.y = -1.1;
 
 
-            particleSystem.emitter = entitys[i].mesh;
+            particleSystem.emitter = units[i].mesh;
             particleSystem.isLocal = true;
             particleSystem.start();
         }
@@ -148,7 +146,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     skybox.material = skyboxMaterial;
     
     let originSphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: 0.1 }, scene);
-    originSphere.renderingGroupId = renderingGroupId_everything;
+    originSphere.renderingGroupId = RenderingGroupId.EVERYTHING;
     
     let xSphere: Mesh = MeshBuilder.CreateSphere("xsphere", { diameter: 0.1 }, scene);
     let xSphereMaterial = new StandardMaterial("mat", scene);
@@ -157,7 +155,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     xSphere.material = xSphereMaterial;
     xSphere.position = new Vector3(1, 0, 0);
     xSphere.isPickable = true;
-    xSphere.renderingGroupId = renderingGroupId_everything;
+    xSphere.renderingGroupId = RenderingGroupId.EVERYTHING;
     
     let ySphere: Mesh = MeshBuilder.CreateSphere("ysphere", { diameter: 0.1 }, scene);
     let ySphereMaterial = new StandardMaterial("mat", scene);
@@ -166,7 +164,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     ySphere.material = ySphereMaterial;
     ySphere.position = new Vector3(0, 1, 0);
     ySphere.isPickable = true;
-    ySphere.renderingGroupId = renderingGroupId_everything;
+    ySphere.renderingGroupId = RenderingGroupId.EVERYTHING;
     
     let zSphere: Mesh = MeshBuilder.CreateSphere("zsphere", { diameter: 0.1 }, scene);
     let zSphereMaterial = new StandardMaterial("mat", scene);
@@ -175,7 +173,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     zSphere.material = zSphereMaterial;
     zSphere.position = new Vector3(0, 0, 1);
     zSphere.isPickable = true;
-    zSphere.renderingGroupId = renderingGroupId_everything;
+    zSphere.renderingGroupId = RenderingGroupId.EVERYTHING;
     
     
     
@@ -187,7 +185,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
         scene,
         function(objects: AbstractMesh[]) {
             for(let i=0; i<objects.length; ++i) {
-                objects[i].renderingGroupId = renderingGroupId_everything;
+                objects[i].renderingGroupId = RenderingGroupId.EVERYTHING;
             }
         }
     );*/
@@ -201,7 +199,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
             console.log(objects);
             jupiter = (<Mesh> objects[1]);
             for(let i=0; i<objects.length; ++i) {
-                objects[i].renderingGroupId = renderingGroupId_everything;
+                objects[i].renderingGroupId = RenderingGroupId.EVERYTHING;
             }
         }
     );*/
@@ -222,7 +220,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     );
     importPromise.then((result: any) => {
         highlightLayer.addMesh(result.meshes[1], Color3.Blue());
-        result.meshes[1].renderingGroupId = renderingGroupId_everything;
+        result.meshes[1].renderingGroupId = RenderingGroupId.EVERYTHING;
     });
     
     const importPromiseFlag = SceneLoader.ImportMeshAsync(
@@ -234,21 +232,19 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     importPromiseFlag.then((result: any) => {
         console.log(result);
         for(let i = 0; i < result.meshes.length; i++) {
-            result.meshes[i].renderingGroupId = renderingGroupId_everything;
+            result.meshes[i].renderingGroupId = RenderingGroupId.EVERYTHING;
             //result.meshes[i].scaling.x = 0.25;
             //result.meshes[i].scaling.y = 0.25;
             //result.meshes[i].scaling.z = 0.25;
         }
         //highlightLayer.addMesh(result.meshes[1], Color3.Blue());
-        //result.meshes[1].renderingGroupId = renderingGroupId_everything;
+        //result.meshes[1].renderingGroupId = RenderingGroupId.EVERYTHING;
     });*/
+    
+    return units;
 };
 
 class SquadronsOfAbandonement {
-    private currentUrl: string;
-    private renderingGroupId_everything: number = 3;
-    private renderingGroupId_ground: number = 0;
-    
     public constructor() {
         let currentUrl = window.location.href;
         
@@ -285,23 +281,22 @@ class SquadronsOfAbandonement {
     
         let gui = new Gui();
         gui.createGui(currentUrl);
+        let mouseSelectionBox = new MouseSelectionBox();
+        mouseSelectionBox.createMouseSelectionBox(scene, gui.getGui());
         
         
         let mainCamera = new MainCamera(canvas, scene);
-        let camera = mainCamera.getCamera();
+        let camera = mainCamera.camera;
         scene.registerBeforeRender(() => {
             mainCamera.runBeforeRender();
         });
         
         let pipeline = new RenderingPipeline(scene, camera);
         
-        populateScene(canvas, engine, scene, camera, currentUrl);
+        let revealers = populateScene(canvas, engine, scene, camera, currentUrl);
 
         let keyboardInputManager = new KeyboardInputManager(scene);
-        let minimap = new Minimap();
-        minimap.createMinimap(scene, camera, engine);
-        let mouseSelectionBox = new MouseSelectionBox();
-        mouseSelectionBox.createMouseSelectionBox(scene, gui.getGui());
+        //let minimap = new Minimap(scene, camera, engine);
         let spaceshipTrailParent = MeshBuilder.CreateSphere("sphere", {diameter: 0.1}, scene);
         let spaceshipTrail = new SpaceshipTrail("spaceshipTrail0", spaceshipTrailParent, scene, camera, 0.1);
         let spaceshipTrailShaderMaterial = new ShaderMaterial(
@@ -318,11 +313,15 @@ class SquadronsOfAbandonement {
         spaceshipTrailShaderMaterial.forceDepthWrite = true;
         spaceshipTrailShaderMaterial.transparencyMode = Material.MATERIAL_ALPHABLEND;
         spaceshipTrailShaderMaterial.alpha = 0.0;
-        spaceshipTrail.renderingGroupId = renderingGroupId_everything;
+        spaceshipTrail.renderingGroupId = RenderingGroupId.EVERYTHING;
         spaceshipTrail.alphaIndex = 1;
         spaceshipTrail.material = spaceshipTrailShaderMaterial;
     
         
+        let fogOfWarGround = new FogOfWarGround(scene, currentUrl, 128);
+        scene.registerBeforeRender(() => {
+            fogOfWarGround.updateRevealerPositions(revealers);
+        });
         
         
         /*let material = new StandardMaterial(
