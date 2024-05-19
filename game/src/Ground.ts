@@ -99,7 +99,6 @@ export class Ground {
                     "unitsZ",
                     "unitsRadius",
                     "unitsType",
-                    "unitsColor",
                 ],
                 defines: [
                     "#define MAX_REVEALERS " + maxRevealers,
@@ -143,14 +142,12 @@ export class Ground {
             unitsX.push(units[i].mesh.position.x);
             unitsZ.push(units[i].mesh.position.z);
             unitsRadius.push(units[i].radius / 5.0);
-            unitsType.push(1);
-            unitsColor.push(new Color4(0.5, 0.5, 0.2, 0.6));
+            unitsType.push(i);
         }
         this._groundShaderMaterial.setInt("unitsCurrentCount", units.length);
         this._groundShaderMaterial.setFloats("unitsX", unitsX);
         this._groundShaderMaterial.setFloats("unitsZ", unitsZ);
         this._groundShaderMaterial.setFloats("unitsRadius", unitsRadius);
         this._groundShaderMaterial.setFloats("unitsType", unitsType);
-        this._groundShaderMaterial.setColor4Array("unitsColor", unitsColor);
 	}
 }

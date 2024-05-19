@@ -13,7 +13,6 @@ uniform float unitsX[MAX_UNITS];
 uniform float unitsZ[MAX_UNITS];
 uniform float unitsRadius[MAX_UNITS];
 uniform float unitsType[MAX_UNITS]; // 0: hovered unit, 1: clicked unit
-uniform vec4 unitsColor[MAX_UNITS];
 
 // Varying values were created by the vertex shader and are fetched in the fragment shader.
 // They are also interpolated from the three calls made in the vertex shader.
@@ -99,11 +98,14 @@ void main() {
     bool isInsideAnyUnitRadius = false;
     bool isInsideSolidRing = false;
     bool isInsideDottedRing = false;
+    vec4 unitSelectionColor = vec4(1.0, 0.0, 0.0, 0.5);
     for (int i = 0; i < unitsCurrentCount; i++) {
         if (thisPixelDistToUnits[i] < unitsRadius[i]) {
             isInsideAnyUnitRadius = true;
+            break;
         } else if (thisPixelDistToUnits[i] < unitsRadius[i] + solidUnitRingWidth) {
-            isInsideSolidRing = true;
+            isInsideSolidRing = unitsType[i] > 0.0;
+            unitSelectionColor = vec4(0.0, 1.0, 0.0, 1.0);
         } else if (thisPixelDistToUnits[i] < unitsRadius[i] + solidUnitRingWidth + dottedUnitRingWidth) {
             vec2 pixelPosition = pixelWorldPosition.xz - vec2(unitsX[i], unitsZ[i]);
             float angleFloat = atan(pixelPosition.x, pixelPosition.y);
@@ -111,6 +113,7 @@ void main() {
             float positionInSegment = float(int(angle) % int(360.0 / float(dottedUnitRingSegments)));
             if (positionInSegment < 360.0 / float(dottedUnitRingSegments) * percentageFilledPerSegment) {
                 isInsideDottedRing = true;
+                unitSelectionColor = vec4(0.0, 1.0, 0.0, 1.0);
             }
         }
     }
@@ -119,10 +122,7 @@ void main() {
     if (isInsideAnyUnitRadius) {
         discard;
     } else if (isInsideSolidRing || isInsideDottedRing) {
-        gl_FragColor.r = 0.0; 
-        gl_FragColor.g = 1.0;
-        gl_FragColor.b = 0.0;
-        gl_FragColor.a = 1.0;
+        gl_FragColor = unitSelectionColor;
     } else {
         float checkerboardX = pixelWorldPosition.x * gridSubdivisionFactor - floor(pixelWorldPosition.x * gridSubdivisionFactor);
         float checkerboardZ = pixelWorldPosition.z * gridSubdivisionFactor - floor(pixelWorldPosition.z * gridSubdivisionFactor);
