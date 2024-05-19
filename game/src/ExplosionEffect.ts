@@ -40,6 +40,7 @@ MaterialPluginBase,
 Matrix,
 Mesh,
 MeshBuilder,
+IParticleSystem,
 NoiseProceduralTexture,
 ParticleHelper,
 ParticleSystem,
@@ -77,19 +78,62 @@ enum ExplosionType {
   ORB_SPHERE = "ORB_SPHERE",
 }
 
+export class ShockwaveEffectHandler {
+	private _ticksCtr: number;
+	private _tickFunction: (effect: any, time: number) => void;
+	private _timeScale: number;
+    
+    public constructor(tickFunction: (effect: any, time: number) => void, timeScale: number = 0.005) {
+        this._ticksCtr = 17;
+        this._tickFunction = tickFunction;
+        this._timeScale = timeScale;
+    }
+    
+    public tick(effect: any) {
+        this._ticksCtr++;
+        effect.setFloat("time", this._ticksCtr * this._timeScale);
+        this._tickFunction(effect, this._ticksCtr * this._timeScale);
+    }
+}
+
 export class ExplosionEffect {
 	private _currentUrl: string;
 	private _camera: Camera;
+	private _explosionParticleEffect?: ParticleSystemSet;
     
-    public constructor(camera: Camera, currentUrl: string) {
+    public constructor(camera: Camera, scene: Scene, currentUrl: string) {
         this._camera = camera;
         this._currentUrl = currentUrl;
+        ParticleHelper.CreateAsync("explosion", scene).then((p) => {
+            this._explosionParticleEffect = p;
+        })
     }
+    
+	public createExplosionWithShockwave(name: string, position: Vector3, scene: Scene, camera: Camera, canvasWidth: number, canvasHeight: number, projectionFunction: (worldPosition: Vector3, scene: Scene, canvasWidth: number, canvasHeight: number) => [Vector2, number], disposeAfterMs: number = 2500) {
+        let explosionTick = function (effect: any, time: number) {
+            let [screenPos, depth] = projectionFunction(position, scene, canvasWidth, canvasHeight);
+            let screenPosRelative = new Vector2(screenPos.x / window.innerWidth, 1.0 - (screenPos.y / window.innerHeight));
+            effect.setVector2("center", screenPosRelative);
+        };
+        this.createShockwave(name, camera, new ShockwaveEffectHandler(explosionTick));
+        
+        if (this._explosionParticleEffect) {
+            let particleSystems: IParticleSystem[] = this._explosionParticleEffect.systems;
+            for (let i = 0; i < particleSystems.length; i++) {
+                particleSystems[i].emitter = new Vector3(position.x, position.y, position.z);
+            }
+            this._explosionParticleEffect.start();
+        }
+	}
 
-	public createExplosion() {
-        /*ParticleHelper.CreateAsync("explosion", scene).then((a) => {
-            a.start();
-        });*/
+	public createExplosion(position: Vector3) {
+        if (this._explosionParticleEffect) {
+            let particleSystems: IParticleSystem[] = this._explosionParticleEffect.systems;
+            for (let i = 0; i < particleSystems.length; i++) {
+                particleSystems[i].emitter = position;
+            }
+            this._explosionParticleEffect.start();
+        }
 	}
 
 	public createFire() {
@@ -105,28 +149,16 @@ export class ExplosionEffect {
 	public createOrb() {
 	}
 
-	public createShockwave() {
-        let postProcess = new PostProcess("shockwavePostProcess", this._currentUrl + "/assets/shaders/shockwave", ["time", "center"], null, 1, this._camera);
-
-        let t = 0.0;
-        postProcess.onApply = function (effect) {
-            t += 0.001;
-            effect.setFloat("time", t);
-            let centerX = Math.sin(3.14 / 2 + t * 100.0) / 2.0 + 0.5;
-            let centerY = Math.cos(3.14 / 2 + t * 100.0) / 2.0 + 0.5;
-            effect.setVector2("center", new Vector2(centerX, centerY));
+	public createShockwave(name: string, camera: Camera, shockwaveEffectHandler: ShockwaveEffectHandler, disposeAfterMs: number = 2500) {
+        // Coordinate system is from screen_bottom_left = [0, 0]
+        // to screen_top_right = [1, 1]
+        let postProcess = new PostProcess(name, this._currentUrl + "/assets/shaders/shockwave", ["time", "center"], null, 1, this._camera);
+        postProcess.onApply = function (effect: any) {
+            shockwaveEffectHandler.tick(effect);
         };
-        
-        
-        /*let postProcess2 = new PostProcess("shockwavePostProcess2", this._currentUrl + "/assets/shaders/shockwave", ["time", "center"], null, 1, camera);
-
-        let t2 = 0.3;
-        postProcess.onApply = function (effect) {
-            t2 += 0.001;
-            effect.setFloat("time", t2);
-            let centerX = 0.5;
-            let centerY = 0.5;
-            effect.setVector2("center", new Vector2(centerX, centerY));
-        };*/
+        let disposeFunction = function () {
+            postProcess.dispose(camera);
+        };
+        setTimeout(disposeFunction, disposeAfterMs);
 	}
 }

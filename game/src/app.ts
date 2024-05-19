@@ -90,6 +90,7 @@ import { Unit } from "./Unit";
 import { CameraLayerMask } from "./CameraLayerMask";
 import { AmbientLight } from "./AmbientLight";
 import { Skybox } from "./Skybox";
+import { ExplosionEffect, ShockwaveEffectHandler } from "./ExplosionEffect";
 
 function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string): Unit[] {
     
@@ -97,7 +98,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     
     const initialPositions = [new Vector3(2, 0, 2), new Vector3(-1, 0, 1)];
     let units = new Array<Unit>;
-    for(let i = 0; i < initialPositions.length; ++i) {
+    for (let i = 0; i < initialPositions.length; i++) {
         let unit = new Unit(scene, initialPositions[i], "box" + i, 5.0, currentUrl);
         units.push(unit);
     }
@@ -145,6 +146,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     let originSphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: 0.1 }, scene);
     originSphere.renderingGroupId = RenderingGroupId.MAIN;
     originSphere.layerMask = CameraLayerMask.MAIN;
+    originSphere.isPickable = true;
     
     let xSphere: Mesh = MeshBuilder.CreateSphere("xsphere", { diameter: 0.1 }, scene);
     let xSphereMaterial = new StandardMaterial("mat", scene);
@@ -184,7 +186,8 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
 };
 
 class SquadronsOfAbandonement {
-    public constructor() {
+	public constructor() {
+        let thisPtr = this;
         let mapSidelength = 1000.0;
         let currentUrl = window.location.href;
         
@@ -230,10 +233,10 @@ class SquadronsOfAbandonement {
         scene.registerBeforeRender(() => {
             mainCamera.runBeforeRender();
         });
-        let minimap = new Minimap(scene, mainCamera.camera, engine, currentUrl, mapSidelength);
+        //let minimap = new Minimap(scene, mainCamera.camera, engine, currentUrl, mapSidelength);
         scene.activeCameras = [];
         scene.activeCameras.push(mainCamera.camera);
-        scene.activeCameras.push(minimap.minimapCamera);
+        //scene.activeCameras.push(minimap.minimapCamera);
     
         
         let ground = new Ground(scene, currentUrl, 128, 128, mapSidelength);
@@ -250,6 +253,9 @@ class SquadronsOfAbandonement {
         let keyboardInputManager = new KeyboardInputManager(scene);
         keyboardInputManager.registerCallback("KeyF", "launchFullscreenCaller", this.nop, this.launchFullscreen, null);
         keyboardInputManager.registerCallback("KeyI", "toggleDebugLayerCaller", this.nop, this.toggleDebugLayer, scene);
+        
+        
+        let explosionEffect = new ExplosionEffect(mainCamera.camera, scene, currentUrl);
         
         let spaceshipTrailParent = MeshBuilder.CreateSphere("sphere", {diameter: 0.1}, scene);
         let spaceshipTrail = new SpaceshipTrail("spaceshipTrail0", spaceshipTrailParent, scene, mainCamera.camera, 0.1);
@@ -290,17 +296,19 @@ class SquadronsOfAbandonement {
         
         
 
-        scene.onPointerDown = function (evt, pickResult) {
-            // We try to pick an object
+        scene.onPointerDown = function (evt: any, pickResult: any) {
             if (pickResult.hit && pickResult.pickedMesh != null) {
                 console.log(pickResult.pickedMesh.name);
+                
+                
+                explosionEffect.createExplosionWithShockwave("shockwaveEffect0", pickResult.pickedPoint, scene, mainCamera.camera, window.innerWidth, window.innerHeight, thisPtr.project);
             }
         };
         
         window.addEventListener("resize", function() {
             canvas.style.width = window.innerWidth + "px";
             canvas.style.height = window.innerHeight + "px";
-            minimap.resize(window.innerWidth, window.innerHeight);
+            //minimap.resize(window.innerWidth, window.innerHeight);
             engine.resize();
         });
         
@@ -356,6 +364,34 @@ class SquadronsOfAbandonement {
     
     private nop(data: any) {
     }
+    
+    private project(worldPosition: Vector3, scene: Scene, canvasWidth: number, canvasHeight: number): [Vector2, number] {
+        // Coordinate system is from screen_top_left = [0, 0]
+        // to screen_bottom_right = [screen_width, screen_height]
+        let vector3 = Vector3.Project(
+            worldPosition,
+            Matrix.Identity(),
+            scene.getTransformMatrix(),
+            new Viewport(0.0, 0.0, canvasWidth, canvasHeight),
+        );
+        let screenPos = new Vector2(vector3.x, vector3.y);
+        let depth = vector3.z;
+        return [screenPos, depth];
+    }
+    
+    private unproject(screenPosition: Vector2, depth: number, engine: Engine, scene: Scene): Vector3 {
+        // TODO: test if this works
+        return Vector3.Unproject(
+            new Vector3(screenPosition.x, screenPosition.y, depth),
+            engine.getRenderWidth(),
+            engine.getRenderHeight(),
+            Matrix.Identity(),
+            scene.getViewMatrix(),
+            scene.getProjectionMatrix()
+        );
+    }
+    
+    
 }
 
 new SquadronsOfAbandonement();

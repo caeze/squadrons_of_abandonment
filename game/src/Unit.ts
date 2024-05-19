@@ -158,6 +158,7 @@ export class Unit extends Entity {
         this.mesh.renderingGroupId = RenderingGroupId.MAIN;
         this.mesh.layerMask = CameraLayerMask.MAIN;
         this.mesh.position = initialPosition;
+        this.mesh.isPickable = true;
         
         let minimapIconMesh = MeshBuilder.CreateSphere(name + "minimapIconMesh", {diameter: 20}, scene);
         minimapIconMesh.renderingGroupId = RenderingGroupId.MAIN;
@@ -178,6 +179,7 @@ export class Unit extends Entity {
         minimapIconMeshShaderMaterial.alpha = 0.0;
         minimapIconMesh.alphaIndex = 1;
         minimapIconMesh.material = minimapIconMeshShaderMaterial;
+        minimapIconMesh.isPickable = false;
         minimapIconMesh.parent = this.mesh;
     }
 }

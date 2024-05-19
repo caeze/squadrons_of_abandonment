@@ -79,6 +79,6 @@ export class ColorHighlightLayer {
     }
     
     public addMeshToHighlightLayer(mesh: Mesh, color: Color3) {
-        highlightLayer.addMesh(mesh, color);
+        this._highlightLayer.addMesh(mesh, color);
     }
 }

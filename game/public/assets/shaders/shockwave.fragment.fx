@@ -14,6 +14,7 @@ void main(void) {
     float effectStrength = 200.0;
     float torusDiameter = 1.2;
     float effectTorusWidth = 0.05;
+    float effectReductionOverTimeFactor = 500.0;
     
     // Get the uv coordinates to work with.
     vec2 uv = vUV.xy;
@@ -34,7 +35,7 @@ void main(void) {
         vec2 dir = normalize(uv - center);
         
         // Perform the distortion and reduce the effect over time.
-        uv += ((dir * diffTime) / (time * dist * 80.0));
+        uv += ((dir * diffTime) / (time * dist * effectReductionOverTimeFactor));
         
         // Grab color for the new coord
         c = texture2D(textureSampler, uv);
