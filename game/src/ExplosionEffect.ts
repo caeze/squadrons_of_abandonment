@@ -32,6 +32,7 @@ FreeCamera,
 HemisphericLight,
 HighlightLayer,
 InstancedMesh,
+IParticleSystem,
 Layer,
 LensFlare,
 LensFlareSystem,
@@ -40,7 +41,6 @@ MaterialPluginBase,
 Matrix,
 Mesh,
 MeshBuilder,
-IParticleSystem,
 NoiseProceduralTexture,
 ParticleHelper,
 ParticleSystem,
@@ -71,6 +71,9 @@ VolumetricLightScatteringPostProcess,
 WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
+
+import { RenderingGroupId } from "./RenderingGroupId";
+import { CameraLayerMask } from "./CameraLayerMask";
 
 enum ExplosionType {
   EXPLOSION = "EXPLOSION",
@@ -116,14 +119,7 @@ export class ExplosionEffect {
             effect.setVector2("center", screenPosRelative);
         };
         this.createShockwave(name, camera, new ShockwaveEffectHandler(explosionTick));
-        
-        if (this._explosionParticleEffect) {
-            let particleSystems: IParticleSystem[] = this._explosionParticleEffect.systems;
-            for (let i = 0; i < particleSystems.length; i++) {
-                particleSystems[i].emitter = new Vector3(position.x, position.y, position.z);
-            }
-            this._explosionParticleEffect.start();
-        }
+        this.createExplosion(position);
 	}
 
 	public createExplosion(position: Vector3) {
@@ -131,6 +127,9 @@ export class ExplosionEffect {
             let particleSystems: IParticleSystem[] = this._explosionParticleEffect.systems;
             for (let i = 0; i < particleSystems.length; i++) {
                 particleSystems[i].emitter = position;
+                particleSystems[i].renderingGroupId = RenderingGroupId.MAIN;
+                particleSystems[i].layerMask = CameraLayerMask.MAIN;
+                particleSystems[i].blendMode = ParticleSystem.BLENDMODE_ADD;
             }
             this._explosionParticleEffect.start();
         }
