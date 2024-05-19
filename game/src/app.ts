@@ -136,6 +136,8 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
             particleSystem.emitter = units[i].mesh;
             particleSystem.isLocal = true;
             particleSystem.start();
+            particleSystem.renderingGroupId = RenderingGroupId.MAIN;
+            particleSystem.layerMask = CameraLayerMask.MAIN;
         }
     }
     
@@ -234,10 +236,11 @@ class SquadronsOfAbandonement {
         scene.registerBeforeRender(() => {
             mainCamera.runBeforeRender();
         });
-        //let minimap = new Minimap(scene, mainCamera.camera, engine, currentUrl, mapSidelength);
+        let minimap = new Minimap(scene, mainCamera.camera, engine, currentUrl, mapSidelength);
         scene.activeCameras = [];
         scene.activeCameras.push(mainCamera.camera);
-        //scene.activeCameras.push(minimap.minimapCamera);
+        scene.activeCameras.push(minimap.minimapCamera);
+        scene.cameraToUseForPointers = mainCamera.camera;
     
         
         let ground = new Ground(scene, currentUrl, 128, 128, mapSidelength);
@@ -300,16 +303,19 @@ class SquadronsOfAbandonement {
         scene.onPointerDown = function (evt: any, pickResult: any) {
             if (pickResult.hit && pickResult.pickedMesh != null) {
                 console.log(pickResult.pickedMesh.name);
+                console.log(pickResult);
                 
-                
-                explosionEffect.createExplosionWithShockwave("shockwaveEffect0", pickResult.pickedPoint, scene, mainCamera.camera, window.innerWidth, window.innerHeight, thisPtr.project);
+                explosionEffect.createExplosionWithShockwave("shockwaveEffect0", pickResult.pickedPoint, scene, mainCamera, window.innerWidth, window.innerHeight, thisPtr.project);
             }
         };
+        document.addEventListener("click", (e: Event) => {
+            console.log(e);
+        });
         
         window.addEventListener("resize", function() {
             canvas.style.width = window.innerWidth + "px";
             canvas.style.height = window.innerHeight + "px";
-            //minimap.resize(window.innerWidth, window.innerHeight);
+            minimap.resize(window.innerWidth, window.innerHeight);
             engine.resize();
         });
         

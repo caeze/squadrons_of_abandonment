@@ -185,5 +185,10 @@ export class RenderingPipeline {
                 defaultPipeline.sharpen.colorAmount = 0.1; // 1 by default
             }
         }
+        let postProcess = new ImageProcessingPostProcess("processing", 1.0, camera);
+        postProcess.vignetteWeight = 10;
+        postProcess.vignetteStretch = 2;
+        postProcess.vignetteColor = new BABYLON.Color4(1, 0, 0, 0);
+        postProcess.vignetteEnabled = true;
     }
 }

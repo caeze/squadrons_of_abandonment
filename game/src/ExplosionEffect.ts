@@ -74,6 +74,7 @@ WebGPUEngine,
 
 import { RenderingGroupId } from "./RenderingGroupId";
 import { CameraLayerMask } from "./CameraLayerMask";
+import { MainCamera } from "./MainCamera";
 
 enum ExplosionType {
   EXPLOSION = "EXPLOSION",
@@ -112,24 +113,25 @@ export class ExplosionEffect {
         })
     }
     
-	public createExplosionWithShockwave(name: string, position: Vector3, scene: Scene, camera: Camera, canvasWidth: number, canvasHeight: number, projectionFunction: (worldPosition: Vector3, scene: Scene, canvasWidth: number, canvasHeight: number) => [Vector2, number], disposeAfterMs: number = 2500) {
+	public createExplosionWithShockwave(name: string, position: Vector3, scene: Scene, mainCamera: MainCamera, canvasWidth: number, canvasHeight: number, projectionFunction: (worldPosition: Vector3, scene: Scene, canvasWidth: number, canvasHeight: number) => [Vector2, number], disposeAfterMs: number = 2500) {
         let explosionTick = function (effect: any, time: number) {
             let [screenPos, depth] = projectionFunction(position, scene, canvasWidth, canvasHeight);
             let screenPosRelative = new Vector2(screenPos.x / window.innerWidth, 1.0 - (screenPos.y / window.innerHeight));
             effect.setVector2("center", screenPosRelative);
         };
-        this.createShockwave(name, camera, new ShockwaveEffectHandler(explosionTick));
+        this.createShockwave(name, mainCamera.camera, new ShockwaveEffectHandler(explosionTick));
         this.createExplosion(position);
+        MainCamera.shake(mainCamera);
 	}
 
 	public createExplosion(position: Vector3) {
         if (this._explosionParticleEffect) {
             let particleSystems: IParticleSystem[] = this._explosionParticleEffect.systems;
             for (let i = 0; i < particleSystems.length; i++) {
-                particleSystems[i].emitter = position;
+                particleSystems[i].emitter = new Vector3(position.x, position.y, position.z);
                 particleSystems[i].renderingGroupId = RenderingGroupId.MAIN;
                 particleSystems[i].layerMask = CameraLayerMask.MAIN;
-                particleSystems[i].blendMode = ParticleSystem.BLENDMODE_ADD;
+                particleSystems[i].blendMode = ParticleSystem.BLENDMODE_MULTIPLYADD;
             }
             this._explosionParticleEffect.start();
         }

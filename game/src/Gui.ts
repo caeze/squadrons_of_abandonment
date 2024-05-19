@@ -97,8 +97,8 @@ export class Gui {
         let button = Button.CreateImageWithCenterTextButton("but", "Click me!", currentUrl + "/assets/img/heightMap.png");
             button.width = 0.2;
             button.height = "40px";
-            button.left = "-500px";
-            button.top = "-500px";
+            button.left = "-50px";
+            button.top = "-50px";
             button.color = "white";
             button.background = "green";
             button.onPointerClickObservable.add(()=>{
@@ -121,8 +121,8 @@ export class Gui {
         
 
         let button1 = Button.CreateSimpleButton("but1", "Click Me");
-        button1.left = "1000px";
-        button1.top = "500px";
+        button1.left = "100px";
+        button1.top = "50px";
         button1.width = "150px";
         button1.height = "40px";
         button1.color = "white";
@@ -132,5 +132,14 @@ export class Gui {
             alert("you did it!");
         });
         this.advancedTexture.addControl(button1); 
+
+        let button2 = Button.CreateSimpleButton("but1", "Click Me");
+        button2.left = "-650px";
+        button2.top = "200px";
+        button2.width = "150px";
+        button2.height = "40px";
+        button2.color = "white";
+        button2.background = "#00000000";
+        this.advancedTexture.addControl(button2); 
     }
 }
