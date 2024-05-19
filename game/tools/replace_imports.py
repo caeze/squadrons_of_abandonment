@@ -89,6 +89,7 @@ def replace_between_strings_in_string(text: str, preamble: str, postamble: str, 
     ret_str = text[: preamble_index + len(preamble)] + replacement + text[postamble_index :]
     return ret_str
 
+path_to_new_content = {}
 all_file_paths = []
 for d in typescript_directories:
     all_file_paths += [f for f in d.iterdir() if f.is_file() and f.suffix == file_extension]
@@ -99,6 +100,9 @@ for path in all_file_paths:
         replacement = content.replace("%%%GUI_IMPORTS%%%", gui_imports).replace("%%%CORE_IMPORTS%%%", core_imports)
         ts_content_new = replace_between_strings_in_string(ts_content, preamble, postamble, replacement)
         if ts_content_new is not None:
-            pass#print(ts_content_new + "\n\n\n\n\n\n\n\n")
+            path_to_new_content[file_path] = ts_content_new
         else:
             print("Could not find preamble or postamble in file", file_path)
+for file_path, new_content in path_to_new_content.items():
+    with open(file_path, "w") as f:
+        f.write(new_content)
