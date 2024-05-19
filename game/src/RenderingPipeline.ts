@@ -90,6 +90,12 @@ export class RenderingPipeline {
             if (defaultPipeline.imageProcessingEnabled) {
                 defaultPipeline.imageProcessing.contrast = 1; // 1 by default
                 defaultPipeline.imageProcessing.exposure = 1; // 1 by default
+                /* vignette */
+                let vignetteStrength = 0.9;
+                defaultPipeline.imageProcessing.vignetteWeight = 10;
+                defaultPipeline.imageProcessing.vignetteStretch = 2;
+                defaultPipeline.imageProcessing.vignetteColor = new Color4(vignetteStrength, vignetteStrength, vignetteStrength, vignetteStrength);
+                defaultPipeline.imageProcessing.vignetteEnabled = true;
                 /* color grading */
                 //defaultPipeline.imageProcessing.colorGradingEnabled = false; // false by default
                 //if (defaultPipeline.imageProcessing.colorGradingEnabled) {
@@ -186,10 +192,5 @@ export class RenderingPipeline {
                 defaultPipeline.sharpen.colorAmount = 0.1; // 1 by default
             }
         }
-        let postProcess = new ImageProcessingPostProcess("processing", 1.0, camera);
-        postProcess.vignetteWeight = 10;
-        postProcess.vignetteStretch = 2;
-        postProcess.vignetteColor = new BABYLON.Color4(1, 0, 0, 0);
-        postProcess.vignetteEnabled = true;
     }
 }
