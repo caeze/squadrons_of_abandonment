@@ -11,7 +11,7 @@ TODO:
 
 
 
-
+trackable lables for unit names and icons? https://playground.babylonjs.com/#XCPP9Y#16
 
 
 

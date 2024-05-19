@@ -224,14 +224,14 @@ class SquadronsOfAbandonement {
             engine = new Engine(canvas, true);
         }*/
         let engine = new Engine(canvas, true);
+        engine.setHardwareScalingLevel(1 / window.devicePixelRatio);
         let scene = new Scene(engine);
     
         let skybox = new Skybox(scene, currentUrl);
         let ambientLight = new AmbientLight(scene);
-        let gui = new Gui();
-        gui.createGui(currentUrl);
+        let gui = new Gui(currentUrl, window.innerWidth, window.innerHeight);
         let mouseSelectionBox = new MouseSelectionBox();
-        mouseSelectionBox.createMouseSelectionBox(scene, gui.getGui());
+        mouseSelectionBox.createMouseSelectionBox(scene, gui.advancedTexture);
         
         let mainCamera = new MainCamera(canvas, scene);
         scene.registerBeforeRender(() => {
@@ -317,6 +317,7 @@ class SquadronsOfAbandonement {
             canvas.style.width = window.innerWidth + "px";
             canvas.style.height = window.innerHeight + "px";
             minimap.resize(window.innerWidth, window.innerHeight);
+            gui.updateButtonPositions(window.innerWidth, window.innerHeight);
             engine.resize();
         });
         

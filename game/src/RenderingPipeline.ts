@@ -135,7 +135,7 @@ export class RenderingPipeline {
                 }
             }
             /* bloom */
-            defaultPipeline.bloomEnabled = true; // false by default
+            defaultPipeline.bloomEnabled = false; // false by default
             if (defaultPipeline.bloomEnabled) {
                 defaultPipeline.bloomKernel = 64; // 64 by default
                 defaultPipeline.bloomScale = 0.5; // 0.5 by default
@@ -166,7 +166,7 @@ export class RenderingPipeline {
                 defaultPipeline.depthOfField.lensSize = 50; // 50 by default
             }
             /* FXAA */
-            defaultPipeline.fxaaEnabled = true; // false by default
+            defaultPipeline.fxaaEnabled = false; // false by default
             if (defaultPipeline.fxaaEnabled) {
                 defaultPipeline.fxaa.samples = 4; // 1 by default
                 defaultPipeline.fxaa.adaptScaleToCurrentViewport = true; // false by default
@@ -178,7 +178,7 @@ export class RenderingPipeline {
                 defaultPipeline.glowLayer.intensity = 1; // 1 by default
             }
             /* grain */
-            defaultPipeline.grainEnabled = true;
+            defaultPipeline.grainEnabled = false;
             if (defaultPipeline.grainEnabled) {
                 defaultPipeline.grain.adaptScaleToCurrentViewport = false; // false by default
                 defaultPipeline.grain.animated = false; // false by default
