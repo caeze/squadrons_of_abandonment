@@ -32,6 +32,7 @@ FreeCamera,
 HemisphericLight,
 HighlightLayer,
 InstancedMesh,
+Layer,
 LensFlare,
 LensFlareSystem,
 Material,
@@ -64,8 +65,9 @@ Vector3,
 Vector4,
 VertexBuffer,
 VertexData,
+Viewport,
 VolumetricLightScatteringPostProcess,
-WebGPUEngine,Viewport,
+WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
