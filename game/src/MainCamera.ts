@@ -65,9 +65,11 @@ Vector4,
 VertexBuffer,
 VertexData,
 VolumetricLightScatteringPostProcess,
-WebGPUEngine,
+WebGPUEngine,Viewport,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
+
+import { CameraLayerMask } from "./CameraLayerMask";
 
 export class MainCamera {
     public camera: ArcRotateCamera;
@@ -94,6 +96,8 @@ export class MainCamera {
         this.camera.wheelPrecision = 20.0;
         this.camera.attachControl(canvas, true);
         this.camera.checkCollisions = true;
+        this.camera.layerMask = CameraLayerMask.MAIN;
+        //this.camera.viewport = new Viewport(0.0, 0.0, 1.0, 1.0); // TODO: can be removed?
     }
     
     public runBeforeRender() {

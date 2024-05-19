@@ -69,16 +69,7 @@ WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
-import { Entity } from "./Entity";
-import { RenderingGroupId } from "./RenderingGroupId";
-
-export class Unit extends Entity {
-    public radius: number;
-    
-    public constructor(scene: Scene, initialPosition: Vector3, name: string, radius: number) {
-        super(scene, MeshBuilder.CreateBox(name, {size: 0.5}, scene));
-        this.radius = radius;
-        this.mesh.renderingGroupId = RenderingGroupId.MAIN;
-        this.mesh.position = initialPosition;
-    }
+export enum CameraLayerMask {
+	MAIN = 1,
+	MINIMAP = 2,
 }

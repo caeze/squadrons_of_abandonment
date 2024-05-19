@@ -19,7 +19,7 @@ float getAlpha() {
     
     // Calculate the alpha value.
     float ret_val = fow_alpha;
-    for (int i = 0; i < revealersCurrentCount + 2; i++) {
+    for (int i = 0; i < MAX_REVEALERS; i++) { // use revealersCurrentCount + 2 for performance?
         if (ret_val == revealed_alpha) {
             return ret_val;
         }

@@ -70,6 +70,6 @@ WebGPUEngine,
 // ----------- global imports end -----------
 
 export enum RenderingGroupId {
-	EVERYTHING = 3,
+	MAIN = 3,
 	GROUND = 0,
 }

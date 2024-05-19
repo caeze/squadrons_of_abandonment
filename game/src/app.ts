@@ -11,6 +11,8 @@ Rectangle,
 TextBlock,
 } from "@babylonjs/gui/2D";
 import {
+Layer,
+Viewport,
 AbstractMesh,
 ArcRotateCamera,
 ArcRotateCameraPointersInput,
@@ -85,6 +87,8 @@ import { RenderingGroupId } from "./RenderingGroupId";
 import { FogOfWarGround } from "./FogOfWarGround";
 import { Entity } from "./Entity";
 import { Unit } from "./Unit";
+import { CameraLayerMask } from "./CameraLayerMask";
+import { AmbientLight } from "./AmbientLight";
 
 function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string): Unit[] {
     
@@ -144,9 +148,10 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
     skyboxMaterial.specularColor = new Color3(0, 0, 0);
     skybox.material = skyboxMaterial;
+    //skybox.layerMask = CameraLayerMask.MAIN;
     
     let originSphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: 0.1 }, scene);
-    originSphere.renderingGroupId = RenderingGroupId.EVERYTHING;
+    originSphere.renderingGroupId = RenderingGroupId.MAIN;
     
     let xSphere: Mesh = MeshBuilder.CreateSphere("xsphere", { diameter: 0.1 }, scene);
     let xSphereMaterial = new StandardMaterial("mat", scene);
@@ -155,7 +160,8 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     xSphere.material = xSphereMaterial;
     xSphere.position = new Vector3(1, 0, 0);
     xSphere.isPickable = true;
-    xSphere.renderingGroupId = RenderingGroupId.EVERYTHING;
+    xSphere.renderingGroupId = RenderingGroupId.MAIN;
+    xSphere.layerMask = CameraLayerMask.MAIN;
     
     let ySphere: Mesh = MeshBuilder.CreateSphere("ysphere", { diameter: 0.1 }, scene);
     let ySphereMaterial = new StandardMaterial("mat", scene);
@@ -164,7 +170,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     ySphere.material = ySphereMaterial;
     ySphere.position = new Vector3(0, 1, 0);
     ySphere.isPickable = true;
-    ySphere.renderingGroupId = RenderingGroupId.EVERYTHING;
+    ySphere.renderingGroupId = RenderingGroupId.MAIN;
     
     let zSphere: Mesh = MeshBuilder.CreateSphere("zsphere", { diameter: 0.1 }, scene);
     let zSphereMaterial = new StandardMaterial("mat", scene);
@@ -173,7 +179,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     zSphere.material = zSphereMaterial;
     zSphere.position = new Vector3(0, 0, 1);
     zSphere.isPickable = true;
-    zSphere.renderingGroupId = RenderingGroupId.EVERYTHING;
+    zSphere.renderingGroupId = RenderingGroupId.MAIN;
     
     
     
@@ -185,7 +191,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
         scene,
         function(objects: AbstractMesh[]) {
             for(let i=0; i<objects.length; ++i) {
-                objects[i].renderingGroupId = RenderingGroupId.EVERYTHING;
+                objects[i].renderingGroupId = RenderingGroupId.MAIN;
             }
         }
     );*/
@@ -199,7 +205,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
             console.log(objects);
             jupiter = (<Mesh> objects[1]);
             for(let i=0; i<objects.length; ++i) {
-                objects[i].renderingGroupId = RenderingGroupId.EVERYTHING;
+                objects[i].renderingGroupId = RenderingGroupId.MAIN;
             }
         }
     );*/
@@ -220,7 +226,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     );
     importPromise.then((result: any) => {
         highlightLayer.addMesh(result.meshes[1], Color3.Blue());
-        result.meshes[1].renderingGroupId = RenderingGroupId.EVERYTHING;
+        result.meshes[1].renderingGroupId = RenderingGroupId.MAIN;
     });
     
     const importPromiseFlag = SceneLoader.ImportMeshAsync(
@@ -232,13 +238,13 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     importPromiseFlag.then((result: any) => {
         console.log(result);
         for(let i = 0; i < result.meshes.length; i++) {
-            result.meshes[i].renderingGroupId = RenderingGroupId.EVERYTHING;
+            result.meshes[i].renderingGroupId = RenderingGroupId.MAIN;
             //result.meshes[i].scaling.x = 0.25;
             //result.meshes[i].scaling.y = 0.25;
             //result.meshes[i].scaling.z = 0.25;
         }
         //highlightLayer.addMesh(result.meshes[1], Color3.Blue());
-        //result.meshes[1].renderingGroupId = RenderingGroupId.EVERYTHING;
+        //result.meshes[1].renderingGroupId = RenderingGroupId.MAIN;
     });*/
     
     return units;
@@ -279,41 +285,43 @@ class SquadronsOfAbandonement {
         let engine = new Engine(canvas, true);
         let scene = new Scene(engine);
     
+        let ambientLight = new AmbientLight(scene);
         let gui = new Gui();
         gui.createGui(currentUrl);
         let mouseSelectionBox = new MouseSelectionBox();
         mouseSelectionBox.createMouseSelectionBox(scene, gui.getGui());
         
-        
         let mainCamera = new MainCamera(canvas, scene);
-        let camera = mainCamera.camera;
         scene.registerBeforeRender(() => {
             mainCamera.runBeforeRender();
         });
+        let minimap = new Minimap(scene, mainCamera.camera, engine, currentUrl);
+        scene.activeCameras = [];
+        scene.activeCameras.push(mainCamera.camera);
+        scene.activeCameras.push(minimap.minimapCamera);
+
         
-        let pipeline = new RenderingPipeline(scene, camera);
+        let pipeline = new RenderingPipeline(scene, mainCamera.camera);
         
-        let revealers = populateScene(canvas, engine, scene, camera, currentUrl);
+        let revealers = populateScene(canvas, engine, scene, mainCamera.camera, currentUrl);
 
         let keyboardInputManager = new KeyboardInputManager(scene);
-        //let minimap = new Minimap(scene, camera, engine);
         let spaceshipTrailParent = MeshBuilder.CreateSphere("sphere", {diameter: 0.1}, scene);
-        let spaceshipTrail = new SpaceshipTrail("spaceshipTrail0", spaceshipTrailParent, scene, camera, 0.1);
+        let spaceshipTrail = new SpaceshipTrail("spaceshipTrail0", spaceshipTrailParent, scene, mainCamera.camera, 0.1);
         let spaceshipTrailShaderMaterial = new ShaderMaterial(
             "spaceshipTrailShaderMaterial",
             scene,
-            currentUrl + "/assets/shaders/spaceshipTrail", // searches for spaceshipTrail.vertex.fx and spaceshipTrail.fragment.fx
+            currentUrl + "/assets/shaders/solidColor", // searches for solidColor.vertex.fx and solidColor.fragment.fx
             {
                 attributes: ["position"],
                 uniforms: ["worldViewProjection", "color"],
-                defines: ["#define MAX_REVEALERS " + 2],
             }
         );
         spaceshipTrailShaderMaterial.setFloats("color", [0.5, 0.0, 0.0, 0.5]);
         spaceshipTrailShaderMaterial.forceDepthWrite = true;
         spaceshipTrailShaderMaterial.transparencyMode = Material.MATERIAL_ALPHABLEND;
         spaceshipTrailShaderMaterial.alpha = 0.0;
-        spaceshipTrail.renderingGroupId = RenderingGroupId.EVERYTHING;
+        spaceshipTrail.renderingGroupId = RenderingGroupId.MAIN;
         spaceshipTrail.alphaIndex = 1;
         spaceshipTrail.material = spaceshipTrailShaderMaterial;
     
@@ -369,9 +377,9 @@ class SquadronsOfAbandonement {
         engine.runRenderLoop(() => {
             // here all updating stuff must be updated
 
-            let displacement = 0.025 * camera.radius;
-            let cameraPosition = camera.position;
-            let cameraTarget = camera.getTarget();
+            let displacement = 0.025 * mainCamera.camera.radius;
+            let cameraPosition = mainCamera.camera.position;
+            let cameraTarget = mainCamera.camera.getTarget();
             let displacementX = 0.0;
             let displacementZ = 0.0;
             if (keyboardInputManager.isPressed("KeyW")) {
@@ -386,7 +394,7 @@ class SquadronsOfAbandonement {
             if (keyboardInputManager.isPressed("KeyD")) {
                 displacementX += displacement;
             }
-            let cameraAngleDegrees = Tools.ToDegrees(camera.alpha) % 360.0 + 90.0;
+            let cameraAngleDegrees = Tools.ToDegrees(mainCamera.camera.alpha) % 360.0 + 90.0;
             while (cameraAngleDegrees < 0.0) {
                 cameraAngleDegrees += 360.0;
             }
@@ -397,8 +405,8 @@ class SquadronsOfAbandonement {
             displacementX = displacementVec2.x;
             displacementZ = displacementVec2.y;
             
-            camera.position = new Vector3(cameraPosition.x + displacementX, cameraPosition.y, cameraPosition.z + displacementZ);
-            camera.setTarget(new Vector3(cameraTarget.x + displacementX, cameraTarget.y, cameraTarget.z + displacementZ));
+            mainCamera.camera.position = new Vector3(cameraPosition.x + displacementX, cameraPosition.y, cameraPosition.z + displacementZ);
+            mainCamera.camera.setTarget(new Vector3(cameraTarget.x + displacementX, cameraTarget.y, cameraTarget.z + displacementZ));
             
             scene.render();
         });

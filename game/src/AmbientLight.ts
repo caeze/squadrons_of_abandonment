@@ -65,20 +65,14 @@ Vector4,
 VertexBuffer,
 VertexData,
 VolumetricLightScatteringPostProcess,
-WebGPUEngine,
+WebGPUEngine,Viewport,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
-import { Entity } from "./Entity";
-import { RenderingGroupId } from "./RenderingGroupId";
-
-export class Unit extends Entity {
-    public radius: number;
-    
-    public constructor(scene: Scene, initialPosition: Vector3, name: string, radius: number) {
-        super(scene, MeshBuilder.CreateBox(name, {size: 0.5}, scene));
-        this.radius = radius;
-        this.mesh.renderingGroupId = RenderingGroupId.MAIN;
-        this.mesh.position = initialPosition;
+export class AmbientLight {
+    public constructor(scene: Scene, intensity: number = 0.5) {
+        let hemisphericLight = new HemisphericLight("hemisphericLight", new Vector3(-3000, -3000, -3000), scene);
+        hemisphericLight.intensity = intensity;
+        hemisphericLight.range = 100000.0;
     }
 }

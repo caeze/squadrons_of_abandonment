@@ -69,6 +69,8 @@ WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
+import { CameraLayerMask } from "./CameraLayerMask";
+
 export class Sun {
     public constructor(scene: Scene, camera: Camera, engine: Engine, currentUrl: string) {
         // Emitter object
@@ -91,14 +93,12 @@ export class Sun {
         let sunSizeFactor = 1000.0;
         let coreSphere = MeshBuilder.CreateSphere("coreSphere", {diameter: 2.0001 * sunSizeFactor, segments: 64}, scene);
         coreSphere.position = new Vector3(-3 * sunSizeFactor, -3 * sunSizeFactor, 3 * sunSizeFactor);
+        coreSphere.layerMask = CameraLayerMask.MAIN;
 
 
         let sunLight = new DirectionalLight("sunLight", new Vector3(-coreSphere.position.x, -coreSphere.position.y, -coreSphere.position.z), scene);
         sunLight.intensity = 10.0;
         //sunLight.range = 100000.0;
-        const hemisphericLight = new HemisphericLight("hemisphericLight", new Vector3(-coreSphere.position.x, -coreSphere.position.y, -coreSphere.position.z), scene);
-        hemisphericLight.intensity = 0.1;
-        hemisphericLight.range = 100000.0;
 
         //Create core material
         let coreMat = new StandardMaterial("coreMat", scene);

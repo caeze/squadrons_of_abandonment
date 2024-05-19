@@ -64,31 +64,39 @@ Vector3,
 Vector4,
 VertexBuffer,
 VertexData,
+Viewport,
 VolumetricLightScatteringPostProcess,
 WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
+import { RenderingGroupId } from "./RenderingGroupId";
+import { CameraLayerMask } from "./CameraLayerMask";
+
 export class Minimap {
-    public constructor(scene: Scene, camera: Camera, engine: Engine) {
+    public minimapCamera: UniversalCamera;
+
+    public constructor(scene: Scene, camera: Camera, engine: Engine, currentUrl: string) {
         /*
         
-        let cameraMinimap: ArcRotateCamera = new ArcRotateCamera("MinimapCamera", 0, 0, 1, Vector3.Zero(), scene);
-        cameraMinimap.position = new Vector3(0, 50, 0);
-        cameraMinimap.layerMask = 2;
-        //cameraMinimap.mode = Camera.ORTHOGRAPHIC_CAMERA;
-        // cameraMinimap.viewport = new Viewport(0.0, 0.4, 1.0, 0.2);
+        let this.minimapCamera: ArcRotateCamera = new ArcRotateCamera("MinimapCamera", 0, 0, 1, Vector3.Zero(), scene);
+        this.minimapCamera.position = new Vector3(0, 50, 0);
+        this.minimapCamera.layerMask = 2;
+        //this.minimapCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+        // this.minimapCamera.viewport = new Viewport(0.0, 0.4, 1.0, 0.2);
         */
-        let cameraMinimap = new UniversalCamera("cameraMinimap", new Vector3(0, 20, 0), scene);
-        cameraMinimap.mode = Camera.ORTHOGRAPHIC_CAMERA;
-        cameraMinimap.minZ = 0.1;
-        cameraMinimap.setTarget(Vector3.Zero());
-        // cameraMinimap.rotation = new Vector3(Math.PI/2,0,0);
-        let cameraMinimapViewport = 300;
-        cameraMinimap.orthoTop = -cameraMinimapViewport;
-        cameraMinimap.orthoBottom = cameraMinimapViewport;
-        cameraMinimap.orthoLeft = cameraMinimapViewport;
-        cameraMinimap.orthoRight = -cameraMinimapViewport;
+        this.minimapCamera = new UniversalCamera("minimapCamera", new Vector3(0, 20, 0), scene);
+        this.minimapCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+        this.minimapCamera.minZ = 0.1;
+        this.minimapCamera.setTarget(Vector3.Zero());
+        // this.minimapCamera.rotation = new Vector3(Math.PI/2,0,0);
+        let minimapCameraViewport = 300;
+        this.minimapCamera.orthoTop = -minimapCameraViewport;
+        this.minimapCamera.orthoBottom = minimapCameraViewport;
+        this.minimapCamera.orthoLeft = minimapCameraViewport;
+        this.minimapCamera.orthoRight = -minimapCameraViewport;
+        this.minimapCamera.layerMask = CameraLayerMask.MINIMAP;
+        this.minimapCamera.viewport = new Viewport(0.0, 0.0, 0.2, 0.2);
         
         
 
@@ -99,11 +107,34 @@ export class Minimap {
         plane.position.set(planeSize / 2, planeSize / 2, 0);
         plane.bakeCurrentTransformIntoVertices();
         plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
-        plane.renderingGroupId = 3;
+        plane.renderingGroupId = RenderingGroupId.MAIN;
+        
+        let bbb = MeshBuilder.CreateBox("bbb", {size: 20}, scene);
+        bbb.layerMask = CameraLayerMask.MINIMAP;
+        //bbb.diffuseColor = new Color3(1, 1, 1);
+        bbb.renderingGroupId = RenderingGroupId.MAIN;
+        bbb.position = new Vector3(0.0, 0.0, 0.0);
+        //bbb.isVisible = false;
+        let bbbShaderMaterial = new ShaderMaterial(
+            "bbbShaderMaterial",
+            scene,
+            currentUrl + "/assets/shaders/solidColor", // searches for solidColor.vertex.fx and solidColor.fragment.fx
+            {
+                attributes: ["position"],
+                uniforms: ["worldViewProjection", "color"],
+            }
+        );
+        bbbShaderMaterial.setFloats("color", [1.0, 1.0, 1.0, 1.0]);
+        bbbShaderMaterial.forceDepthWrite = true;
+        bbbShaderMaterial.transparencyMode = Material.MATERIAL_ALPHABLEND;
+        bbbShaderMaterial.alpha = 0.0;
+        bbb.renderingGroupId = RenderingGroupId.MAIN;
+        bbb.alphaIndex = 1;
+        bbb.material = bbbShaderMaterial;
 
         const rt_texture = new RenderTargetTexture("minimap_rtt", 1024, scene);
-        rt_texture.activeCamera = cameraMinimap;
-        rt_texture.renderList = scene.meshes;
+        rt_texture.activeCamera = this.minimapCamera;
+        rt_texture.renderList = [bbb];
         scene.customRenderTargets.push(rt_texture);
 
         let mon2mat = new StandardMaterial("minimap_texturePlane", scene);
@@ -133,7 +164,7 @@ export class Minimap {
         let minimapRenderTargetTexture = new RenderTargetTexture("minimapRenderTargetTexture", 1024, scene, false, false);
         //minimapRenderTargetTexture.coordinatesMode = RenderTargetTexture.EQUIRECTANGULAR_MODE;
         scene.customRenderTargets.push(minimapRenderTargetTexture);
-        minimapRenderTargetTexture.activeCamera = cameraMinimap;
+        minimapRenderTargetTexture.activeCamera = this.minimapCamera;
         minimapRenderTargetTexture.renderList = [sphereMinimap];
         let minimapPlane = Mesh.CreatePlane("minimapPlane", 4, scene);
         minimapPlane.renderingGroupId = 2;
