@@ -69,6 +69,7 @@ WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
+import { RenderingGroupId } from "./RenderingGroupId";
 import { CameraLayerMask } from "./CameraLayerMask";
 
 export class Sun {
@@ -93,8 +94,6 @@ export class Sun {
         let sunSizeFactor = 1000.0;
         let coreSphere = MeshBuilder.CreateSphere("coreSphere", {diameter: 2.0001 * sunSizeFactor, segments: 64}, scene);
         coreSphere.position = new Vector3(-3 * sunSizeFactor, -3 * sunSizeFactor, 3 * sunSizeFactor);
-        coreSphere.layerMask = CameraLayerMask.MAIN;
-
 
         let sunLight = new DirectionalLight("sunLight", new Vector3(-coreSphere.position.x, -coreSphere.position.y, -coreSphere.position.z), scene);
         sunLight.intensity = 10.0;
@@ -224,10 +223,14 @@ export class Sun {
         glareParticles.isBillboardBased = true;
 
         // Render Order
-        glareParticles.renderingGroupId = 2;
-        surfaceParticles.renderingGroupId = 2;
-        coreSphere.renderingGroupId = 2;
-        flareParticles.renderingGroupId = 2;
+        glareParticles.renderingGroupId = RenderingGroupId.MAIN;
+        surfaceParticles.renderingGroupId = RenderingGroupId.MAIN;
+        coreSphere.renderingGroupId = RenderingGroupId.MAIN;
+        flareParticles.renderingGroupId = RenderingGroupId.MAIN;
+        glareParticles.layerMask = CameraLayerMask.MAIN;
+        surfaceParticles.layerMask = CameraLayerMask.MAIN;
+        coreSphere.layerMask = CameraLayerMask.MAIN;
+        flareParticles.layerMask = CameraLayerMask.MAIN;
 
         let godrays = new VolumetricLightScatteringPostProcess('godrays', 1.0, camera, coreSphere, 100, Texture.BILINEAR_SAMPLINGMODE, engine, false);
 

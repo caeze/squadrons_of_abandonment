@@ -89,6 +89,7 @@ import { Entity } from "./Entity";
 import { Unit } from "./Unit";
 import { CameraLayerMask } from "./CameraLayerMask";
 import { AmbientLight } from "./AmbientLight";
+import { Skybox } from "./Skybox";
 
 function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string): Unit[] {
     
@@ -97,7 +98,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     const initialPositions = [new Vector3(2, 0, 2), new Vector3(-1, 0, -1)];
     let units = new Array<Unit>;
     for(let i = 0; i < initialPositions.length; ++i) {
-        let unit = new Unit(scene, initialPositions[i], "box" + i, 5.0);
+        let unit = new Unit(scene, initialPositions[i], "box" + i, 5.0, currentUrl);
         units.push(unit);
     }
     scene.registerBeforeRender(() => {
@@ -140,18 +141,10 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     
 
     
-    const skybox = MeshBuilder.CreateBox("skyBox", { size: 10000.0 }, scene);
-    const skyboxMaterial = new StandardMaterial("skyBox", scene);
-    skyboxMaterial.backFaceCulling = false;
-    skyboxMaterial.reflectionTexture = new CubeTexture(currentUrl + "/assets/img/skybox/skybox", scene);
-    skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-    skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
-    skyboxMaterial.specularColor = new Color3(0, 0, 0);
-    skybox.material = skyboxMaterial;
-    //skybox.layerMask = CameraLayerMask.MAIN;
     
     let originSphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: 0.1 }, scene);
     originSphere.renderingGroupId = RenderingGroupId.MAIN;
+    originSphere.layerMask = CameraLayerMask.MAIN;
     
     let xSphere: Mesh = MeshBuilder.CreateSphere("xsphere", { diameter: 0.1 }, scene);
     let xSphereMaterial = new StandardMaterial("mat", scene);
@@ -171,6 +164,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     ySphere.position = new Vector3(0, 1, 0);
     ySphere.isPickable = true;
     ySphere.renderingGroupId = RenderingGroupId.MAIN;
+    ySphere.layerMask = CameraLayerMask.MAIN;
     
     let zSphere: Mesh = MeshBuilder.CreateSphere("zsphere", { diameter: 0.1 }, scene);
     let zSphereMaterial = new StandardMaterial("mat", scene);
@@ -180,6 +174,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
     zSphere.position = new Vector3(0, 0, 1);
     zSphere.isPickable = true;
     zSphere.renderingGroupId = RenderingGroupId.MAIN;
+    zSphere.layerMask = CameraLayerMask.MAIN;
     
     
     
@@ -252,6 +247,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
 
 class SquadronsOfAbandonement {
     public constructor() {
+        let mapSidelength = 1000.0;
         let currentUrl = window.location.href;
         
         let loadingScreenDiv = document.getElementById("loadingScreenDiv");
@@ -285,6 +281,7 @@ class SquadronsOfAbandonement {
         let engine = new Engine(canvas, true);
         let scene = new Scene(engine);
     
+        let skybox = new Skybox(scene, currentUrl);
         let ambientLight = new AmbientLight(scene);
         let gui = new Gui();
         gui.createGui(currentUrl);
@@ -295,10 +292,16 @@ class SquadronsOfAbandonement {
         scene.registerBeforeRender(() => {
             mainCamera.runBeforeRender();
         });
-        let minimap = new Minimap(scene, mainCamera.camera, engine, currentUrl);
+        let minimap = new Minimap(scene, mainCamera.camera, engine, currentUrl, mapSidelength);
         scene.activeCameras = [];
         scene.activeCameras.push(mainCamera.camera);
         scene.activeCameras.push(minimap.minimapCamera);
+    
+        
+        let fogOfWarGround = new FogOfWarGround(scene, currentUrl, 128, mapSidelength);
+        scene.registerBeforeRender(() => {
+            fogOfWarGround.updateRevealerPositions(revealers);
+        });
 
         
         let pipeline = new RenderingPipeline(scene, mainCamera.camera);
@@ -306,6 +309,9 @@ class SquadronsOfAbandonement {
         let revealers = populateScene(canvas, engine, scene, mainCamera.camera, currentUrl);
 
         let keyboardInputManager = new KeyboardInputManager(scene);
+        keyboardInputManager.registerCallback("KeyF", "launchFullscreenCaller", this.nop, this.launchFullscreen, null);
+        keyboardInputManager.registerCallback("KeyI", "toggleDebugLayerCaller", this.nop, this.toggleDebugLayer, scene);
+        
         let spaceshipTrailParent = MeshBuilder.CreateSphere("sphere", {diameter: 0.1}, scene);
         let spaceshipTrail = new SpaceshipTrail("spaceshipTrail0", spaceshipTrailParent, scene, mainCamera.camera, 0.1);
         let spaceshipTrailShaderMaterial = new ShaderMaterial(
@@ -322,24 +328,9 @@ class SquadronsOfAbandonement {
         spaceshipTrailShaderMaterial.transparencyMode = Material.MATERIAL_ALPHABLEND;
         spaceshipTrailShaderMaterial.alpha = 0.0;
         spaceshipTrail.renderingGroupId = RenderingGroupId.MAIN;
+        spaceshipTrail.layerMask = CameraLayerMask.MAIN;
         spaceshipTrail.alphaIndex = 1;
         spaceshipTrail.material = spaceshipTrailShaderMaterial;
-    
-        
-        let fogOfWarGround = new FogOfWarGround(scene, currentUrl, 128);
-        scene.registerBeforeRender(() => {
-            fogOfWarGround.updateRevealerPositions(revealers);
-        });
-        
-        
-        /*let material = new StandardMaterial(
-            "material",
-            scene
-        );
-        //material.specularColor.copyFromFloats(0.2, 0.2, 0.2);
-        //material.diffuseColor.copyFromFloats(0.9, 0.9, 0.9);
-        material.disableLighting = true;
-        material.emissiveTexture = new Texture('https://i.ibb.co/FYywNM9/light-Mat-Emissive.png' , scene);*/
         let k = 0;
         let p = [
             Math.random() * 180 + 20,
@@ -370,9 +361,9 @@ class SquadronsOfAbandonement {
         window.addEventListener("resize", function() {
             canvas.style.width = window.innerWidth + "px";
             canvas.style.height = window.innerHeight + "px";
+            minimap.resize(window.innerWidth, window.innerHeight);
             engine.resize();
         });
-        
         
         engine.runRenderLoop(() => {
             // here all updating stuff must be updated
@@ -410,9 +401,6 @@ class SquadronsOfAbandonement {
             
             scene.render();
         });
-        
-        keyboardInputManager.registerCallback("KeyF", "launchFullscreenCaller", this.nop, this.launchFullscreen, null);
-        keyboardInputManager.registerCallback("KeyI", "toggleDebugLayerCaller", this.nop, this.toggleDebugLayer, scene);
     }
     
     private launchFullscreen(data: any) {

@@ -76,7 +76,7 @@ export class SpaceshipTrail extends Mesh {
 	private _length: number;
     private _points: Vector3[] = [];
 
-	constructor(name: string, generator: Mesh, scene: Scene, mainCamera: Camera, radius: number = 1, length: number = 60) {
+	public constructor(name: string, generator: Mesh, scene: Scene, mainCamera: Camera, radius: number = 1, length: number = 60) {
 		super(name, scene);
 		this.layerMask = 1;
 		this._generator = generator;

@@ -69,8 +69,20 @@ WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
-export enum RenderingGroupId {
-    SKYBOX = 0,
-	GROUND = 1,
-	MAIN = 2,
+import { RenderingGroupId } from "./RenderingGroupId";
+import { CameraLayerMask } from "./CameraLayerMask";
+
+export class Skybox {
+	public constructor(scene: Scene, currentUrl: string) {
+        let skybox = MeshBuilder.CreateBox("skyBox", { size: 10000.0 }, scene);
+        let skyboxMaterial = new StandardMaterial("skyBoxStandardMaterial", scene);
+        skyboxMaterial.backFaceCulling = false;
+        skyboxMaterial.reflectionTexture = new CubeTexture(currentUrl + "/assets/img/skybox/skybox", scene);
+        skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+        skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
+        skyboxMaterial.specularColor = new Color3(0, 0, 0);
+        skybox.material = skyboxMaterial;
+        skybox.renderingGroupId = RenderingGroupId.SKYBOX;
+        skybox.layerMask = CameraLayerMask.MAIN;
+	}
 }

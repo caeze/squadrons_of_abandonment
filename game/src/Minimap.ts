@@ -26,7 +26,7 @@ DefaultLoadingScreen,
 DefaultRenderingPipeline,
 DepthOfFieldEffectBlurLevel,
 DirectionalLight,
-Effect,
+Effect,Layer,
 Engine,
 FreeCamera,
 HemisphericLight,
@@ -76,63 +76,43 @@ import { CameraLayerMask } from "./CameraLayerMask";
 export class Minimap {
     public minimapCamera: UniversalCamera;
 
-    public constructor(scene: Scene, camera: Camera, engine: Engine, currentUrl: string) {
-        /*
-        
-        let this.minimapCamera: ArcRotateCamera = new ArcRotateCamera("MinimapCamera", 0, 0, 1, Vector3.Zero(), scene);
-        this.minimapCamera.position = new Vector3(0, 50, 0);
-        this.minimapCamera.layerMask = 2;
-        //this.minimapCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
-        // this.minimapCamera.viewport = new Viewport(0.0, 0.4, 1.0, 0.2);
-        */
+    public constructor(scene: Scene, camera: Camera, engine: Engine, currentUrl: string, mapSidelength: number) {
         this.minimapCamera = new UniversalCamera("minimapCamera", new Vector3(0, 20, 0), scene);
         this.minimapCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
         this.minimapCamera.minZ = 0.1;
         this.minimapCamera.setTarget(Vector3.Zero());
-        // this.minimapCamera.rotation = new Vector3(Math.PI/2,0,0);
-        let minimapCameraViewport = 300;
+        let minimapCameraViewportMarginFactor = 1.05;
+        let minimapCameraViewport = mapSidelength / 2.0 * minimapCameraViewportMarginFactor;
         this.minimapCamera.orthoTop = -minimapCameraViewport;
         this.minimapCamera.orthoBottom = minimapCameraViewport;
         this.minimapCamera.orthoLeft = minimapCameraViewport;
         this.minimapCamera.orthoRight = -minimapCameraViewport;
         this.minimapCamera.layerMask = CameraLayerMask.MINIMAP;
-        this.minimapCamera.viewport = new Viewport(0.0, 0.0, 0.2, 0.2);
-        
+        this.resize(window.innerWidth, window.innerHeight);
+        let minimapBackgroundLayer = new Layer("minimapBackgroundLayer", currentUrl + "/assets/img/minimapBackground.png", scene, true);
+        minimapBackgroundLayer.layerMask = CameraLayerMask.MINIMAP;
+    }
+    
+    
+    public resize(windowInnerWidthPx: number, windowInnerHeightPx: number) {
+        let targetWidthPx = 300;
+        let targetHeightPx = 300;
+        this.minimapCamera.viewport = new Viewport(0.0, 0.0, targetWidthPx / windowInnerWidthPx, targetHeightPx / windowInnerHeightPx);
+    }
         
 
-        const planeSize = 0.5;
+        /*const planeSize = 0.5;
         let plane = MeshBuilder.CreatePlane("plane", { size: planeSize }, scene);
         //plane.position.z = 1.001
         //plane.parent = camera;
         plane.position.set(planeSize / 2, planeSize / 2, 0);
         plane.bakeCurrentTransformIntoVertices();
         plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
-        plane.renderingGroupId = RenderingGroupId.MAIN;
+        plane.renderingGroupId = RenderingGroupId.MAIN;*/
         
-        let bbb = MeshBuilder.CreateBox("bbb", {size: 20}, scene);
-        bbb.layerMask = CameraLayerMask.MINIMAP;
-        //bbb.diffuseColor = new Color3(1, 1, 1);
-        bbb.renderingGroupId = RenderingGroupId.MAIN;
-        bbb.position = new Vector3(0.0, 0.0, 0.0);
-        //bbb.isVisible = false;
-        let bbbShaderMaterial = new ShaderMaterial(
-            "bbbShaderMaterial",
-            scene,
-            currentUrl + "/assets/shaders/solidColor", // searches for solidColor.vertex.fx and solidColor.fragment.fx
-            {
-                attributes: ["position"],
-                uniforms: ["worldViewProjection", "color"],
-            }
-        );
-        bbbShaderMaterial.setFloats("color", [1.0, 1.0, 1.0, 1.0]);
-        bbbShaderMaterial.forceDepthWrite = true;
-        bbbShaderMaterial.transparencyMode = Material.MATERIAL_ALPHABLEND;
-        bbbShaderMaterial.alpha = 0.0;
-        bbb.renderingGroupId = RenderingGroupId.MAIN;
-        bbb.alphaIndex = 1;
-        bbb.material = bbbShaderMaterial;
+        
 
-        const rt_texture = new RenderTargetTexture("minimap_rtt", 1024, scene);
+        /*const rt_texture = new RenderTargetTexture("minimap_rtt", 1024, scene);
         rt_texture.activeCamera = this.minimapCamera;
         rt_texture.renderList = [bbb];
         scene.customRenderTargets.push(rt_texture);
@@ -150,7 +130,7 @@ export class Minimap {
             let  invertCameraViewProj = Matrix.Invert(camera.getTransformationMatrix());
             let  screenWidth = scene.getEngine().getRenderWidth(true);
             this.setPositionTop(false, plane, 100, 0, invertCameraViewProj, screenWidth)
-        });
+        });*/
         
         /*let sphereMinimap = MeshBuilder.CreateSphere("sphereMinimap", { diameter: 5.0 }, scene);
         sphereMinimap.position = new Vector3(0, 15, 0);
@@ -221,9 +201,9 @@ export class Minimap {
         // minimapPlane.enableEdgesRendering(epsilon);	 
         minimapPlane.edgesWidth = 5.0;
         minimapPlane.edgesColor = new Color4(1, 1, 1, 1);*/
-    }
+    //}
     
-    private setPositionTop(fromLeft: any, mesh: any, meshWidthInPixels: any, spacingWithBorderInPixels: any, invertCameraViewProj: any, screenWidth: any) {
+    /*private setPositionTop(fromLeft: any, mesh: any, meshWidthInPixels: any, spacingWithBorderInPixels: any, invertCameraViewProj: any, screenWidth: any) {
         //spacing from the edges of the screen (left, right)
         let spacingWithBorder = spacingWithBorderInPixels / screenWidth;
         //width of the meshes relative to screen
@@ -247,5 +227,5 @@ export class Minimap {
         p.x = pOfst;
         //set position 
         mesh.position = Vector3.TransformCoordinates(p, invertCameraViewProj);
-    }
+    }*/
 }

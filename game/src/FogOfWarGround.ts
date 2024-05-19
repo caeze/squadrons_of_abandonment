@@ -70,13 +70,13 @@ WebGPUEngine,
 // ----------- global imports end -----------
 
 import { RenderingGroupId } from "./RenderingGroupId";
+import { CameraLayerMask } from "./CameraLayerMask";
 import { Unit } from "./Unit";
 
 export class FogOfWarGround {
 	private _groundShaderMaterial: ShaderMaterial;
     
-    public constructor(scene: Scene, currentUrl: string, maxRevealers: number) {
-        let mapSidelength = 1000.0;
+    public constructor(scene: Scene, currentUrl: string, maxRevealers: number, mapSidelength: number) {
         let ground = MeshBuilder.CreatePlane("ground", {size: mapSidelength});
         this._groundShaderMaterial = new ShaderMaterial(
             "fowShaderMaterial",
@@ -101,6 +101,7 @@ export class FogOfWarGround {
             }
         );
         ground.renderingGroupId = RenderingGroupId.GROUND;
+        ground.layerMask = CameraLayerMask.MAIN;
         ground.alphaIndex = 1;
         ground.rotation = new Vector3(Math.PI / 2, 0, 0);
         ground.material = this._groundShaderMaterial;
