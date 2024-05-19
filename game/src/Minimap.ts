@@ -1,20 +1,22 @@
+// ------------- global imports -------------
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { UniversalCamera, Matrix, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
+import { TextBlock, Control, Container, Rectangle, AdvancedDynamicTexture, Button } from "@babylonjs/gui/2D";
+import { DepthOfFieldEffectBlurLevel, DefaultRenderingPipeline, Material, DefaultLoadingScreen, Quaternion, Tools, WebGPUEngine, Matrix, HighlightLayer, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
+// ----------- global imports end -----------
 
 export class Minimap {
     public createMinimap(scene: Scene, camera: Camera, engine: Engine) {
         /*
         
-        var cameraMinimap: ArcRotateCamera = new ArcRotateCamera("MinimapCamera", 0, 0, 1, Vector3.Zero(), scene);
+        let cameraMinimap: ArcRotateCamera = new ArcRotateCamera("MinimapCamera", 0, 0, 1, Vector3.Zero(), scene);
         cameraMinimap.position = new Vector3(0, 50, 0);
         cameraMinimap.layerMask = 2;
         //cameraMinimap.mode = Camera.ORTHOGRAPHIC_CAMERA;
         // cameraMinimap.viewport = new Viewport(0.0, 0.4, 1.0, 0.2);
         */
-        var cameraMinimap = new UniversalCamera("cameraMinimap", new Vector3(0, 20, 0), scene);
+        let cameraMinimap = new UniversalCamera("cameraMinimap", new Vector3(0, 20, 0), scene);
         cameraMinimap.mode = Camera.ORTHOGRAPHIC_CAMERA;
         cameraMinimap.minZ = 0.1;
         cameraMinimap.setTarget(Vector3.Zero());
@@ -28,7 +30,7 @@ export class Minimap {
         
 
         const planeSize = 0.5;
-        var plane = MeshBuilder.CreatePlane("plane", { size: planeSize }, scene);
+        let plane = MeshBuilder.CreatePlane("plane", { size: planeSize }, scene);
         //plane.position.z = 1.001
         //plane.parent = camera;
         plane.position.set(planeSize / 2, planeSize / 2, 0);
@@ -41,7 +43,7 @@ export class Minimap {
         rt_texture.renderList = scene.meshes;
         scene.customRenderTargets.push(rt_texture);
 
-        var mon2mat = new StandardMaterial("minimap_texturePlane", scene);
+        let mon2mat = new StandardMaterial("minimap_texturePlane", scene);
         mon2mat.diffuseColor = new Color3(1, 1, 1);
         mon2mat.diffuseTexture = rt_texture;
         mon2mat.specularColor = Color3.Black();
@@ -56,25 +58,25 @@ export class Minimap {
             this.setPositionTop(false, plane, 100, 0, invertCameraViewProj, screenWidth)
         });
         
-        /*var sphereMinimap = MeshBuilder.CreateSphere("sphereMinimap", { diameter: 5.0 }, scene);
+        /*let sphereMinimap = MeshBuilder.CreateSphere("sphereMinimap", { diameter: 5.0 }, scene);
         sphereMinimap.position = new Vector3(0, 15, 0);
         sphereMinimap.layerMask = 2;
-        var materialSphereMinimap = new StandardMaterial("textureSphereMinimap", scene);
+        let materialSphereMinimap = new StandardMaterial("textureSphereMinimap", scene);
         materialSphereMinimap.alpha = 1;
         materialSphereMinimap.diffuseColor = new Color3(0, 0, 1);
         sphereMinimap.material = materialSphereMinimap;
         
 
-        var minimapRenderTargetTexture = new RenderTargetTexture("minimapRenderTargetTexture", 1024, scene, false, false);
+        let minimapRenderTargetTexture = new RenderTargetTexture("minimapRenderTargetTexture", 1024, scene, false, false);
         //minimapRenderTargetTexture.coordinatesMode = RenderTargetTexture.EQUIRECTANGULAR_MODE;
         scene.customRenderTargets.push(minimapRenderTargetTexture);
         minimapRenderTargetTexture.activeCamera = cameraMinimap;
         minimapRenderTargetTexture.renderList = [sphereMinimap];
-        var minimapPlane = Mesh.CreatePlane("minimapPlane", 4, scene);
+        let minimapPlane = Mesh.CreatePlane("minimapPlane", 4, scene);
         minimapPlane.renderingGroupId = 2;
         minimapPlane.showBoundingBox = false;
         //minimapPlane.scaling = new Vector3(window.innerWidth / window.innerHeight, 1, 1);
-        var minimapPlaneMaterial = new StandardMaterial("minimapPlaneMaterial", scene);
+        let minimapPlaneMaterial = new StandardMaterial("minimapPlaneMaterial", scene);
         //minimapPlaneMaterial.diffuseColor = new Color3(1,1,1);
         minimapPlaneMaterial.diffuseTexture = minimapRenderTargetTexture;
         minimapPlaneMaterial.specularColor = Color3.Black();
@@ -92,11 +94,11 @@ export class Minimap {
             minimapPlane.position.x = -3;
             minimapPlane.position.y = -3;
             minimapPlane.position.z = 10; * / 
-            var ray = scene.createPickingRay(0, 0, Matrix.Identity(), camera, false);
-            var rayOrigin = ray.origin;
-            var rayDirection = ray.direction;
+            let ray = scene.createPickingRay(0, 0, Matrix.Identity(), camera, false);
+            let rayOrigin = ray.origin;
+            let rayDirection = ray.direction;
             rayDirection.normalize();
-            var minimapPlanePosition = rayDirection.scaleAndAddToRef(10, rayOrigin);
+            let minimapPlanePosition = rayDirection.scaleAndAddToRef(10, rayOrigin);
             console.log(camera.position);
             minimapPlane.position.x = minimapPlanePosition.x;
             minimapPlane.position.y = minimapPlanePosition.y;
@@ -147,7 +149,7 @@ export class Minimap {
         let d = qt.subtract(pt).length() * scalingFactor;
         //scale the mesh to the proper size relative to screen
         mesh.scaling = new Vector3(d, d, d);
-        //offset the x value of the p vector depending on "fromLeft" variable (calculated above -> pOfst)
+        //offset the x value of the p vector depending on "fromLeft" letiable (calculated above -> pOfst)
         p.x = pOfst;
         //set position 
         mesh.position = Vector3.TransformCoordinates(p, invertCameraViewProj);

@@ -1,13 +1,15 @@
+// ------------- global imports -------------
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { ColorCurves, DefaultRenderingPipeline, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
+import { TextBlock, Control, Container, Rectangle, AdvancedDynamicTexture, Button } from "@babylonjs/gui/2D";
+import { DepthOfFieldEffectBlurLevel, DefaultRenderingPipeline, Material, DefaultLoadingScreen, Quaternion, Tools, WebGPUEngine, Matrix, HighlightLayer, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
+// ----------- global imports end -----------
 
 export class RenderingPipeline {
     public constructor(scene: Scene, mainCamera: Camera) {
         // https://doc.babylonjs.com/api/classes/babylon.defaultrenderingpipeline
-        var defaultPipeline = new DefaultRenderingPipeline(
+        let defaultPipeline = new DefaultRenderingPipeline(
             "DefaultRenderingPipeline",
             false, // is HDR?
             scene,
@@ -28,7 +30,7 @@ export class RenderingPipeline {
                 //    defaultPipeline.imageProcessing.colorGradingTexture = new BABYLON.ColorGradingTexture("textures/LateSunset.3dl", scene);
                 //    // using .png :
                 //    /*
-                //    var colorGradingTexture = new BABYLON.Texture("textures/colorGrade-highContrast.png", scene, true, false);
+                //    let colorGradingTexture = new BABYLON.Texture("textures/colorGrade-highContrast.png", scene, true, false);
                 //    colorGradingTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
                 //    colorGradingTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;                
                 //    defaultPipeline.imageProcessing.colorGradingTexture = colorGradingTexture;
@@ -38,7 +40,7 @@ export class RenderingPipeline {
                 /* color curves */
                 defaultPipeline.imageProcessing.colorCurvesEnabled = false; // false by default
                 if (defaultPipeline.imageProcessing.colorCurvesEnabled) {
-                    var curve = new ColorCurves();
+                    let curve = new ColorCurves();
                     curve.globalDensity = 0; // 0 by default
                     curve.globalExposure = 0; // 0 by default
                     curve.globalHue = 30; // 30 by default
@@ -77,7 +79,7 @@ export class RenderingPipeline {
                 defaultPipeline.chromaticAberration.enablePixelPerfectMode = false; // false by default
                 defaultPipeline.chromaticAberration.forceFullscreenViewport = true; // true by default
                 defaultPipeline.chromaticAberration.radialIntensity = 3;
-                var rotation = Math.PI;
+                let rotation = Math.PI;
                 defaultPipeline.chromaticAberration.direction.x = Math.sin(rotation)
                 defaultPipeline.chromaticAberration.direction.y = Math.cos(rotation)
             }

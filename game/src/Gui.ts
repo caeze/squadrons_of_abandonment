@@ -1,8 +1,10 @@
+// ------------- global imports -------------
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
+import { TextBlock, Control, Container, Rectangle, AdvancedDynamicTexture, Button } from "@babylonjs/gui/2D";
+import { DepthOfFieldEffectBlurLevel, DefaultRenderingPipeline, Material, DefaultLoadingScreen, Quaternion, Tools, WebGPUEngine, Matrix, HighlightLayer, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
+// ----------- global imports end -----------
 
 export class Gui {
     private advancedTexture: AdvancedDynamicTexture;
@@ -21,7 +23,7 @@ export class Gui {
     public createGui(currentUrl: string) {
         this.advancedTexture.isForeground = true;
         
-        var button = Button.CreateImageWithCenterTextButton("but", "Click me!", currentUrl + "/assets/img/heightMap.png");
+        let button = Button.CreateImageWithCenterTextButton("but", "Click me!", currentUrl + "/assets/img/heightMap.png");
             button.width = 0.2;
             button.height = "40px";
             button.left = "-500px";
@@ -47,7 +49,7 @@ export class Gui {
         
         
 
-        var button1 = Button.CreateSimpleButton("but1", "Click Me");
+        let button1 = Button.CreateSimpleButton("but1", "Click Me");
         button1.left = "1000px";
         button1.top = "500px";
         button1.width = "150px";

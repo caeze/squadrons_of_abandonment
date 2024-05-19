@@ -1,8 +1,10 @@
+// ------------- global imports -------------
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { VertexBuffer, VertexData, AnimatedInputBlockTypes, VectorMergerBlock, VectorSplitterBlock, InputBlock, SubtractBlock, MultiplyBlock, NormalizeBlock, CrossBlock, TextureBlock, AddBlock, TransformBlock, Matrix, NodeMaterialSystemValues, VertexOutputBlock, Vector2, TrigonometryBlock, TrigonometryBlockOperations, FragmentOutputBlock, Color4, NodeMaterial, NodeMaterialModes, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
+import { TextBlock, Control, Container, Rectangle, AdvancedDynamicTexture, Button } from "@babylonjs/gui/2D";
+import { DepthOfFieldEffectBlurLevel, DefaultRenderingPipeline, Material, DefaultLoadingScreen, Quaternion, Tools, WebGPUEngine, Matrix, HighlightLayer, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
+// ----------- global imports end -----------
 
 export class SpaceshipTrail extends Mesh {
 	private _generator: Mesh;
@@ -28,7 +30,7 @@ export class SpaceshipTrail extends Mesh {
 	}
 
 	public foldToGenerator(): void {
-        var verticesData = this.getVerticesData(VertexBuffer.PositionKind);
+        let verticesData = this.getVerticesData(VertexBuffer.PositionKind);
         if (verticesData == null) {
             verticesData = [];
         }

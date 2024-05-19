@@ -1,21 +1,23 @@
+// ------------- global imports -------------
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { LensFlareSystem, LensFlare, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button } from '@babylonjs/gui/2D';
+import { TextBlock, Control, Container, Rectangle, AdvancedDynamicTexture, Button } from "@babylonjs/gui/2D";
+import { DepthOfFieldEffectBlurLevel, DefaultRenderingPipeline, Material, DefaultLoadingScreen, Quaternion, Tools, WebGPUEngine, Matrix, HighlightLayer, BoxParticleEmitter, NoiseProceduralTexture, DirectionalLight, AbstractMesh, PointLight, Camera, VolumetricLightScatteringPostProcess, SphereParticleEmitter, Color4, Constants, ParticleHelper, ParticleSystemSet, TransformNode, ParticleSystem, Engine, Scene, ArcRotateCamera, FreeCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, InstancedMesh, StandardMaterial, Texture, Vector2, Vector4 , Color3, SceneLoader, AssetsManager, ArcRotateCameraPointersInput, CubeTexture, RegisterMaterialPlugin, MaterialPluginBase, PostProcess, PassPostProcess, Effect, ShaderMaterial, RenderTargetTexture } from "@babylonjs/core";
+// ----------- global imports end -----------
 
 export class Sun {
     public constructor(scene: Scene, camera: Camera, engine: Engine, currentUrl: string) {
         // Emitter object
-        //var sunSurface = Mesh.CreateBox("emitter", 0.01, scene);
-        //var sunFlares = Mesh.CreateBox("emitter", 0.01, scene);
-        //var sunGlare = Mesh.CreateBox("emitter", 0.01, scene);
+        //let sunSurface = Mesh.CreateBox("emitter", 0.01, scene);
+        //let sunFlares = Mesh.CreateBox("emitter", 0.01, scene);
+        //let sunGlare = Mesh.CreateBox("emitter", 0.01, scene);
 
 
         // Create a particle system
-        var surfaceParticles = new ParticleSystem("surfaceParticles", 1600, scene);
-        var flareParticles = new ParticleSystem("flareParticles", 20, scene);
-        var glareParticles = new ParticleSystem("glareParticles", 600, scene);
+        let surfaceParticles = new ParticleSystem("surfaceParticles", 1600, scene);
+        let flareParticles = new ParticleSystem("flareParticles", 20, scene);
+        let glareParticles = new ParticleSystem("glareParticles", 600, scene);
 
         //Texture of each particle
         surfaceParticles.particleTexture = new Texture(currentUrl + "/assets/img/particles/sunSurface.png", scene);
@@ -23,12 +25,12 @@ export class Sun {
         glareParticles.particleTexture = new Texture(currentUrl + "/assets/img/particles/sunGlare.png", scene);
 
         //Create core sphere
-        var sunSizeFactor = 1000.0;
-        var coreSphere = MeshBuilder.CreateSphere("coreSphere", {diameter: 2.0001 * sunSizeFactor, segments: 64}, scene);
+        let sunSizeFactor = 1000.0;
+        let coreSphere = MeshBuilder.CreateSphere("coreSphere", {diameter: 2.0001 * sunSizeFactor, segments: 64}, scene);
         coreSphere.position = new Vector3(-3 * sunSizeFactor, -3 * sunSizeFactor, 3 * sunSizeFactor);
 
 
-        var sunLight = new DirectionalLight("sunLight", new Vector3(-coreSphere.position.x, -coreSphere.position.y, -coreSphere.position.z), scene);
+        let sunLight = new DirectionalLight("sunLight", new Vector3(-coreSphere.position.x, -coreSphere.position.y, -coreSphere.position.z), scene);
         sunLight.intensity = 10.0;
         //sunLight.range = 100000.0;
         const hemisphericLight = new HemisphericLight("hemisphericLight", new Vector3(-coreSphere.position.x, -coreSphere.position.y, -coreSphere.position.z), scene);
@@ -36,8 +38,8 @@ export class Sun {
         hemisphericLight.range = 100000.0;
 
         //Create core material
-        var coreMat = new StandardMaterial("coreMat", scene);
-        var factor = 0.25;
+        let coreMat = new StandardMaterial("coreMat", scene);
+        let factor = 0.25;
         coreMat.emissiveColor = new Color3(0.3773*factor, 0.0930*factor, 0.0266*factor); 
 
         coreSphere.material = coreMat;
@@ -58,7 +60,7 @@ export class Sun {
         flareParticles.maxInitialRotation = Math.PI;
 
         // Where the particles come from
-        var emitterType = new SphereParticleEmitter();
+        let emitterType = new SphereParticleEmitter();
         emitterType.radius = 1 * sunSizeFactor;
         emitterType.radiusRange = 0;
 
@@ -127,7 +129,7 @@ export class Sun {
         glareParticles.blendMode = ParticleSystem.BLENDMODE_ADD;
 
         // Set the gravity of all particles
-        var gravity = Vector3.Normalize(coreSphere.position).scale(-1.0);
+        let gravity = Vector3.Normalize(coreSphere.position).scale(-1.0);
         surfaceParticles.gravity = gravity;
         flareParticles.gravity = gravity;
         glareParticles.gravity = gravity;
@@ -164,7 +166,7 @@ export class Sun {
         coreSphere.renderingGroupId = 2;
         flareParticles.renderingGroupId = 2;
 
-        var godrays = new VolumetricLightScatteringPostProcess('godrays', 1.0, camera, coreSphere, 100, Texture.BILINEAR_SAMPLINGMODE, engine, false);
+        let godrays = new VolumetricLightScatteringPostProcess('godrays', 1.0, camera, coreSphere, 100, Texture.BILINEAR_SAMPLINGMODE, engine, false);
 
         //godrays._volumetricLightScatteringRTT.renderParticles = true;
 
@@ -183,8 +185,8 @@ export class Sun {
         glareParticles.start();
         
         const lensFlareSystem = new LensFlareSystem("lensFlareSystem", coreSphere, scene);
-        var proximityToSun = 0.2;
-        var colorFactor = 0.5;
+        let proximityToSun = 0.2;
+        let colorFactor = 0.5;
         const flare0 = new LensFlare(0.2, 0.05 + proximityToSun, new Color3(1.0 * colorFactor, 1.0 * colorFactor, 1.0 * colorFactor), currentUrl + "/assets/img/particles/lensFlare2.png", lensFlareSystem);
         const flare1 = new LensFlare(0.075, 0.3 + proximityToSun, new Color3(0.8 * colorFactor, 0.56 * colorFactor, 0.72 * colorFactor), currentUrl + "/assets/img/particles/lensFlare3.png", lensFlareSystem);
         const flare2 = new LensFlare(0.1, -0.1 + proximityToSun, new Color3(0.71 * colorFactor, 0.8 * colorFactor, 0.95 * colorFactor), currentUrl + "/assets/img/particles/lensFlare1.png", lensFlareSystem);

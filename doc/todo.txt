@@ -5,7 +5,7 @@ TODO:
  - click for move markers
  - UI stub to be filled - https://playground.babylonjs.com/#HSVQL#52
 
-
+// blending/chaining multiple post processes by using the one below as a texture input for the next one: https://www.babylonjs-playground.com/#DLZQXL#6
 // explosions: https://playground.babylonjs.com/#VS5XS7#0 IMPORTANT    https://playground.babylonjs.com/#X37LS1#3
 // supernova explosion: https://playground.babylonjs.com/#QZTX7A#5 IMPORTANT
 // stars warp jump https://playground.babylonjs.com/#J5JYZB

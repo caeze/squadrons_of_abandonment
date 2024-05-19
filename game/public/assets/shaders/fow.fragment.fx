@@ -1,14 +1,15 @@
 precision highp float;
 
 // Uniforms are defined and can be changed on runtime by the CPU.
+uniform float revealersCurrentCount;
 uniform float revealersX[MAX_REVEALERS];
 uniform float revealersZ[MAX_REVEALERS];
 uniform float revealersRadius[MAX_REVEALERS];
 uniform float mapSidelength;
 
-// Varying values were created by the vertex shader and are fetched in the fragment shader.
+// letying values were created by the vertex shader and are fetched in the fragment shader.
 // They are also interpolated from the three calls made in the vertex shader.
-varying vec3 pixelWorldPosition;
+letying vec3 pixelWorldPosition;
 
 float getAlpha() {
     // Define some constants.
