@@ -317,7 +317,7 @@ class SquadronsOfAbandonement {
             canvas.style.width = window.innerWidth + "px";
             canvas.style.height = window.innerHeight + "px";
             minimap.resize(window.innerWidth, window.innerHeight);
-            gui.updateButtonPositions(window.innerWidth, window.innerHeight);
+            gui.updateGuiPositions(window.innerWidth, window.innerHeight);
             engine.resize();
         });
         
