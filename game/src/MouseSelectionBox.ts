@@ -80,6 +80,7 @@ export class MouseSelectionBox {
         selectionRectangle.height = "40px";
         selectionRectangle.color = "#00ff0000";
         selectionRectangle.thickness = 3;
+        selectionRectangle.zIndex = 1;
         advancedTexture.addControl(selectionRectangle);
         
         let lastPointerPositionX = -1000000;

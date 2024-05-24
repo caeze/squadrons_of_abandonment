@@ -113,10 +113,27 @@ class ImageButtonWithOptionalTexts {
     }
 }
 
+class ProgressBar {
+    public background: Rectangle;
+    public foreground: Rectangle;
+    public progress: number;
+    public progressBarLtrb: Vector4;
+    public size: Vector2;
+    
+    public constructor(background: Rectangle, foreground: Rectangle, progress: number, progressBarLtrb: Vector4, size: Vector2) {
+        this.background = background;
+        this.foreground = foreground;
+        this.progress = progress;
+        this.progressBarLtrb = progressBarLtrb;
+        this.size = size;
+    }
+}
+
 export class Gui {
     public advancedTexture: AdvancedDynamicTexture;
     private _buttonData: Record<string, ImageButtonData> = {};
     private _buttons: Record<string, ImageButtonWithOptionalTexts> = {};
+    private _abilityProgressBar: ProgressBar;
 
     public constructor(currentUrl: string, canvasWidth: number, canvasHeight: number, buttonSize: number = 50, minimapSize: number = 300) {
         this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("Gui", undefined, undefined, Texture.NEAREST_NEAREST);
@@ -231,21 +248,17 @@ export class Gui {
         this._buttons = this.createAllButtons(this._buttonData, canvasWidth, canvasHeight);
         
         // Add the ability progress bar.
+        let abilityProgressBarSize = new Vector2(3 * buttonSize, 20);
+        let abilityProgressBarLtrb = new Vector4(470, -1, -1, 50);
+        let [abilityProgressBarBackground, abilityProgressBarForeground] = this.createProgressBar("abilityProgressBar2", abilityProgressBarLtrb, "#00ff00", abilityProgressBarSize, canvasWidth, canvasHeight);
+        this._abilityProgressBar = new ProgressBar(abilityProgressBarBackground, abilityProgressBarForeground, 0, abilityProgressBarLtrb, abilityProgressBarSize);
+        this.setAbilityProgress(0);
         
-        let progressBar = new Rectangle("abilityProgressBar");
-        progressBar.background = 'black';
-        progressBar.width = 20 + "px";
-        progressBar.height = 20 + "px";
-        progressBar.left = 20 + "px";
-        progressBar.top = 20 + "px";
-        progressBar.alpha = 1.0;
-        progressBar.thickness = 0;
-        progressBar.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-        progressBar.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-        this.advancedTexture.addControl(progressBar);
+        // Add the chat box.
     }
     
     public updateGuiPositions(canvasWidth: number, canvasHeight: number) {
+        // Update the button positions.
         for (let buttonName in this._buttons) {
             let buttonPosition = this.getButtonPosition(this._buttonData[buttonName], canvasWidth, canvasHeight);
             this._buttons[buttonName].button.left = buttonPosition.x + "px";
@@ -263,6 +276,13 @@ export class Gui {
                 textTop.top = textPositionCenter.y + "px";
             } 
         }
+        
+        // Update the ability progress bar position.
+        let progressBarPosition = this.getPosition(this._abilityProgressBar.progressBarLtrb, this._abilityProgressBar.size, canvasWidth, canvasHeight);
+        this._abilityProgressBar.background.left = progressBarPosition.x + "px";
+        this._abilityProgressBar.background.top = progressBarPosition.y + "px";
+        this._abilityProgressBar.foreground.left = progressBarPosition.x + "px";
+        this._abilityProgressBar.foreground.top = progressBarPosition.y + "px";
     }
     
     private createAllButtons(buttonData: Record<string, ImageButtonData>, canvasWidth: number, canvasHeight: number): Record<string, ImageButtonWithOptionalTexts> {
@@ -291,6 +311,7 @@ export class Gui {
         button.thickness = 0;
         button.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
         button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+        button.zIndex = 10;
         if (buttonData.clickable) {
             button.onPointerEnterObservable.add(()=>{
                 button.alpha = 0.75;
@@ -321,6 +342,7 @@ export class Gui {
             textTop.fontSize = 18;
             textTop.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
             textTop.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            textTop.zIndex = 10;
             let textBottom = new TextBlock();
             textBottom.text = buttonData.textLineBottom;
             textBottom.left = textPositionBottom.x + "px";
@@ -333,6 +355,7 @@ export class Gui {
             textBottom.fontSize = 18;
             textBottom.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
             textBottom.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            textBottom.zIndex = 10;
             return new ImageButtonWithOptionalTexts(button, textTop, textBottom);
         } else if (buttonData.textLineTop != "") {
             let textTop = new TextBlock();
@@ -347,47 +370,77 @@ export class Gui {
             textTop.fontSize = 18;
             textTop.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
             textTop.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            textTop.zIndex = 10;
             return new ImageButtonWithOptionalTexts(button, textTop);
         }
         return new ImageButtonWithOptionalTexts(button);
     }
     
+    private createProgressBar(progressBarName: string, progressBarLtrb: Vector4, color: string, progressBarSize: Vector2, canvasWidth: number, canvasHeight: number): [Rectangle, Rectangle] {
+        let progressBarPosition = this.getPosition(progressBarLtrb, progressBarSize, canvasWidth, canvasHeight);
+        let progressBarBackground = new Rectangle(progressBarName + "Background");
+        progressBarBackground.width = progressBarSize.x + "px";
+        progressBarBackground.height = progressBarSize.y + "px";
+        progressBarBackground.left = progressBarPosition.x + "px";
+        progressBarBackground.top = progressBarPosition.y + "px";
+        progressBarBackground.background = "#555555";
+        progressBarBackground.alpha = 1.0;
+        progressBarBackground.thickness = 0;
+        progressBarBackground.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+        progressBarBackground.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+        progressBarBackground.zIndex = 10;
+        this.advancedTexture.addControl(progressBarBackground);
+        let progressBarForeground = new Rectangle(progressBarName + "BarForeground");
+        progressBarForeground.width = progressBarSize.x + "px";
+        progressBarForeground.height = progressBarSize.y + "px";
+        progressBarForeground.left = progressBarPosition.x + "px";
+        progressBarForeground.top = progressBarPosition.y + "px";
+        progressBarForeground.background = color;
+        progressBarForeground.alpha = 1.0;
+        progressBarForeground.thickness = 0;
+        progressBarForeground.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+        progressBarForeground.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+        progressBarForeground.zIndex = 10;
+        this.advancedTexture.addControl(progressBarForeground);
+        return [progressBarBackground, progressBarForeground];
+    }
+    
+    public setAbilityProgress(newProgress: number) {
+        this.updateProgressBarProgress(this._abilityProgressBar, newProgress);
+    }
+    
+    public updateProgressBarProgress(progressBar: ProgressBar, newProgress: number) {
+        progressBar.progress = Math.min(Math.max(newProgress, 0.0), 1.0);
+        progressBar.foreground.width = (progressBar.size.x * progressBar.progress) + "px";
+    }
+    
     private getButtonPosition(buttonData: ImageButtonData, canvasWidth: number, canvasHeight: number): Vector2 {
-        let buttonPositionX = 0;
-        let buttonPositionY = 0;
-        if (buttonData.distanceLeft >= 0) {
-            buttonPositionX = buttonData.distanceLeft;
-        }
-        if (buttonData.distanceTop >= 0) {
-            buttonPositionY = buttonData.distanceTop;
-        }
-        if (buttonData.distanceRight >= 0) {
-            buttonPositionX = canvasWidth - buttonData.distanceRight - buttonData.size.x;
-        }
-        if (buttonData.distanceBottom >= 0) {
-            buttonPositionY = canvasHeight - buttonData.distanceBottom - buttonData.size.y;
-        }
-        return new Vector2(buttonPositionX, buttonPositionY);
+        return this.getPosition(new Vector4(buttonData.distanceLeft, buttonData.distanceTop, buttonData.distanceRight, buttonData.distanceBottom), new Vector2(buttonData.size.x, buttonData.size.y), canvasWidth, canvasHeight);
     }
     
     private getTextPosition(buttonData: ImageButtonData, canvasWidth: number, canvasHeight: number, offsetX: number = 4, offsetY: number = 4): [Vector2, Vector2, Vector2] {
-        let textPositionX = 0;
-        let textPositionY = 0;
-        if (buttonData.distanceLeft >= 0) {
-            textPositionX = buttonData.distanceLeft;
-        }
-        if (buttonData.distanceTop >= 0) {
-            textPositionY = buttonData.distanceTop;
-        }
-        if (buttonData.distanceRight >= 0) {
-            textPositionX = canvasWidth - buttonData.distanceRight - buttonData.size.x;
-        }
-        if (buttonData.distanceBottom >= 0) {
-            textPositionY = canvasHeight - buttonData.distanceBottom - buttonData.size.y;
-        }
-        let textPositionTop = new Vector2(textPositionX + buttonData.size.x + offsetX, textPositionY + offsetY);
-        let textPositionCenter = new Vector2(textPositionX + buttonData.size.x + offsetX, textPositionY + offsetY + 10);
-        let textPositionBottom = new Vector2(textPositionX + buttonData.size.x + offsetX, textPositionY + offsetY + 20);
+        let textPosition = this.getPosition(new Vector4(buttonData.distanceLeft, buttonData.distanceTop, buttonData.distanceRight, buttonData.distanceBottom), new Vector2(buttonData.size.x, buttonData.size.y), canvasWidth, canvasHeight);
+        let textPositionTop = new Vector2(textPosition.x + buttonData.size.x + offsetX, textPosition.y + offsetY);
+        let textPositionCenter = new Vector2(textPosition.x + buttonData.size.x + offsetX, textPosition.y + offsetY + 10);
+        let textPositionBottom = new Vector2(textPosition.x + buttonData.size.x + offsetX, textPosition.y + offsetY + 20);
         return [textPositionTop, textPositionCenter, textPositionBottom];
+    }
+    
+    private getPosition(leftTopRightBottom: Vector4, elementSize: Vector2, canvasWidth: number, canvasHeight: number): Vector2 {
+        let positionX = 0;
+        let positionY = 0;
+        if (leftTopRightBottom.x >= 0) {
+            positionX = leftTopRightBottom.x;
+        }
+        if (leftTopRightBottom.y >= 0) {
+            positionY = leftTopRightBottom.y;
+        }
+        if (leftTopRightBottom.z >= 0) {
+            positionX = canvasWidth - leftTopRightBottom.z - elementSize.x;
+        }
+        if (leftTopRightBottom.w >= 0) {
+            positionY = canvasHeight - leftTopRightBottom.w - elementSize.y;
+        }
+        return new Vector2(positionX, positionY);
     }
 }

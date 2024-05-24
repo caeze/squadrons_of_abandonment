@@ -93,6 +93,7 @@ import { CameraLayerMask } from "./CameraLayerMask";
 import { AmbientLight } from "./AmbientLight";
 import { Skybox } from "./Skybox";
 import { ExplosionEffect, ShockwaveEffectHandler } from "./ExplosionEffect";
+import { SliceMesh } from "./SliceMesh";
 
 function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string): Unit[] {
     
@@ -259,8 +260,23 @@ class SquadronsOfAbandonement {
         keyboardInputManager.registerCallback("KeyF", "launchFullscreenCaller", this.nop, this.launchFullscreen, null);
         keyboardInputManager.registerCallback("KeyI", "toggleDebugLayerCaller", this.nop, this.toggleDebugLayer, scene);
         
+        let unitToSlice = new Unit(scene, new Vector3(0.0, 0.0, 0.0), "unitToSlice", 5.0, currentUrl);
+        let sliceMesh = new SliceMesh();
+        let [meshParts, explodeMeshMovementDirections, explodeMeshMovementRotations] = sliceMesh.slice(scene, unitToSlice.mesh, 7);
+        let explosionMovementStrengthFactor = 0.05;
+        scene.registerBeforeRender(() => {
+            for (let i = 0; i < meshParts.length; i++) {
+                meshParts[i].position.x += explodeMeshMovementDirections[i].x * explosionMovementStrengthFactor;
+                meshParts[i].position.y += explodeMeshMovementDirections[i].y * explosionMovementStrengthFactor;
+                meshParts[i].position.z += explodeMeshMovementDirections[i].z * explosionMovementStrengthFactor;
+                meshParts[i].rotation.x += explodeMeshMovementRotations[i].x * explosionMovementStrengthFactor;
+                meshParts[i].rotation.y += explodeMeshMovementRotations[i].y * explosionMovementStrengthFactor;
+                meshParts[i].rotation.z += explodeMeshMovementRotations[i].z * explosionMovementStrengthFactor;
+            }
+        });
         
         let explosionEffect = new ExplosionEffect(mainCamera.camera, scene, currentUrl);
+        explosionEffect.createExplosionWithShockwave("shockwaveEffect0", new Vector3(0.0, 0.0, 0.0), scene, mainCamera, window.innerWidth, window.innerHeight, this.project);
         
         let spaceshipTrailParent = MeshBuilder.CreateSphere("sphere", {diameter: 0.1}, scene);
         let spaceshipTrail = new SpaceshipTrail("spaceshipTrail0", spaceshipTrailParent, scene, mainCamera.camera, 0.1);
@@ -303,10 +319,9 @@ class SquadronsOfAbandonement {
 
         scene.onPointerDown = function (evt: any, pickResult: any) {
             if (pickResult.hit && pickResult.pickedMesh != null) {
-                console.log(pickResult.pickedMesh.name);
                 console.log(pickResult);
-                
-                explosionEffect.createExplosionWithShockwave("shockwaveEffect0", pickResult.pickedPoint, scene, mainCamera, window.innerWidth, window.innerHeight, thisPtr.project);
+                console.log(pickResult.pickedPoint);
+                console.log(pickResult.pickedMesh.name);
             }
         };
         document.addEventListener("click", (e: Event) => {
@@ -321,8 +336,11 @@ class SquadronsOfAbandonement {
             engine.resize();
         });
         
+        let i = 0;
         engine.runRenderLoop(() => {
             // here all updating stuff must be updated
+            i += 0.001;
+            //gui.setAbilityProgress(i);
 
             let displacement = 0.025 * mainCamera.camera.radius;
             let cameraPosition = mainCamera.camera.position;

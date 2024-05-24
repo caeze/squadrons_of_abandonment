@@ -86,11 +86,14 @@ enum ExplosionType {
 export class ShockwaveEffectHandler {
 	private _ticksCtr: number;
 	private _tickFunction: (effect: any, time: number) => void;
+	private _camera: Camera;
 	private _timeScale: number;
     
-    public constructor(tickFunction: (effect: any, time: number) => void, timeScale: number = 0.005) {
+    public constructor(tickFunction: (effect: any, time: number) => void, camera: Camera, timeScale: number = 0.005) {
+        // TODO: scale effect by camera radius
         this._ticksCtr = 17;
         this._tickFunction = tickFunction;
+        this._camera = camera;
         this._timeScale = timeScale;
     }
     
@@ -120,7 +123,7 @@ export class ExplosionEffect {
             let screenPosRelative = new Vector2(screenPos.x / window.innerWidth, 1.0 - (screenPos.y / window.innerHeight));
             effect.setVector2("center", screenPosRelative);
         };
-        this.createShockwave(name, mainCamera.camera, new ShockwaveEffectHandler(explosionTick));
+        this.createShockwave(name, mainCamera.camera, new ShockwaveEffectHandler(explosionTick, mainCamera.camera));
         this.createExplosion(position);
         MainCamera.shake(mainCamera);
 	}
