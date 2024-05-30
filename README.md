@@ -29,6 +29,46 @@ How to run
   Open `http://localhost:8080/` in a browser
 ~~~
 
+git clone git@github.com:caeze/squadrons_of_abandonment.git
+
+sudo apt install nodejs
+
+sudo apt-get install npm
+
+npm install --save-dev webpack
+
+npm install typescript
+
+sudo npm link typescript
+
+sudo npm install --global yarn
+
+yarn add typescript
+
+npm run build
+
+yarn install typescript
+
+npm install --global yarn
+
+sudo npm install --global yarn
+
+yarn install typescript
+
+yarn add typescript
+
+npm run build
+
+sudo npm install -g n
+
+n lts
+
+sudo n lts
+
+node --version
+
+npm run build
+
 Mardown cheatsheet
 ------------------
 
