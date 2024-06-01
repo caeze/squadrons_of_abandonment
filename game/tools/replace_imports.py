@@ -6,6 +6,7 @@ gui_imports = """AdvancedDynamicTexture,
 Button,
 Container,
 Control,
+InputText,
 Rectangle,
 TextBlock,"""
 core_imports = """AbstractMesh,

@@ -7,6 +7,7 @@ AdvancedDynamicTexture,
 Button,
 Container,
 Control,
+InputText,
 Rectangle,
 TextBlock,
 } from "@babylonjs/gui/2D";
@@ -134,6 +135,7 @@ export class Gui {
     private _buttonData: Record<string, ImageButtonData> = {};
     private _buttons: Record<string, ImageButtonWithOptionalTexts> = {};
     private _abilityProgressBar: ProgressBar;
+    private _chatInputText: InputText;
 
     public constructor(currentUrl: string, canvasWidth: number, canvasHeight: number, buttonSize: number = 50, minimapSize: number = 300) {
         this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("Gui", undefined, undefined, Texture.NEAREST_NEAREST);
@@ -252,9 +254,11 @@ export class Gui {
         let abilityProgressBarLtrb = new Vector4(470, -1, -1, 50);
         let [abilityProgressBarBackground, abilityProgressBarForeground] = this.createProgressBar("abilityProgressBar2", abilityProgressBarLtrb, "#00ff00", abilityProgressBarSize, canvasWidth, canvasHeight);
         this._abilityProgressBar = new ProgressBar(abilityProgressBarBackground, abilityProgressBarForeground, 0, abilityProgressBarLtrb, abilityProgressBarSize);
-        this.setAbilityProgress(0);
+        this.setAbilityProgress(0.3);
         
         // Add the chat box.
+        this._chatInputText = this.createInputText("chatInputText", new Vector4(0, -1, -1, minimapSize + 4 * buttonSize), "#ffffff", new Vector2(300, 20), canvasWidth, canvasHeight);
+        let chatLine0 = this.createText("chatLine0", "ASD", new Vector4(0, -1, -1, minimapSize + 5 * buttonSize), "#999999", new Vector2(300, 20), canvasWidth, canvasHeight);
     }
     
     public updateGuiPositions(canvasWidth: number, canvasHeight: number) {
@@ -403,6 +407,48 @@ export class Gui {
         progressBarForeground.zIndex = 10;
         this.advancedTexture.addControl(progressBarForeground);
         return [progressBarBackground, progressBarForeground];
+    }
+    
+    private createInputText(inputTextName: string, inputTextLtrb: Vector4, color: string, inputTextSize: Vector2, canvasWidth: number, canvasHeight: number): InputText {
+        let inputTextPosition = this.getPosition(inputTextLtrb, inputTextSize, canvasWidth, canvasHeight);
+        let inputText = new InputText(inputTextName);
+        inputText.width = inputTextSize.x + "px";
+        inputText.height = inputTextSize.y + "px";
+        inputText.maxWidth = inputTextSize.x + "px";
+        inputText.left = inputTextPosition.x + "px";
+        inputText.top = inputTextPosition.y + "px";
+        inputText.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+        inputText.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+        inputText.text = "This is a very long text used to test how the cursor works within the InputText control.";
+        inputText.color = color;
+        inputText.background = "#00000000";
+        inputText.thickness = 0;
+        inputText.shadowColor = "#000000";
+        inputText.shadowBlur = 4;
+        inputText.shadowOffsetX = 1;
+        inputText.shadowOffsetY = 1;
+        inputText.zIndex = 100;
+        this.advancedTexture.addControl(inputText);
+        return inputText;
+    }
+    
+    private createText(textName: string, textContent: string, textLtrb: Vector4, color: string, textSize: Vector2, canvasWidth: number, canvasHeight: number): TextBlock {
+        let textPosition = this.getPosition(textLtrb, textSize, canvasWidth, canvasHeight);
+        let text = new TextBlock(textName);
+        text.text = textContent;
+        text.left = textPosition.x + "px";
+        text.top = textPosition.y + "px";
+        text.color = color;
+        text.shadowColor = "#000000";
+        text.shadowBlur = 4;
+        text.shadowOffsetX = 1;
+        text.shadowOffsetY = 1;
+        text.fontSize = 18;
+        text.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+        text.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+        text.zIndex = 10;
+        this.advancedTexture.addControl(text);
+        return text;
     }
     
     public setAbilityProgress(newProgress: number) {
