@@ -82,11 +82,12 @@ export class RenderingPipeline {
             scene,
             [mainCamera]
         );
-        if (defaultPipeline.isSupported) {
+        let enablePipeline = false;
+        if (defaultPipeline.isSupported && enablePipeline) {
             /* MSAA */
             defaultPipeline.samples = 9; // 1 by default
             /* imageProcessing */
-            defaultPipeline.imageProcessingEnabled = false; //true by default
+            defaultPipeline.imageProcessingEnabled = true; //true by default
             if (defaultPipeline.imageProcessingEnabled) {
                 defaultPipeline.imageProcessing.contrast = 1; // 1 by default
                 defaultPipeline.imageProcessing.exposure = 1; // 1 by default
@@ -166,13 +167,13 @@ export class RenderingPipeline {
                 defaultPipeline.depthOfField.lensSize = 50; // 50 by default
             }
             /* FXAA */
-            defaultPipeline.fxaaEnabled = false; // false by default
+            defaultPipeline.fxaaEnabled = true; // false by default
             if (defaultPipeline.fxaaEnabled) {
                 defaultPipeline.fxaa.samples = 4; // 1 by default
                 defaultPipeline.fxaa.adaptScaleToCurrentViewport = true; // false by default
             }
             /* glowLayer */
-            defaultPipeline.glowLayerEnabled = false;
+            defaultPipeline.glowLayerEnabled = true;
             if (defaultPipeline.glowLayerEnabled && defaultPipeline.glowLayer != null) {
                 defaultPipeline.glowLayer.blurKernelSize = 16; // 16 by default
                 defaultPipeline.glowLayer.intensity = 1; // 1 by default
@@ -181,8 +182,8 @@ export class RenderingPipeline {
             defaultPipeline.grainEnabled = false;
             if (defaultPipeline.grainEnabled) {
                 defaultPipeline.grain.adaptScaleToCurrentViewport = false; // false by default
-                defaultPipeline.grain.animated = false; // false by default
-                defaultPipeline.grain.intensity = 30; // 30 by default
+                defaultPipeline.grain.animated = true; // false by default
+                defaultPipeline.grain.intensity = 15; // 30 by default
             }
             /* sharpen */
             defaultPipeline.sharpenEnabled = false; // enable for explosions

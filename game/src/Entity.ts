@@ -74,8 +74,8 @@ WebGPUEngine,
 // ----------- global imports end -----------
 
 export class Entity {
-    public mesh: Mesh;
     private _scene: Scene;
+    public mesh: Mesh;
     
     public constructor(scene: Scene, mesh: Mesh) {
         this._scene = scene;

@@ -6,6 +6,9 @@ TODO:
 
 
 
+VERY GOOD!!!:
+blaster effects laser shooting: https://playground.babylonjs.com/#CMS27E#8
+
 
 
 

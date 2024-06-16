@@ -80,7 +80,7 @@ import { CameraLayerMask } from "./CameraLayerMask";
 export class Unit extends Entity {
     public radius: number;
     
-    public constructor(scene: Scene, initialPosition: Vector3, name: string, radius: number, currentUrl: string) {
+    public constructor(scene: Scene, initialPosition: Vector3, name: string, radius: number, currentUrl: string, mesh: Mesh) {
     
     
     
@@ -153,14 +153,44 @@ export class Unit extends Entity {
     
     
     
-    
-    
-        super(scene, MeshBuilder.CreateBox(name, {size: 0.5}, scene));
-        this.radius = radius;
+        /*let importPromise = SceneLoader.ImportMeshAsync(null, currentUrl + "/assets/models/", glbFileName, scene);
+        importPromise.then((result: any) => {
+            for(let i = 0; i < result.meshes.length; i++) {
+                result.meshes[i].renderingGroupId = RenderingGroupId.MAIN;
+                result.meshes[i].layerMask = CameraLayerMask.MAIN;
+                result.meshes[i].position = initialPosition;
+                result.meshes[i].isPickable = true;
+            }
+            meshes = result.meshes;
+        });*/
+        /*SceneLoader.ImportMesh(
+            "",
+            currentUrl + "/assets/models/",
+            "jupiter.glb",
+            scene,
+            function(objects: AbstractMesh[]) {
+                console.log(objects);
+                jupiter = (<Mesh> objects[1]);
+                for(let i=0; i<objects.length; ++i) {
+                    objects[i].renderingGroupId = RenderingGroupId.MAIN;
+                }
+            }
+        );*/
+        super(scene, mesh);
+        
+        //let result = await this._loadMeshes(scene, currentUrl, glbFileName);
+        //let meshes = result.meshes;
+        //let allMeshes = meshes.getChildMeshes();
         this.mesh.renderingGroupId = RenderingGroupId.MAIN;
         this.mesh.layerMask = CameraLayerMask.MAIN;
         this.mesh.position = initialPosition;
         this.mesh.isPickable = true;
+        
+        this.radius = radius;
+        /*this.mesh.renderingGroupId = RenderingGroupId.MAIN;
+        this.mesh.layerMask = CameraLayerMask.MAIN;
+        this.mesh.position = initialPosition;
+        this.mesh.isPickable = true;*/
         
         let minimapIconMesh = MeshBuilder.CreateSphere(name + "minimapIconMesh", {diameter: 20}, scene);
         minimapIconMesh.renderingGroupId = RenderingGroupId.MAIN;

@@ -7,8 +7,8 @@
   "emitterId": "exaust",
   "particleEmitterType": {
     "type": "SphereParticleEmitter",
-    "radius": 0.1,
-    "radiusRange": 0.81,
+    "radius": 0.05,
+    "radiusRange": 0.41,
     "directionRandomizer": 0
   },
   "texture": {
@@ -64,9 +64,9 @@
   "maxAngularSpeed": 0,
   "minSize": 0.9,
   "maxSize": 2.0,
-  "minScaleX": 0.301,
+  "minScaleX": 0.1,
   "maxScaleX": 0.30094,
-  "minScaleY": 0.2842766666666666,
+  "minScaleY": 0.1,
   "maxScaleY": 0.25095,
   "minEmitPower": 0.0068,
   "maxEmitPower": 0.0068,
@@ -75,7 +75,7 @@
   "emitRate": 10000,
   "gravity": [
     0,
-    -2,
+    -1,
     0
   ],
   "noiseStrength": [

@@ -1,3 +1,6 @@
+![Logo](http://francky.me/images/quora001.png)
+game/public/assets/img/squadronsOfAbandonementLogo.png
+
 Squadrons of Abandonement
 =========================
 
@@ -12,6 +15,7 @@ How to run
 ~~~
   install from https://github.com/coreybutler/nvm-windows
 ~~~
+From the game directory:
 ~~~
   nvm install 14
 ~~~

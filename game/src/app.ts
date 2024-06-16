@@ -14,6 +14,7 @@ import {
 AbstractMesh,
 ArcRotateCamera,
 ArcRotateCameraPointersInput,
+AssetContainer,
 AssetsManager,
 BoxParticleEmitter,
 Camera,
@@ -95,23 +96,24 @@ import { Skybox } from "./Skybox";
 import { ExplosionEffect, ShockwaveEffectHandler } from "./ExplosionEffect";
 import { SliceMesh } from "./SliceMesh";
 
-function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string): Unit[] {
+function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string, meshes: Mesh[]): Unit[] {
     
     let sun = new Sun(scene, camera, engine, currentUrl);
     
-    const initialPositions = [new Vector3(2, 0, 2), new Vector3(-1, 0, 1)];
     let units = new Array<Unit>;
-    for (let i = 0; i < initialPositions.length; i++) {
-        let unit = new Unit(scene, initialPositions[i], "box" + i, 5.0, currentUrl);
+    for (let i = 0; i < meshes.length; i++) {
+        let unit = new Unit(scene, new Vector3(0, 0, 0), "box" + i, 5.0, currentUrl, meshes[i]);
         units.push(unit);
     }
     scene.registerBeforeRender(() => {
         units[0].mesh.position.x -= 0.005;
-        units[0].mesh.rotation.x += 0.005;
-        units[0].mesh.rotation.y += 0.005;
+        //units[0].mesh.rotation.x += 0.005;
+        //units[0].mesh.rotation.y += 0.005;
         units[1].mesh.position.x += 0.005;
-        units[1].mesh.rotation.x += 0.005;
-        units[1].mesh.rotation.y += 0.005;
+        //units[1].mesh.rotation.x += 0.005;
+        //units[1].mesh.rotation.y += 0.005;
+        units[0].mesh.rotationQuaternion = null;
+        units[1].mesh.rotationQuaternion = null;
     });
 
     
@@ -126,20 +128,26 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
         const particleJSON = JSON.parse(particleFile.text);
         
         
-        for(let i=0; i<units.length; ++i) {
-            const particleSystem = ParticleSystem.Parse(particleJSON, scene, "", false, 1000);
+        for(let i = 0; i < units.length; i++) {
+            const exhaustParticleSystem = ParticleSystem.Parse(particleJSON, scene, "", false, 1000);
         
 
-            let exhaust = new TransformNode("exaust");
-            exhaust.parent = units[i].mesh;
-            exhaust.position.y = -1.1;
+            let exhaustTransformNode = new TransformNode(units[i].mesh.name + "ExhaustTransformNode");
+            exhaustTransformNode.parent = units[i].mesh;
+            exhaustTransformNode.position.x = -0.6;
+            exhaustTransformNode.position.y = 0.05;
+            exhaustTransformNode.rotation.z = -Math.PI / 2;
 
-
-            particleSystem.emitter = units[i].mesh;
-            particleSystem.isLocal = true;
-            particleSystem.start();
-            particleSystem.renderingGroupId = RenderingGroupId.MAIN;
-            particleSystem.layerMask = CameraLayerMask.MAIN;
+            exhaustParticleSystem.emitter = exhaustTransformNode as AbstractMesh;
+            exhaustParticleSystem.isLocal = true;
+            exhaustParticleSystem.renderingGroupId = RenderingGroupId.MAIN;
+            exhaustParticleSystem.layerMask = CameraLayerMask.MAIN;
+            exhaustParticleSystem.minSize = 0.4;
+            exhaustParticleSystem.maxSize = 0.4;
+            exhaustParticleSystem.color1 = new Color4(1, 0.5, 0.5, 0.8);
+            exhaustParticleSystem.color2 = new Color4(1, 0, 0, 1);
+            exhaustParticleSystem.start();
+            console.log(exhaustParticleSystem);
         }
     }
     
@@ -193,7 +201,6 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
 class SquadronsOfAbandonement {
 	public constructor() {
         let thisPtr = this;
-        let mapSidelength = 1000.0;
         let currentUrl = window.location.href;
         
         let loadingScreenDiv = document.getElementById("loadingScreenDiv");
@@ -227,7 +234,78 @@ class SquadronsOfAbandonement {
         let engine = new Engine(canvas, true);
         engine.setHardwareScalingLevel(1 / window.devicePixelRatio);
         let scene = new Scene(engine);
+        
+        this._loadMeshesAndShowScene(canvas, engine, scene, currentUrl, ["redSpaceFighter.glb", "redStation.glb", "spaceShuttle.glb"]);
+    }
     
+    private _loadMeshesAndShowScene(canvas: HTMLElement, engine: Engine, scene: Scene, currentUrl: string, glbFileNames: string[]) {
+        let thisPtr = this;
+        let assetsManager = new AssetsManager(scene);
+        let assetContainers: Record<string, AssetContainer> = {};
+        
+        for(let i = 0; i < glbFileNames.length; i++) {
+            let meshTask = assetsManager.addMeshTask("meshTask" + i, "", currentUrl + "/assets/models/", glbFileNames[i]);
+            meshTask.onSuccess = function (task) {
+                let assetContainer = new AssetContainer(scene);
+                let loadedMeshes = task.loadedMeshes;
+                let loadedMeshName = task.sceneFilename.toString().replace(".glb", "");
+                for(let j = 0; j < loadedMeshes.length; j++) {
+                    loadedMeshes[j].name = loadedMeshName + "_" + j;
+                    loadedMeshes[j].renderingGroupId = RenderingGroupId.MAIN;
+                    loadedMeshes[j].layerMask = CameraLayerMask.MAIN;
+                    loadedMeshes[j].isPickable = true;
+                    assetContainer.meshes.push(loadedMeshes[j]);
+                }
+                assetContainer.removeAllFromScene();
+                assetContainers[loadedMeshName] = assetContainer;
+            };
+            meshTask.onError = function (task, message, exception) {
+                alert("meshTask.onError" + "\n" + message + "\n" + exception + "\n" + i);
+            };
+        }
+        
+        assetsManager.onProgress = function (remainingCount, totalCount, lastFinishedTask) {
+            let percent = Math.floor((totalCount - remainingCount) / totalCount * 100.0);
+            engine.loadingUIText = "LOADING MODELS " + percent + "%";
+            engine.loadingUIBackgroundColor = "#000000";
+        };
+        assetsManager.onFinish = function (tasks) {
+            /*for (let i = 0; i < assetContainer.meshes.length; i++) {
+                let mesh = assetContainer.meshes[i];
+                let meshNameWithoutSuffix = mesh.name.substring(0, mesh.name.lastIndexOf("_"));
+                if (!(meshNameWithoutSuffix in meshesInAssetContainer)) {
+                    meshesInAssetContainer[meshNameWithoutSuffix] = [];
+                }
+                meshesInAssetContainer[meshNameWithoutSuffix].push(mesh);
+            }*/
+            thisPtr._showScene(canvas, engine, scene, currentUrl, assetContainers);
+        };
+        /*assetsManager.onTaskSuccess = function (task) {
+            console.log("assetsManager.onTaskSuccess", task);
+        };*/
+        assetsManager.onTaskError = function (task) {
+            alert("assetsManager.onTaskError" + "\n" + task);
+        };
+        
+        /*assetsManager.onTaskSuccessObservable.add(function (task) {
+            console.log("assetsManager.onTaskSuccessObservable", task);
+        });
+        assetsManager.onTaskErrorObservable.add(function (task) {
+            console.log("assetsManager.onTaskErrorObservable", task, task.errorObject.message, task.errorObject.exception);
+        });
+        assetsManager.onProgressObservable.add(function (task) {
+            console.log("assetsManager.onProgressObservable", task);
+        });
+        assetsManager.onTasksDoneObservable.add(function (task) {
+            console.log("assetsManager.onTasksDoneObservable ", task);
+        });*/
+        
+        assetsManager.load();
+    }
+    
+    private _showScene(canvas: HTMLElement, engine: Engine, scene: Scene, currentUrl: string, meshesInAssetContainers: Record<string, AssetContainer>) {
+        let mapSidelength = 1000.0;
+        
         let skybox = new Skybox(scene, currentUrl);
         let ambientLight = new AmbientLight(scene);
         let gui = new Gui(currentUrl, window.innerWidth, window.innerHeight);
@@ -244,25 +322,31 @@ class SquadronsOfAbandonement {
         scene.activeCameras.push(minimap.minimapCamera);
         scene.cameraToUseForPointers = mainCamera.camera;
     
-        
         let ground = new Ground(scene, currentUrl, 128, 128, mapSidelength);
         scene.registerBeforeRender(() => {
             ground.updateRevealerPositions(revealers);
             ground.updateSelectedPositions(revealers);
         });
-
         
         let pipeline = new RenderingPipeline(scene, mainCamera.camera);
         
-        let revealers = populateScene(canvas, engine, scene, mainCamera.camera, currentUrl);
+        let meshes: Mesh[] = [];
+        for (let meshName in meshesInAssetContainers) {
+            let assetContainer = meshesInAssetContainers[meshName];
+            let cloneMaterialsAndDontShareThem = true;
+            let instantiatedEntries = assetContainer.instantiateModelsToScene((name) => "p_" + name, cloneMaterialsAndDontShareThem);
+            meshes.push(instantiatedEntries.rootNodes[0] as Mesh);
+        }
+        
+        let revealers = populateScene(canvas, engine, scene, mainCamera.camera, currentUrl, meshes);
 
         let keyboardInputManager = new KeyboardInputManager(scene);
-        keyboardInputManager.registerCallback("KeyF", "launchFullscreenCaller", this.nop, this.launchFullscreen, null);
-        keyboardInputManager.registerCallback("KeyI", "toggleDebugLayerCaller", this.nop, this.toggleDebugLayer, scene);
+        keyboardInputManager.registerCallback("KeyF", "launchFullscreenCaller", this._nop, this._launchFullscreen, null);
+        keyboardInputManager.registerCallback("KeyI", "toggleDebugLayerCaller", this._nop, this._toggleDebugLayer, scene);
         
-        let unitToSlice = new Unit(scene, new Vector3(0.0, 0.0, 0.0), "unitToSlice", 5.0, currentUrl);
+        /*let unitToSlice = new Unit(scene, new Vector3(0.0, 0.0, 0.0), "unitToSlice", 5.0, currentUrl, MeshBuilder.CreateBox("boxForSlicing", {size: 0.5}, scene));
         let sliceMesh = new SliceMesh();
-        let [meshParts, explodeMeshMovementDirections, explodeMeshMovementRotations] = sliceMesh.slice(scene, unitToSlice.mesh, 7);
+        let [meshParts, explodeMeshMovementDirections, explodeMeshMovementRotations] = sliceMesh.slice(scene, unitToSlice.mesh, 6);
         let explosionMovementStrengthFactor = 0.05;
         scene.registerBeforeRender(() => {
             for (let i = 0; i < meshParts.length; i++) {
@@ -273,10 +357,10 @@ class SquadronsOfAbandonement {
                 meshParts[i].rotation.y += explodeMeshMovementRotations[i].y * explosionMovementStrengthFactor;
                 meshParts[i].rotation.z += explodeMeshMovementRotations[i].z * explosionMovementStrengthFactor;
             }
-        });
+        });*/
         
         let explosionEffect = new ExplosionEffect(mainCamera.camera, scene, currentUrl);
-        explosionEffect.createExplosionWithShockwave("shockwaveEffect0", new Vector3(0.0, 0.0, 0.0), scene, mainCamera, window.innerWidth, window.innerHeight, this.project);
+        explosionEffect.createExplosionWithShockwave("shockwaveEffect0", new Vector3(0.0, 0.0, 0.0), scene, mainCamera, window.innerWidth, window.innerHeight, this._project);
         
         let spaceshipTrailParent = MeshBuilder.CreateSphere("sphere", {diameter: 0.1}, scene);
         let spaceshipTrail = new SpaceshipTrail("spaceshipTrail0", spaceshipTrailParent, scene, mainCamera.camera, 0.1);
@@ -314,8 +398,6 @@ class SquadronsOfAbandonement {
                 k++;
             }
         )
-        
-        
 
         scene.onPointerDown = function (evt: any, pickResult: any) {
             if (pickResult.hit && pickResult.pickedMesh != null) {
@@ -336,11 +418,16 @@ class SquadronsOfAbandonement {
             engine.resize();
         });
         
+        let divFps = document.getElementById("fps");
+        
         let i = 0;
         engine.runRenderLoop(() => {
             // here all updating stuff must be updated
             i += 0.001;
-            //gui.setAbilityProgress(i);
+            //gui.setAbilityProgress(i);l
+            if (divFps) {
+                divFps.innerHTML = engine.getFps().toFixed() + " fps";
+            }
 
             let displacement = 0.025 * mainCamera.camera.radius;
             let cameraPosition = mainCamera.camera.position;
@@ -377,11 +464,11 @@ class SquadronsOfAbandonement {
         });
     }
     
-    private launchFullscreen(data: any) {
+    private _launchFullscreen(data: any) {
         document.documentElement.requestFullscreen();
     }
     
-    private toggleDebugLayer(data: any) {
+    private _toggleDebugLayer(data: any) {
         if (data.debugLayer.isVisible()) {
             data.debugLayer.hide();
         } else {
@@ -389,10 +476,10 @@ class SquadronsOfAbandonement {
         }
     }
     
-    private nop(data: any) {
+    private _nop(data: any) {
     }
     
-    private project(worldPosition: Vector3, scene: Scene, canvasWidth: number, canvasHeight: number): [Vector2, number] {
+    private _project(worldPosition: Vector3, scene: Scene, canvasWidth: number, canvasHeight: number): [Vector2, number] {
         // Coordinate system is from screen_top_left = [0, 0]
         // to screen_bottom_right = [screen_width, screen_height]
         let vector3 = Vector3.Project(
@@ -406,7 +493,7 @@ class SquadronsOfAbandonement {
         return [screenPos, depth];
     }
     
-    private unproject(screenPosition: Vector2, depth: number, engine: Engine, scene: Scene): Vector3 {
+    private _unproject(screenPosition: Vector2, depth: number, engine: Engine, scene: Scene): Vector3 {
         // TODO: test if this works
         return Vector3.Unproject(
             new Vector3(screenPosition.x, screenPosition.y, depth),

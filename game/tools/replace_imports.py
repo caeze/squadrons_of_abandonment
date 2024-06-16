@@ -12,6 +12,7 @@ TextBlock,"""
 core_imports = """AbstractMesh,
 ArcRotateCamera,
 ArcRotateCameraPointersInput,
+AssetContainer,
 AssetsManager,
 BoxParticleEmitter,
 Camera,
