@@ -1,4 +1,5 @@
-![Logo](game/public/assets/img/squadronsOfAbandonementLogo.png
+![Logo](game/public/assets/img/squadronsOfAbandonementLogo.png)
+
 
 Squadrons of Abandonement
 =========================
