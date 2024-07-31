@@ -10,6 +10,19 @@ VERY GOOD!!!:
 blaster effects laser shooting: https://playground.babylonjs.com/#CMS27E#8
 
 
+Laser beam Babylonjs
+https://www.babylonjs-playground.com/#1U7OXA
+
+Procedural texture fire
+https://www.babylonjs-playground.com/#1HECPU#48
+
+Game AI
+https://mugen87.github.io/yuka/examples/
+
+Colyseus for networking
+
+Pulse Wave scanning effect
+https://playground.babylonjs.com/#4QH8JM
 
 
 
