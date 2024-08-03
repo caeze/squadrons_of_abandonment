@@ -8,11 +8,11 @@ uniform float revealersX[MAX_REVEALERS];
 uniform float revealersZ[MAX_REVEALERS];
 uniform float revealersRadius[MAX_REVEALERS];
 
-uniform int unitsCurrentCount;
-uniform float unitsX[MAX_UNITS];
-uniform float unitsZ[MAX_UNITS];
-uniform float unitsRadius[MAX_UNITS];
-uniform float unitsType[MAX_UNITS]; // 0: hovered unit, 1: clicked unit
+uniform int entitiesCurrentCount;
+uniform float entitiesX[MAX_ENTITIES];
+uniform float entitiesZ[MAX_ENTITIES];
+uniform float entitiesRadius[MAX_ENTITIES];
+uniform float entitiesType[MAX_ENTITIES]; // 0: hovered entity, 1: clicked entity
 
 // Varying values were created by the vertex shader and are fetched in the fragment shader.
 // They are also interpolated from the three calls made in the vertex shader.
@@ -72,9 +72,9 @@ bool isOuterBorderLine(float mapBorderLineWidth, float mapBorderDashedWidth) {
            (pixelWorldPosition.z < -(mapSidelength / 2.0 - mapBorderLineWidth));
 }
 
-void getDistancesToAllUnits(inout float thisPixelDistToUnits[MAX_UNITS]) {
-    for (int i = 0; i < unitsCurrentCount; i++) {
-        thisPixelDistToUnits[i] = length(pixelWorldPosition.xz - vec2(unitsX[i], unitsZ[i]));
+void getDistancesToAllEntities(inout float thisPixelDistToEntities[MAX_ENTITIES]) {
+    for (int i = 0; i < entitiesCurrentCount; i++) {
+        thisPixelDistToEntities[i] = length(pixelWorldPosition.xz - vec2(entitiesX[i], entitiesZ[i]));
     }
 }
 
@@ -85,44 +85,44 @@ void main() {
     float gridSubdivisionFactor = 1.0;
     float mapBorderLineWidth = 0.025;
     float mapBorderDashedWidth = 0.1;
-    float solidUnitRingWidth = 0.025;
-    float dottedUnitRingWidth = 0.025;
-    int dottedUnitRingSegments = 10;
+    float solidEntityRingWidth = 0.025;
+    float dottedEntityRingWidth = 0.025;
+    int dottedEntityRingSegments = 10;
     float percentageFilledPerSegment = 0.5;
     
-    // Calculate distances to units.
-    float thisPixelDistToUnits[MAX_UNITS];
-    getDistancesToAllUnits(thisPixelDistToUnits);
+    // Calculate distances to entities.
+    float thisPixelDistToEntities[MAX_ENTITIES];
+    getDistancesToAllEntities(thisPixelDistToEntities);
     
-    // Calculate if unit selection coloring should be applied.
-    bool isInsideAnyUnitRadius = false;
+    // Calculate if entity selection coloring should be applied.
+    bool isInsideAnyEntityRadius = false;
     bool isInsideSolidRing = false;
     bool isInsideDottedRing = false;
-    vec4 unitSelectionColor = vec4(1.0, 0.0, 0.0, 0.5);
-    for (int i = 0; i < unitsCurrentCount; i++) {
-        if (thisPixelDistToUnits[i] < unitsRadius[i]) {
-            isInsideAnyUnitRadius = true;
+    vec4 entitySelectionColor = vec4(1.0, 0.0, 0.0, 0.5);
+    for (int i = 0; i < entitiesCurrentCount; i++) {
+        if (thisPixelDistToEntities[i] < entitiesRadius[i]) {
+            isInsideAnyEntityRadius = true;
             break;
-        } else if (thisPixelDistToUnits[i] < unitsRadius[i] + solidUnitRingWidth) {
-            isInsideSolidRing = unitsType[i] > 0.0;
-            unitSelectionColor = vec4(0.0, 1.0, 0.0, 1.0);
-        } else if (thisPixelDistToUnits[i] < unitsRadius[i] + solidUnitRingWidth + dottedUnitRingWidth) {
-            vec2 pixelPosition = pixelWorldPosition.xz - vec2(unitsX[i], unitsZ[i]);
+        } else if (thisPixelDistToEntities[i] < entitiesRadius[i] + solidEntityRingWidth) {
+            isInsideSolidRing = entitiesType[i] > 0.0;
+            entitySelectionColor = vec4(0.0, 1.0, 0.0, 1.0);
+        } else if (thisPixelDistToEntities[i] < entitiesRadius[i] + solidEntityRingWidth + dottedEntityRingWidth) {
+            vec2 pixelPosition = pixelWorldPosition.xz - vec2(entitiesX[i], entitiesZ[i]);
             float angleFloat = atan(pixelPosition.x, pixelPosition.y);
             float angle = degrees(angleFloat) + 180.0;
-            float positionInSegment = float(int(angle) % int(360.0 / float(dottedUnitRingSegments)));
-            if (positionInSegment < 360.0 / float(dottedUnitRingSegments) * percentageFilledPerSegment) {
+            float positionInSegment = float(int(angle) % int(360.0 / float(dottedEntityRingSegments)));
+            if (positionInSegment < 360.0 / float(dottedEntityRingSegments) * percentageFilledPerSegment) {
                 isInsideDottedRing = true;
-                unitSelectionColor = vec4(0.0, 1.0, 0.0, 1.0);
+                entitySelectionColor = vec4(0.0, 1.0, 0.0, 1.0);
             }
         }
     }
     
     // Calculate the output color.
-    if (isInsideAnyUnitRadius) {
+    if (isInsideAnyEntityRadius) {
         discard;
     } else if (isInsideSolidRing || isInsideDottedRing) {
-        gl_FragColor = unitSelectionColor;
+        gl_FragColor = entitySelectionColor;
     } else {
         float checkerboardX = pixelWorldPosition.x * gridSubdivisionFactor - floor(pixelWorldPosition.x * gridSubdivisionFactor);
         float checkerboardZ = pixelWorldPosition.z * gridSubdivisionFactor - floor(pixelWorldPosition.z * gridSubdivisionFactor);

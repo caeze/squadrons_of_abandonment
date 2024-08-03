@@ -73,14 +73,13 @@ WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
-export class Entity {
-    private _scene: Scene;
-    public mesh: Mesh;
-    public radius: number;
+export class ConsoleFunctions {
+	public constructor() {
+        (window as any).displayNumber = this._displayNumber;
+	}
     
-    public constructor(scene: Scene, mesh: Mesh, radius: number) {
-        this._scene = scene;
-        this.mesh = mesh;
-        this.radius = radius;
-    }
+    private _displayNumber(arg0: number): boolean {
+        alert(arg0);
+        return true;
+	}
 }

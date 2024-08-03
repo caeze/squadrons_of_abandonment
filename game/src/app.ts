@@ -17,6 +17,7 @@ ArcRotateCameraPointersInput,
 AssetContainer,
 AssetsManager,
 BoxParticleEmitter,
+BoundingInfo,
 Camera,
 Color3,
 Color4,
@@ -82,7 +83,6 @@ import { Sun } from "./Sun";
 import { Gui } from "./Gui";
 import { Minimap } from "./Minimap";
 import { RenderingPipeline } from "./RenderingPipeline";
-import { MouseSelectionBox } from "./MouseSelectionBox";
 import { KeyboardInputManager } from "./KeyboardInputManager";
 import { MainCamera } from "./MainCamera";
 import { SpaceshipTrail } from "./SpaceshipTrail";
@@ -95,12 +95,18 @@ import { AmbientLight } from "./AmbientLight";
 import { Skybox } from "./Skybox";
 import { ExplosionEffect, ShockwaveEffectHandler } from "./ExplosionEffect";
 import { SliceMesh } from "./SliceMesh";
+import { ConsoleFunctions } from "./ConsoleFunctions";
+import { SelectionManager } from "./SelectionManager";
+
+// TODO: the scene transformation matrix is not updated when the camera is moved once there is the mnimap Camera
+// TODO: the bounding info of the imported gltf files is wromng as they have two nodes inside and only one has the correct info but the other has the mesh and texture data
+// TODO: mesh picking does not work
 
 function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string, meshes: Mesh[]): Unit[] {
     
-    let sun = new Sun(scene, camera, engine, currentUrl);
+    //let sun = new Sun(scene, camera, engine, currentUrl);
     
-    let units = new Array<Unit>;
+    let units: Unit[] = [];
     for (let i = 0; i < meshes.length; i++) {
         let unit = new Unit(scene, new Vector3(0, 0, 0), "box" + i, 5.0, currentUrl, meshes[i]);
         units.push(unit);
@@ -110,7 +116,7 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
         //units[0].mesh.rotation.x += 0.005;
         //units[0].mesh.rotation.y += 0.005;
         units[1].mesh.position.x += 0.005;
-        //units[1].mesh.rotation.x += 0.005;
+        units[1].mesh.rotation.x += 0.005;
         //units[1].mesh.rotation.y += 0.005;
         units[0].mesh.rotationQuaternion = null;
         units[1].mesh.rotationQuaternion = null;
@@ -147,7 +153,6 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
             exhaustParticleSystem.color1 = new Color4(1, 0.5, 0.5, 0.8);
             exhaustParticleSystem.color2 = new Color4(1, 0, 0, 1);
             exhaustParticleSystem.start();
-            console.log(exhaustParticleSystem);
         }
     }
     
@@ -200,7 +205,6 @@ function populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera
 
 class SquadronsOfAbandonement {
 	public constructor() {
-        let thisPtr = this;
         let currentUrl = window.location.href;
         
         let loadingScreenDiv = document.getElementById("loadingScreenDiv");
@@ -254,7 +258,10 @@ class SquadronsOfAbandonement {
                     loadedMeshes[j].renderingGroupId = RenderingGroupId.MAIN;
                     loadedMeshes[j].layerMask = CameraLayerMask.MAIN;
                     loadedMeshes[j].isPickable = true;
+                    loadedMeshes[j].showBoundingBox = true;
                     assetContainer.meshes.push(loadedMeshes[j]);
+                    //loadedMeshes[j].setBoundingInfo(new BoundingInfo(new Vector3(-3, -3, -3), new Vector3(5, 5, 5)));
+                    //console.log(loadedMeshes[j].name, loadedMeshes[j].getBoundingInfo().boundingBox)
                 }
                 assetContainer.removeAllFromScene();
                 assetContainers[loadedMeshName] = assetContainer;
@@ -309,23 +316,22 @@ class SquadronsOfAbandonement {
         let skybox = new Skybox(scene, currentUrl);
         let ambientLight = new AmbientLight(scene);
         let gui = new Gui(currentUrl, window.innerWidth, window.innerHeight);
-        let mouseSelectionBox = new MouseSelectionBox();
-        mouseSelectionBox.createMouseSelectionBox(scene, gui.advancedTexture);
         
         let mainCamera = new MainCamera(canvas, scene);
         scene.registerBeforeRender(() => {
             mainCamera.runBeforeRender();
         });
-        let minimap = new Minimap(scene, mainCamera.camera, engine, currentUrl, mapSidelength);
+        /*let minimap = new Minimap(scene, mainCamera.camera, engine, currentUrl, mapSidelength);
         scene.activeCameras = [];
-        scene.activeCameras.push(mainCamera.camera);
         scene.activeCameras.push(minimap.minimapCamera);
-        scene.cameraToUseForPointers = mainCamera.camera;
+        scene.activeCameras.push(mainCamera.camera);
+        scene.cameraToUseForPointers = mainCamera.camera;*/
     
+        let selectedEntities: Entity[] = [];
         let ground = new Ground(scene, currentUrl, 128, 128, mapSidelength);
         scene.registerBeforeRender(() => {
             ground.updateRevealerPositions(revealers);
-            ground.updateSelectedPositions(revealers);
+            ground.updateSelectedPositions(selectedEntities);
         });
         
         let pipeline = new RenderingPipeline(scene, mainCamera.camera);
@@ -339,10 +345,28 @@ class SquadronsOfAbandonement {
         }
         
         let revealers = populateScene(canvas, engine, scene, mainCamera.camera, currentUrl, meshes);
-
+        let entities = revealers;
+        
+        let getAllEntitiesFunction = () => {
+            return entities;
+        }
+        let selectedEntitiesCallbackFunction = (newlySelectedEntities: Entity[]) => {
+            selectedEntities.length = 0;
+            selectedEntities.push(...newlySelectedEntities);
+        }
+        let pickInScenePositionFunction = (position: Vector2) => {
+            return this.pickInScenePosition(scene, position, getAllEntitiesFunction());
+        }
+        let pickInSceneBoxFunction = (topLeftPosition: Vector2, bottomRightPosition: Vector2) => {
+            return this.pickInSceneBox(scene, engine, mainCamera.camera, topLeftPosition, bottomRightPosition, getAllEntitiesFunction());
+        }
+        let selectionManager = new SelectionManager(getAllEntitiesFunction, selectedEntitiesCallbackFunction, pickInScenePositionFunction, pickInSceneBoxFunction, gui.advancedTexture);
+        
         let keyboardInputManager = new KeyboardInputManager(scene);
         keyboardInputManager.registerCallback("KeyF", "launchFullscreenCaller", this._nop, this._launchFullscreen, null);
         keyboardInputManager.registerCallback("KeyI", "toggleDebugLayerCaller", this._nop, this._toggleDebugLayer, scene);
+        
+        let consoleFunctions = new ConsoleFunctions();
         
         /*let unitToSlice = new Unit(scene, new Vector3(0.0, 0.0, 0.0), "unitToSlice", 5.0, currentUrl, MeshBuilder.CreateBox("boxForSlicing", {size: 0.5}, scene));
         let sliceMesh = new SliceMesh();
@@ -360,27 +384,9 @@ class SquadronsOfAbandonement {
         });*/
         
         let explosionEffect = new ExplosionEffect(mainCamera.camera, scene, currentUrl);
-        explosionEffect.createExplosionWithShockwave("shockwaveEffect0", new Vector3(0.0, 0.0, 0.0), scene, mainCamera, window.innerWidth, window.innerHeight, this._project);
+        explosionEffect.createExplosionWithShockwave("shockwaveEffect0", new Vector3(0.0, 0.0, 0.0), scene, mainCamera, window.innerWidth, window.innerHeight, SquadronsOfAbandonement._project);
         
-        let spaceshipTrailParent = MeshBuilder.CreateSphere("sphere", {diameter: 0.1}, scene);
-        let spaceshipTrail = new SpaceshipTrail("spaceshipTrail0", spaceshipTrailParent, scene, mainCamera.camera, 0.1);
-        let spaceshipTrailShaderMaterial = new ShaderMaterial(
-            "spaceshipTrailShaderMaterial",
-            scene,
-            currentUrl + "/assets/shaders/solidColor", // searches for solidColor.vertex.fx and solidColor.fragment.fx
-            {
-                attributes: ["position"],
-                uniforms: ["worldViewProjection", "color"],
-            }
-        );
-        spaceshipTrailShaderMaterial.setFloats("color", [0.5, 0.0, 0.0, 0.5]);
-        spaceshipTrailShaderMaterial.forceDepthWrite = true;
-        spaceshipTrailShaderMaterial.transparencyMode = Material.MATERIAL_ALPHABLEND;
-        spaceshipTrailShaderMaterial.alpha = 0.0;
-        spaceshipTrail.renderingGroupId = RenderingGroupId.MAIN;
-        spaceshipTrail.layerMask = CameraLayerMask.MAIN;
-        spaceshipTrail.alphaIndex = 1;
-        spaceshipTrail.material = spaceshipTrailShaderMaterial;
+        let spaceshipTrail = new SpaceshipTrail("spaceshipTrail0", scene, mainCamera.camera, new Vector3(0.0, 0.0, 0.0), currentUrl, new Color4(0.5, 0.0, 0.0, 0.5), 0.1);
         let k = 0;
         let p = [
             Math.random() * 180 + 20,
@@ -392,28 +398,32 @@ class SquadronsOfAbandonement {
         ]
         scene.onBeforeRenderObservable.add(
             () => {
-                spaceshipTrailParent.position.x = 5 * (Math.sin(k / p[0]) + Math.cos(k / p[3]));
-                spaceshipTrailParent.position.y = 5 * (Math.sin(k / p[1]) + Math.cos(k / p[4]));
-                spaceshipTrailParent.position.z = 5 * (Math.sin(k / p[2]) + Math.cos(k / p[5]));
+                let newPosition = new Vector3();
+                newPosition.x = 5 * (Math.sin(k / p[0]) + Math.cos(k / p[3]));
+                newPosition.y = 5 * (Math.sin(k / p[1]) + Math.cos(k / p[4]));
+                newPosition.z = 5 * (Math.sin(k / p[2]) + Math.cos(k / p[5]));
+                spaceshipTrail.update(newPosition);
                 k++;
             }
         )
-
-        scene.onPointerDown = function (evt: any, pickResult: any) {
-            if (pickResult.hit && pickResult.pickedMesh != null) {
-                console.log(pickResult);
-                console.log(pickResult.pickedPoint);
-                console.log(pickResult.pickedMesh.name);
-            }
-        };
-        document.addEventListener("click", (e: Event) => {
-            console.log(e);
+        
+        scene.onPointerObservable.add((eventData: any) => {
+            let mousePositionX = scene.pointerX;
+            let mousePositionY = scene.pointerY;
+            let mousePosition = new Vector2(mousePositionX, mousePositionY);
+            let eventDataType = eventData.type;
+            let mouseButtonId = eventData.event.button;
+            selectionManager.onMouseMove(mousePosition, eventDataType, mouseButtonId);
         });
+        
+        /*document.addEventListener("click", (e: Event) => {
+            console.log(e);
+        });*/
         
         window.addEventListener("resize", function() {
             canvas.style.width = window.innerWidth + "px";
             canvas.style.height = window.innerHeight + "px";
-            minimap.resize(window.innerWidth, window.innerHeight);
+            //minimap.resize(window.innerWidth, window.innerHeight);
             gui.updateGuiPositions(window.innerWidth, window.innerHeight);
             engine.resize();
         });
@@ -464,6 +474,61 @@ class SquadronsOfAbandonement {
         });
     }
     
+    private _destroyScene() {
+        // TODO: implement this:
+		//scene.onBeforeRenderObservable.removeCallback(this.update);
+    }
+    
+    public pickInScenePosition(scene: Scene, position: Vector2, allEntities: Entity[]): Entity[] {
+        // TODO: you can reduce the number of candidates with mesh.isPickabke = false
+        //       Other option is to create impostors (simple invisible meshes that will be be picked instead of complex ones)
+        let selectedEntities: Entity[] = [];
+	    let pickResult = scene.pick(0, 0);
+        if (pickResult.hit && pickResult.pickedMesh != null) {
+            //console.log(position.x, position.y);
+            //console.log(pickResult);
+            //console.log(pickResult.pickedPoint);
+            //console.log(pickResult.pickedMesh.name);
+            for (let i = 0; i < allEntities.length; i++) {
+                if (pickResult.pickedMesh.uniqueId == allEntities[i].mesh.uniqueId) {
+                    selectedEntities.push(allEntities[i]);
+                    break;
+                }
+            }
+        }
+        return selectedEntities;
+    }
+    
+    public pickInSceneBox(scene: Scene, engine: Engine, camera: Camera, topLeftPosition: Vector2, bottomRightPosition: Vector2, allEntities: Entity[]): Entity[] {
+        let selectedEntities: Entity[] = [];
+        for (let i = 2; i < allEntities.length; i++) {
+            let boundingVectors = allEntities[i].mesh.getHierarchyBoundingVectors();
+            let boundingInfo = new BoundingInfo(boundingVectors.min, boundingVectors.max);
+            allEntities[i].mesh.refreshBoundingInfo(true, true);
+            console.log(boundingInfo);
+            let boundingBoxCorners = boundingInfo.boundingBox.vectorsWorld;
+            //boundingBoxCorners.push(allEntities[i].mesh.getBoundingInfo().boundingBox.centerWorld);
+            /*let [screenPos, depth] = SquadronsOfAbandonement._project(new Vector3(0,0,0), scene, canvasWidth, canvasHeight);
+                console.log(screenPos, depth);*/
+            /*let meshScreenPoint = Vector3.Project(new Vector3(0,0,0), Matrix.Identity(), scene.getTransformMatrix(), camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+                console.log(meshScreenPoint);*/
+            for (let j = 0; j < boundingBoxCorners.length; j++) {
+            console.log(boundingBoxCorners[j].x, boundingBoxCorners[j].y, boundingBoxCorners[j].z);
+                // TODO: replace with this.project method
+                let screenPos = Vector3.Project(boundingBoxCorners[j], Matrix.Identity(), scene.getTransformMatrix(), camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+               // console.log(screenPos);
+                let meshScreenPoint = Vector3.Project(boundingBoxCorners[j], Matrix.Identity(), scene.getTransformMatrix(), camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+
+                if (topLeftPosition.x < screenPos.x && bottomRightPosition.x > screenPos.x && topLeftPosition.y < screenPos.y && bottomRightPosition.y > screenPos.y) {
+                    selectedEntities.push(allEntities[i]);
+                    break;
+                }
+            }
+            break;
+        }
+        return selectedEntities;
+    }
+    
     private _launchFullscreen(data: any) {
         document.documentElement.requestFullscreen();
     }
@@ -479,7 +544,8 @@ class SquadronsOfAbandonement {
     private _nop(data: any) {
     }
     
-    private _project(worldPosition: Vector3, scene: Scene, canvasWidth: number, canvasHeight: number): [Vector2, number] {
+    private static _project(worldPosition: Vector3, scene: Scene, canvasWidth: number, canvasHeight: number): [Vector2, number] {
+        // TODO: canvasWidth and Height not needed because it can be replaced with camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight())?
         // Coordinate system is from screen_top_left = [0, 0]
         // to screen_bottom_right = [screen_width, screen_height]
         let vector3 = Vector3.Project(
@@ -493,7 +559,7 @@ class SquadronsOfAbandonement {
         return [screenPos, depth];
     }
     
-    private _unproject(screenPosition: Vector2, depth: number, engine: Engine, scene: Scene): Vector3 {
+    private static _unproject(screenPosition: Vector2, depth: number, engine: Engine, scene: Scene): Vector3 {
         // TODO: test if this works
         return Vector3.Unproject(
             new Vector3(screenPosition.x, screenPosition.y, depth),

@@ -10,6 +10,11 @@ VERY GOOD!!!:
 blaster effects laser shooting: https://playground.babylonjs.com/#CMS27E#8
 
 
+VERY GOOD!
+draw on meshes via selection box
+https://playground.babylonjs.com/#KV6LQT#4
+
+
 Laser beam Babylonjs
 https://www.babylonjs-playground.com/#1U7OXA
 

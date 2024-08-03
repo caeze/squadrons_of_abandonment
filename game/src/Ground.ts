@@ -75,12 +75,12 @@ WebGPUEngine,
 
 import { RenderingGroupId } from "./RenderingGroupId";
 import { CameraLayerMask } from "./CameraLayerMask";
-import { Unit } from "./Unit";
+import { Entity } from "./Entity";
 
 export class Ground {
 	private _groundShaderMaterial: ShaderMaterial;
     
-    public constructor(scene: Scene, currentUrl: string, maxRevealers: number, maxUnits: number, mapSidelength: number) {
+    public constructor(scene: Scene, currentUrl: string, maxRevealers: number, maxEntities: number, mapSidelength: number) {
         let ground = MeshBuilder.CreatePlane("ground", {size: mapSidelength});
         this._groundShaderMaterial = new ShaderMaterial(
             "groundShaderMaterial",
@@ -96,15 +96,15 @@ export class Ground {
                     "revealersX",
                     "revealersZ",
                     "revealersRadius",
-                    "unitsCurrentCount",
-                    "unitsX",
-                    "unitsZ",
-                    "unitsRadius",
-                    "unitsType",
+                    "entitiesCurrentCount",
+                    "entitiesX",
+                    "entitiesZ",
+                    "entitiesRadius",
+                    "entitiesType",
                 ],
                 defines: [
                     "#define MAX_REVEALERS " + maxRevealers,
-                    "#define MAX_UNITS " + maxUnits,
+                    "#define MAX_ENTITIES " + maxEntities,
                 ],
             }
         );
@@ -119,37 +119,37 @@ export class Ground {
         this._groundShaderMaterial.setFloat("mapSidelength", mapSidelength);
     }
 
-	public updateRevealerPositions(units: Unit[]) {
+	public updateRevealerPositions(entities: Entity[]) {
         const revealersX = [];
         const revealersZ = [];
         const revealersRadius = [];
-        for(let i = 0; i < units.length; i++) {
-            revealersX.push(units[i].mesh.position.x);
-            revealersZ.push(units[i].mesh.position.z);
-            revealersRadius.push(units[i].radius);
+        for(let i = 0; i < entities.length; i++) {
+            revealersX.push(entities[i].mesh.position.x);
+            revealersZ.push(entities[i].mesh.position.z);
+            revealersRadius.push(entities[i].radius);
         }
-        this._groundShaderMaterial.setInt("revealersCurrentCount", units.length);
+        this._groundShaderMaterial.setInt("revealersCurrentCount", entities.length);
         this._groundShaderMaterial.setFloats("revealersX", revealersX);
         this._groundShaderMaterial.setFloats("revealersZ", revealersZ);
         this._groundShaderMaterial.setFloats("revealersRadius", revealersRadius);
 	}
 
-	public updateSelectedPositions(units: Unit[]) {
-        const unitsX = [];
-        const unitsZ = [];
-        const unitsRadius = [];
-        const unitsType = [];
-        const unitsColor = [];
-        for(let i = 0; i < units.length; i++) {
-            unitsX.push(units[i].mesh.position.x);
-            unitsZ.push(units[i].mesh.position.z);
-            unitsRadius.push(units[i].radius / 5.0);
-            unitsType.push(i);
+	public updateSelectedPositions(entities: Entity[]) {
+        const entitiesX = [];
+        const entitiesZ = [];
+        const entitiesRadius = [];
+        const entitiesType = [];
+        const entitiesColor = [];
+        for(let i = 0; i < entities.length; i++) {
+            entitiesX.push(entities[i].mesh.position.x);
+            entitiesZ.push(entities[i].mesh.position.z);
+            entitiesRadius.push(entities[i].radius / 5.0);
+            entitiesType.push(i);
         }
-        this._groundShaderMaterial.setInt("unitsCurrentCount", units.length);
-        this._groundShaderMaterial.setFloats("unitsX", unitsX);
-        this._groundShaderMaterial.setFloats("unitsZ", unitsZ);
-        this._groundShaderMaterial.setFloats("unitsRadius", unitsRadius);
-        this._groundShaderMaterial.setFloats("unitsType", unitsType);
+        this._groundShaderMaterial.setInt("entitiesCurrentCount", entities.length);
+        this._groundShaderMaterial.setFloats("entitiesX", entitiesX);
+        this._groundShaderMaterial.setFloats("entitiesZ", entitiesZ);
+        this._groundShaderMaterial.setFloats("entitiesRadius", entitiesRadius);
+        this._groundShaderMaterial.setFloats("entitiesType", entitiesType);
 	}
 }

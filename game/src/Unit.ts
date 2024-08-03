@@ -77,9 +77,7 @@ import { Entity } from "./Entity";
 import { RenderingGroupId } from "./RenderingGroupId";
 import { CameraLayerMask } from "./CameraLayerMask";
 
-export class Unit extends Entity {
-    public radius: number;
-    
+export class Unit extends Entity {    
     public constructor(scene: Scene, initialPosition: Vector3, name: string, radius: number, currentUrl: string, mesh: Mesh) {
     
     
@@ -176,7 +174,7 @@ export class Unit extends Entity {
                 }
             }
         );*/
-        super(scene, mesh);
+        super(scene, mesh, radius);
         
         //let result = await this._loadMeshes(scene, currentUrl, glbFileName);
         //let meshes = result.meshes;
@@ -186,7 +184,6 @@ export class Unit extends Entity {
         this.mesh.position = initialPosition;
         this.mesh.isPickable = true;
         
-        this.radius = radius;
         /*this.mesh.renderingGroupId = RenderingGroupId.MAIN;
         this.mesh.layerMask = CameraLayerMask.MAIN;
         this.mesh.position = initialPosition;

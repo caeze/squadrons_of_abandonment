@@ -73,70 +73,71 @@ WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
-export class SpaceshipTrail extends Mesh {
-	private _generator: Mesh;
+import { RenderingGroupId } from "./RenderingGroupId";
+import { CameraLayerMask } from "./CameraLayerMask";
+
+export class SpaceshipTrail {
+	private _trailMesh: Mesh;
 	private _mainCamera: Camera;
 	private _radius: number;
 	private _length: number;
     private _points: Vector3[] = [];
 
-	public constructor(name: string, generator: Mesh, scene: Scene, mainCamera: Camera, radius: number = 1, length: number = 60) {
-		super(name, scene);
-		this.layerMask = 1;
-		this._generator = generator;
-		this._mainCamera = mainCamera;
+	public constructor(name: string, scene: Scene, mainCamera: Camera, initialPosition: Vector3, currentUrl: string, color: Color4, radius: number = 1, length: number = 60) {
+		this._trailMesh = new Mesh(name, scene);
+        this._mainCamera = mainCamera;
 		this._radius = radius;
 		this._length = length;
-		this._createMesh();
-		scene.onBeforeRenderObservable.add(this._update);
+		this._createMesh(initialPosition);
+        let shaderMaterial = new ShaderMaterial(
+            name + "ShaderMaterial",
+            scene,
+            currentUrl + "/assets/shaders/solidColor", // searches for solidColor.vertex.fx and solidColor.fragment.fx
+            {
+                attributes: ["position"],
+                uniforms: ["worldViewProjection", "color"],
+            }
+        );
+        shaderMaterial.setFloats("color", [color.r, color.g, color.b, color.a]);
+        shaderMaterial.forceDepthWrite = true;
+        shaderMaterial.transparencyMode = Material.MATERIAL_ALPHABLEND;
+        shaderMaterial.alpha = 0.0;
+        this._trailMesh.renderingGroupId = RenderingGroupId.MAIN;
+        this._trailMesh.layerMask = CameraLayerMask.MAIN;
+        this._trailMesh.alphaIndex = 1;
+        this._trailMesh.material = shaderMaterial;
 	}
 
 	public destroy(): void {
-		this.getScene().onBeforeRenderObservable.removeCallback(this._update);
-		this.dispose();
+		this._trailMesh.dispose();
 	}
 
-	public foldToGenerator(): void {
-        let verticesData = this.getVerticesData(VertexBuffer.PositionKind);
-        if (verticesData == null) {
-            verticesData = [];
-        }
-		let positions: Array<number> | Float32Array = verticesData;
-		let generatorWorldPosition = this._generator.absolutePosition;
-		for (let i = 0; i < positions.length; i += 3) {
-			positions[i] = generatorWorldPosition.x;
-			positions[i + 1] = generatorWorldPosition.y;
-			positions[i + 2] = generatorWorldPosition.z;
-		}
-	}
-
-	private _createMesh(): void {
+	private _createMesh(initialPosition: Vector3) {
 		let data: VertexData = new VertexData();
 		let positions: Array<number> = [];
 		let indices: Array<number> = [];
-
         let index = 0;
-        let initialPosition = this._generator.absolutePosition.asArray();
+        let initialPositionArray = initialPosition.asArray();
 		for (let i = 0; i < this._length - 1; i++) {
-            positions.push(...initialPosition);
-            positions.push(...initialPosition);
+            positions.push(...initialPositionArray);
+            positions.push(...initialPositionArray);
             indices.push(index, index + 1, index + 3);
             indices.push(index, index + 3, index + 2);
             index += 2;
         }
-        positions.push(...initialPosition);
-        positions.push(...initialPosition);
+        positions.push(...initialPositionArray);
+        positions.push(...initialPositionArray);
 
 		data.positions = positions;
 		data.indices = indices;
         data.normals = [];
         VertexData.ComputeNormals(data.positions, data.indices, data.normals);
-		data.applyToMesh(this, true);
+		data.applyToMesh(this._trailMesh, true);
 	}
 
-	private _update = () => {
-        let initialPosition = this._generator.position.asArray();
-        this._points.push(this._generator.position.clone());
+	public update(newPosition: Vector3) {
+        let newPositionArray = newPosition.asArray();
+        this._points.push(newPosition.clone());
         while (this._points.length > this._length) {
             this._points.splice(0, 1);
         }
@@ -153,13 +154,12 @@ export class SpaceshipTrail extends Mesh {
                 normals.push(...norm.asArray(), ...norm.asArray());
             }
             else {
-                positions.push(...initialPosition);
-                positions.push(...initialPosition);
+                positions.push(...newPositionArray);
+                positions.push(...newPositionArray);
                 normals.push(0, 1, 0, 0, 1, 0);
             }
         }
-
-        this.updateVerticesData(VertexBuffer.PositionKind, positions, true, false);
-	    this.updateVerticesData(VertexBuffer.NormalKind, normals, true, false);
+        this._trailMesh.updateVerticesData(VertexBuffer.PositionKind, positions, true, false);
+	    this._trailMesh.updateVerticesData(VertexBuffer.NormalKind, normals, true, false);
 	}
 }
