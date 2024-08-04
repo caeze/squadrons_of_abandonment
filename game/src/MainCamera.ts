@@ -93,6 +93,7 @@ export class MainCamera {
         this.camera.wheelDeltaPercentage = 0.0;
         this.camera.inertia = 0.7;
         this.camera.minZ = 0.5;
+        this.camera.maxZ = 100000;
         this.camera.checkCollisions = true;
         this.camera.setTarget(Vector3.Zero());
         (this.camera.inputs.attached.pointers as ArcRotateCameraPointersInput).buttons = [1];

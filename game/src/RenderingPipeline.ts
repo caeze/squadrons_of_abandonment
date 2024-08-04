@@ -82,7 +82,7 @@ export class RenderingPipeline {
             scene,
             [mainCamera]
         );
-        let enablePipeline = false;
+        let enablePipeline = true;
         if (defaultPipeline.isSupported && enablePipeline) {
             /* MSAA */
             defaultPipeline.samples = 9; // 1 by default

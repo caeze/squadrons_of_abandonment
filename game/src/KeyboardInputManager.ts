@@ -169,7 +169,7 @@ export class KeyboardInputManager {
     private _callbackFunctionsReleased: Record<string, Record<string, (data: any) => void>> = {};
     private _data: Record<string, Record<string, any>> = {};
 
-    public constructor(scene: Scene) {
+    public constructor() {
         for (let code of this.KEY_CODES) {
             this._keyPressed[code] = false;
         }

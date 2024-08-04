@@ -117,9 +117,9 @@ export class ExplosionEffect {
         })
     }
     
-	public createExplosionWithShockwave(name: string, position: Vector3, scene: Scene, mainCamera: MainCamera, canvasWidth: number, canvasHeight: number, projectionFunction: (worldPosition: Vector3, scene: Scene, canvasWidth: number, canvasHeight: number) => [Vector2, number], disposeAfterMs: number = 2500) {
+	public createExplosionWithShockwave(name: string, position: Vector3, engine: Engine, mainCamera: MainCamera, projectionFunction: (worldPosition: Vector3, engine: Engine, camera: Camera) => [Vector2, number], disposeAfterMs: number = 2500) {
         let explosionTick = function (effect: any, time: number) {
-            let [screenPos, depth] = projectionFunction(position, scene, canvasWidth, canvasHeight);
+            let [screenPos, depth] = projectionFunction(position, engine, mainCamera.camera);
             let screenPosRelative = new Vector2(screenPos.x / window.innerWidth, 1.0 - (screenPos.y / window.innerHeight));
             effect.setVector2("center", screenPosRelative);
         };

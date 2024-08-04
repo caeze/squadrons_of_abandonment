@@ -75,6 +75,7 @@ WebGPUEngine,
 
 import { Entity } from "./Entity";
 import { MouseSelectionBoxOnGui } from "./MouseSelectionBoxOnGui";
+import { SquadronsOfAbandonement } from "./SquadronsOfAbandonement";
 
 export class SelectionManager {
     private _getAllEntitiesFunction: () => Entity[];
@@ -84,11 +85,15 @@ export class SelectionManager {
     private _mouseSelectionBoxOnGui: MouseSelectionBoxOnGui;
     private _lastMousePosition: Vector2;
     
-    public constructor(getAllEntitiesFunction: () => Entity[], selectedEntitiesCallbackFunction: (entities: Entity[]) => void, pickInScenePosition: (position: Vector2) => Entity[], pickInSceneBox: (topLeftPosition: Vector2, bottomRightPosition: Vector2) => Entity[], advancedTexture: AdvancedDynamicTexture) {
+    public constructor(engine: Engine, scene: Scene, camera: Camera, getAllEntitiesFunction: () => Entity[], selectedEntitiesCallbackFunction: (entities: Entity[]) => void, pickInScenePosition: (position: Vector2) => Entity[], pickInSceneBox: (topLeftPosition: Vector2, bottomRightPosition: Vector2) => Entity[], advancedTexture: AdvancedDynamicTexture) {
         this._getAllEntitiesFunction = getAllEntitiesFunction;
         this._selectedEntitiesCallbackFunction = selectedEntitiesCallbackFunction;
-        this._pickInScenePosition = pickInScenePosition;
-        this._pickInSceneBox = pickInSceneBox;
+        this._pickInScenePosition = (position: Vector2) => {
+            return this._pickInScenePositionImpl(scene, camera, mainCamera.camera, position, getAllEntitiesFunction());
+        }
+        this._pickInSceneBox = (topLeftPosition: Vector2, bottomRightPosition: Vector2) => {
+            return this._pickInSceneBoxImpl(engine, camera, topLeftPosition, bottomRightPosition, getAllEntitiesFunction());
+        }
         this._mouseSelectionBoxOnGui = new MouseSelectionBoxOnGui(advancedTexture);
         this._lastMousePosition = new Vector2(-1000000, -1000000);
     }
@@ -132,5 +137,38 @@ export class SelectionManager {
         let entities = this._pickInSceneBox(topLeftPosition, bottomRightPosition);
         this._selectedEntitiesCallbackFunction(entities);
         //console.log("_selectViaBox", entities);
+    }
+    
+    private _pickInScenePositionImpl(scene: Scene, camera: Camera, position: Vector2, allEntities: Entity[]): Entity[] {
+        let selectedEntities: Entity[] = [];
+        let fastCheck = false;
+	    let pickResult = scene.pick(position.x, position.y, undefined, fastCheck, camera);
+        if (pickResult.hit && pickResult.pickedMesh != null) {
+            for (let i = 0; i < allEntities.length; i++) {
+                let entityMesh = allEntities[i].getMainMesh();
+                if (pickResult.pickedMesh.uniqueId == entityMesh.uniqueId) {
+                    selectedEntities.push(allEntities[i]);
+                    break;
+                }
+            }
+        }
+        return selectedEntities;
+    }
+    
+    private _pickInSceneBoxImpl(engine: Engine, camera: Camera, topLeftPosition: Vector2, bottomRightPosition: Vector2, allEntities: Entity[]): Entity[] {
+        let selectedEntities: Entity[] = [];
+        for (let i = 0; i < allEntities.length; i++) {
+            let entityMesh = allEntities[i].getMainMesh();
+            let boundingBoxCorners = entityMesh.getBoundingInfo().boundingBox.vectorsWorld;
+            boundingBoxCorners.push(entityMesh.getBoundingInfo().boundingBox.centerWorld);
+            for (let j = 0; j < boundingBoxCorners.length; j++) {
+                let [screenPos, depth] = SquadronsOfAbandonement.project(boundingBoxCorners[j], engine, camera);
+                if (topLeftPosition.x < screenPos.x && bottomRightPosition.x > screenPos.x && topLeftPosition.y < screenPos.y && bottomRightPosition.y > screenPos.y) {
+                    selectedEntities.push(allEntities[i]);
+                    break;
+                }
+            }
+        }
+        return selectedEntities;
     }
 }

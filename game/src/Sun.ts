@@ -95,7 +95,7 @@ export class Sun {
         glareParticles.particleTexture = new Texture(currentUrl + "/assets/img/particles/sunGlare.png", scene);
 
         //Create core sphere
-        let sunSizeFactor = 1000.0;
+        let sunSizeFactor = 10000.0;
         let coreSphere = MeshBuilder.CreateSphere("coreSphere", {diameter: 2.0001 * sunSizeFactor, segments: 64}, scene);
         coreSphere.position = new Vector3(-3 * sunSizeFactor, -3 * sunSizeFactor, 3 * sunSizeFactor);
 
@@ -195,7 +195,7 @@ export class Sun {
         glareParticles.blendMode = ParticleSystem.BLENDMODE_ADD;
 
         // Set the gravity of all particles
-        let gravity = Vector3.Normalize(coreSphere.position).scale(-1.0);
+        let gravity = Vector3.Normalize(coreSphere.position).scale(-500.0);
         surfaceParticles.gravity = gravity;
         flareParticles.gravity = gravity;
         glareParticles.gravity = gravity;
@@ -255,11 +255,11 @@ export class Sun {
         glareParticles.start();
         
         const lensFlareSystem = new LensFlareSystem("lensFlareSystem", coreSphere, scene);
-        let proximityToSun = 0.2;
-        let colorFactor = 0.5;
-        const flare0 = new LensFlare(0.2, 0.05 + proximityToSun, new Color3(1.0 * colorFactor, 1.0 * colorFactor, 1.0 * colorFactor), currentUrl + "/assets/img/particles/lensFlare2.png", lensFlareSystem);
-        const flare1 = new LensFlare(0.075, 0.3 + proximityToSun, new Color3(0.8 * colorFactor, 0.56 * colorFactor, 0.72 * colorFactor), currentUrl + "/assets/img/particles/lensFlare3.png", lensFlareSystem);
-        const flare2 = new LensFlare(0.1, -0.1 + proximityToSun, new Color3(0.71 * colorFactor, 0.8 * colorFactor, 0.95 * colorFactor), currentUrl + "/assets/img/particles/lensFlare1.png", lensFlareSystem);
-        const flare3 = new LensFlare(0.15, 0.2 + proximityToSun, new Color3(0.95 * colorFactor, 0.89 * colorFactor, 0.71 * colorFactor), currentUrl + "/assets/img/particles/lensFlare1.png", lensFlareSystem);
+        let proximityToSun = 0.1;
+        let colorFactor = 0.75;
+        const flare0 = new LensFlare(0.4, 0.05 + proximityToSun, new Color3(1.0 * colorFactor, 1.0 * colorFactor, 1.0 * colorFactor), currentUrl + "/assets/img/particles/lensFlare2.png", lensFlareSystem);
+        const flare1 = new LensFlare(0.1, 0.3 + proximityToSun, new Color3(0.8 * colorFactor, 0.56 * colorFactor, 0.72 * colorFactor), currentUrl + "/assets/img/particles/lensFlare3.png", lensFlareSystem);
+        const flare2 = new LensFlare(0.2, -0.1 + proximityToSun, new Color3(0.71 * colorFactor, 0.8 * colorFactor, 0.95 * colorFactor), currentUrl + "/assets/img/particles/lensFlare1.png", lensFlareSystem);
+        const flare3 = new LensFlare(0.3, 0.2 + proximityToSun, new Color3(0.95 * colorFactor, 0.89 * colorFactor, 0.71 * colorFactor), currentUrl + "/assets/img/particles/lensFlare1.png", lensFlareSystem);
     }
 }

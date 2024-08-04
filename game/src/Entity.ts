@@ -83,4 +83,8 @@ export class Entity {
         this.mesh = mesh;
         this.radius = radius;
     }
+    
+    public getMainMesh(): Mesh {
+        return this.mesh.getChildren()[0] as Mesh;
+    }
 }
