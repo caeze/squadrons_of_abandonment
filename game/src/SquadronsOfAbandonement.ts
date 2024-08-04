@@ -7,6 +7,7 @@ AdvancedDynamicTexture,
 Button,
 Container,
 Control,
+InputText,
 Rectangle,
 TextBlock,
 } from "@babylonjs/gui/2D";
@@ -14,13 +15,16 @@ import {
 AbstractMesh,
 ArcRotateCamera,
 ArcRotateCameraPointersInput,
+AssetContainer,
 AssetsManager,
+BoundingInfo,
 BoxParticleEmitter,
 Camera,
 Color3,
 Color4,
 ColorCurves,
 Constants,
+CSG,
 CubeTexture,
 DefaultLoadingScreen,
 DefaultRenderingPipeline,
@@ -47,6 +51,7 @@ ParticleHelper,
 ParticleSystem,
 ParticleSystemSet,
 PassPostProcess,
+Plane,
 PointLight,
 PointerEventTypes,
 PostProcess,
@@ -91,17 +96,10 @@ import { ExplosionEffect, ShockwaveEffectHandler } from "./ExplosionEffect";
 import { SliceMesh } from "./SliceMesh";
 import { ConsoleFunctions } from "./ConsoleFunctions";
 import { SelectionManager } from "./SelectionManager";
+import { EntityLoader } from "./EntityLoader";
 
 export class SquadronsOfAbandonement {
 	public constructor() {
-        const myWrapperFunction = async () => {
-            await this._startGame();
-        };
-        let promise = myWrapperFunction();
-        //promise.then(result => console.log(result));
-    }
-    
-    private async _startGame() {
         let currentUrl = window.location.href;
         
         let loadingScreenDiv = document.getElementById("loadingScreenDiv");
@@ -230,7 +228,8 @@ export class SquadronsOfAbandonement {
             meshes.push(instantiatedEntries.rootNodes[0] as Mesh);
         }
         
-        let revealers = populateScene(canvas, engine, scene, mainCamera.camera, currentUrl, meshes);
+        let entityLoader = new EntityLoader();
+        let revealers = entityLoader.populateScene(canvas, engine, scene, mainCamera.camera, currentUrl, meshes);
         let entities = revealers;
         
         let getAllEntitiesFunction = () => {
@@ -240,7 +239,7 @@ export class SquadronsOfAbandonement {
             selectedEntities.length = 0;
             selectedEntities.push(...newlySelectedEntities);
         }
-        let selectionManager = new SelectionManager(engine, scene, mainCamera.camera, getAllEntitiesFunction, selectedEntitiesCallbackFunction, pickInScenePositionFunction, pickInSceneBoxFunction, gui.advancedTexture);
+        let selectionManager = new SelectionManager(engine, scene, mainCamera.camera, getAllEntitiesFunction, selectedEntitiesCallbackFunction, gui.advancedTexture);
         
         let keyboardInputManager = new KeyboardInputManager();
         keyboardInputManager.registerCallback("KeyF", "launchFullscreenCaller", this._nop, this._launchFullscreen, null);
@@ -374,7 +373,7 @@ export class SquadronsOfAbandonement {
     private _nop(data: any) {
     }
     
-    private static project(worldPosition: Vector3, engine: Engine, camera: Camera): [Vector2, number] {
+    public static project(worldPosition: Vector3, engine: Engine, camera: Camera): [Vector2, number] {
         // Coordinate system is from screen_top_left = [0, 0]
         // to screen_bottom_right = [screen_width, screen_height]
         let vector3 = Vector3.Project(
@@ -388,7 +387,7 @@ export class SquadronsOfAbandonement {
         return [screenPos, depth];
     }
     
-    private static unproject(screenPosition: Vector2, depth: number, engine: Engine, scene: Scene): Vector3 {
+    public static unproject(screenPosition: Vector2, depth: number, engine: Engine, scene: Scene): Vector3 {
         // TODO: test if this works
         return Vector3.Unproject(
             new Vector3(screenPosition.x, screenPosition.y, depth),

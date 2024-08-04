@@ -7,6 +7,7 @@ AdvancedDynamicTexture,
 Button,
 Container,
 Control,
+InputText,
 Rectangle,
 TextBlock,
 } from "@babylonjs/gui/2D";
@@ -14,13 +15,16 @@ import {
 AbstractMesh,
 ArcRotateCamera,
 ArcRotateCameraPointersInput,
+AssetContainer,
 AssetsManager,
+BoundingInfo,
 BoxParticleEmitter,
 Camera,
 Color3,
 Color4,
 ColorCurves,
 Constants,
+CSG,
 CubeTexture,
 DefaultLoadingScreen,
 DefaultRenderingPipeline,
@@ -47,6 +51,7 @@ ParticleHelper,
 ParticleSystem,
 ParticleSystemSet,
 PassPostProcess,
+Plane,
 PointLight,
 PointerEventTypes,
 PostProcess,
@@ -85,11 +90,11 @@ export class SelectionManager {
     private _mouseSelectionBoxOnGui: MouseSelectionBoxOnGui;
     private _lastMousePosition: Vector2;
     
-    public constructor(engine: Engine, scene: Scene, camera: Camera, getAllEntitiesFunction: () => Entity[], selectedEntitiesCallbackFunction: (entities: Entity[]) => void, pickInScenePosition: (position: Vector2) => Entity[], pickInSceneBox: (topLeftPosition: Vector2, bottomRightPosition: Vector2) => Entity[], advancedTexture: AdvancedDynamicTexture) {
+    public constructor(engine: Engine, scene: Scene, camera: Camera, getAllEntitiesFunction: () => Entity[], selectedEntitiesCallbackFunction: (entities: Entity[]) => void, advancedTexture: AdvancedDynamicTexture) {
         this._getAllEntitiesFunction = getAllEntitiesFunction;
         this._selectedEntitiesCallbackFunction = selectedEntitiesCallbackFunction;
         this._pickInScenePosition = (position: Vector2) => {
-            return this._pickInScenePositionImpl(scene, camera, mainCamera.camera, position, getAllEntitiesFunction());
+            return this._pickInScenePositionImpl(scene, camera, position, getAllEntitiesFunction());
         }
         this._pickInSceneBox = (topLeftPosition: Vector2, bottomRightPosition: Vector2) => {
             return this._pickInSceneBoxImpl(engine, camera, topLeftPosition, bottomRightPosition, getAllEntitiesFunction());
