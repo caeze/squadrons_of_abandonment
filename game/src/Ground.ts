@@ -45,6 +45,7 @@ Material,
 MaterialPluginBase,
 Matrix,
 Mesh,
+MeshAssetTask,
 MeshBuilder,
 NoiseProceduralTexture,
 ParticleHelper,
@@ -63,6 +64,7 @@ SceneLoader,
 ShaderMaterial,
 SphereParticleEmitter,
 StandardMaterial,
+TextFileAssetTask,
 Texture,
 Tools,
 TransformNode,
@@ -90,7 +92,7 @@ export class Ground {
         this._groundShaderMaterial = new ShaderMaterial(
             "groundShaderMaterial",
             scene,
-            currentUrl + "/assets/shaders/ground", // searches for ground.vertex.fx and ground.fragment.fx
+            currentUrl + "assets/shaders/ground", // searches for ground.vertex.fx and ground.fragment.fx
             {
                 attributes: ["position"],
                 uniforms: [

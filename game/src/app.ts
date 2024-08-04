@@ -45,6 +45,7 @@ Material,
 MaterialPluginBase,
 Matrix,
 Mesh,
+MeshAssetTask,
 MeshBuilder,
 NoiseProceduralTexture,
 ParticleHelper,
@@ -63,6 +64,7 @@ SceneLoader,
 ShaderMaterial,
 SphereParticleEmitter,
 StandardMaterial,
+TextFileAssetTask,
 Texture,
 Tools,
 TransformNode,
@@ -81,6 +83,33 @@ WebGPUEngine,
 // let SPECTOR = require("spectorjs");
 // let spector = new SPECTOR.Spector();
 // spector.displayUI();
+
+export * from "./AmbientLight";
+export * from "./AssetsLoader";
+export * from "./Building";
+export * from "./CameraLayerMask";
+export * from "./ColorHighlightLayer";
+export * from "./ConsoleFunctions";
+export * from "./Emplacement";
+export * from "./Entity";
+export * from "./ExplosionEffect";
+export * from "./Ground";
+export * from "./Gui";
+export * from "./Jupiter";
+export * from "./KeyboardInputManager";
+export * from "./MainCamera";
+export * from "./MapLoader";
+export * from "./Minimap";
+export * from "./MouseSelectionBoxOnGui";
+export * from "./RenderingGroupId";
+export * from "./RenderingPipeline";
+export * from "./SelectionManager";
+export * from "./Skybox";
+export * from "./SliceMesh";
+export * from "./SpaceshipTrail";
+export * from "./SquadronsOfAbandonement";
+export * from "./Sun";
+export * from "./Unit";
 
 import { SquadronsOfAbandonement } from "./SquadronsOfAbandonement";
 

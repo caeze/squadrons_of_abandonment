@@ -45,6 +45,7 @@ Material,
 MaterialPluginBase,
 Matrix,
 Mesh,
+MeshAssetTask,
 MeshBuilder,
 NoiseProceduralTexture,
 ParticleHelper,
@@ -63,6 +64,7 @@ SceneLoader,
 ShaderMaterial,
 SphereParticleEmitter,
 StandardMaterial,
+TextFileAssetTask,
 Texture,
 Tools,
 TransformNode,
@@ -78,25 +80,7 @@ WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
-import { Sun } from "./Sun";
-import { Gui } from "./Gui";
-import { Minimap } from "./Minimap";
-import { RenderingPipeline } from "./RenderingPipeline";
-import { KeyboardInputManager } from "./KeyboardInputManager";
-import { MainCamera } from "./MainCamera";
-import { SpaceshipTrail } from "./SpaceshipTrail";
-import { RenderingGroupId } from "./RenderingGroupId";
-import { Ground } from "./Ground";
-import { Entity } from "./Entity";
-import { Unit } from "./Unit";
-import { CameraLayerMask } from "./CameraLayerMask";
-import { AmbientLight } from "./AmbientLight";
-import { Skybox } from "./Skybox";
-import { ExplosionEffect, ShockwaveEffectHandler } from "./ExplosionEffect";
-import { SliceMesh } from "./SliceMesh";
-import { ConsoleFunctions } from "./ConsoleFunctions";
-import { SelectionManager } from "./SelectionManager";
-import { EntityLoader } from "./EntityLoader";
+import * as SOA from "./app";
 
 export class SquadronsOfAbandonement {
 	public constructor() {
@@ -108,59 +92,29 @@ export class SquadronsOfAbandonement {
         }
         
         let canvas = document.createElement("canvas");
-        /*let gl = canvas.getContext("webgl");
-        if (gl != null) {
-            gl.getParameter(gl.RENDERER);
-        }*/
         canvas.style.width = window.innerWidth + "px";
         canvas.style.height = window.innerHeight + "px";
-        canvas.id = "gameCanvas";
+        canvas.id = "soaGameCanvas";
         document.body.appendChild(canvas);
         document.body.style.cssText = "margin: 0; padding: 0; height: 100%; overflow: hidden;";
         
-        ParticleHelper.BaseAssetsUrl = currentUrl + "/assets/particle_definitions";
-        ParticleSystemSet.BaseAssetsUrl = currentUrl + "/assets/particle_definitions";
-        DefaultLoadingScreen.DefaultLogoUrl = currentUrl + "/assets/img/squadronsOfAbandonementLogo.png";
+        ParticleHelper.BaseAssetsUrl = currentUrl + "assets/particle_definitions";
+        ParticleSystemSet.BaseAssetsUrl = currentUrl + "assets/particle_definitions";
+        DefaultLoadingScreen.DefaultLogoUrl = currentUrl + "assets/img/squadronsOfAbandonementLogo.png";
 
         let engine = new Engine(canvas, true);
         engine.setHardwareScalingLevel(1 / window.devicePixelRatio);
         let scene = new Scene(engine);
         
-        this._loadMeshesAndShowScene(canvas, engine, scene, currentUrl, ["redSpaceFighter.glb", "redStation.glb", "strangeObject.glb"]);
-    }
-    
-    private _loadMeshesAndShowScene(canvas: HTMLElement, engine: Engine, scene: Scene, currentUrl: string, glbFileNames: string[]) {
-        let thisPtr = this;
-        let assetsManager = new AssetsManager(scene);
-        let assetContainers: Record<string, AssetContainer> = {};
+        let assetsLoader = new SOA.AssetsLoader();
         
-        for(let i = 0; i < glbFileNames.length; i++) {
-            let meshTask = assetsManager.addMeshTask("meshTask" + i, "", currentUrl + "/assets/models/", glbFileNames[i]);
-            meshTask.onSuccess = function (task) {
-                let assetContainer = new AssetContainer(scene);
-                let loadedMeshes = task.loadedMeshes;
-                let loadedMeshName = task.sceneFilename.toString().replace(".glb", "");
-                for(let j = 0; j < loadedMeshes.length; j++) {
-                    loadedMeshes[j].name = loadedMeshName + "_" + j;
-                    loadedMeshes[j].renderingGroupId = RenderingGroupId.MAIN;
-                    loadedMeshes[j].layerMask = CameraLayerMask.MAIN;
-                    loadedMeshes[j].isPickable = true;
-                    assetContainer.meshes.push(loadedMeshes[j]);
-                }
-                assetContainer.removeAllFromScene();
-                assetContainers[loadedMeshName] = assetContainer;
-            };
-            meshTask.onError = function (task, message, exception) {
-                alert("meshTask.onError" + "\n" + message + "\n" + exception + "\n" + i);
-            };
-        }
-        
-        assetsManager.onProgress = function (remainingCount, totalCount, lastFinishedTask) {
+        let onProgressFunction = function (remainingCount: number, totalCount: number, lastFinishedTask: any) {
             let percent = Math.floor((totalCount - remainingCount) / totalCount * 100.0);
             engine.loadingUIText = "LOADING MODELS " + percent + "%";
             engine.loadingUIBackgroundColor = "#000000";
         };
-        assetsManager.onFinish = function (tasks) {
+        let thisPtr = this;
+        let onFinishFunction = function (meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>) {
             /*for (let i = 0; i < assetContainer.meshes.length; i++) {
                 let mesh = assetContainer.meshes[i];
                 let meshNameWithoutSuffix = mesh.name.substring(0, mesh.name.lastIndexOf("_"));
@@ -169,83 +123,56 @@ export class SquadronsOfAbandonement {
                 }
                 meshesInAssetContainer[meshNameWithoutSuffix].push(mesh);
             }*/
-            thisPtr._showScene(canvas, engine, scene, currentUrl, assetContainers);
-        };
-        /*assetsManager.onTaskSuccess = function (task) {
-            console.log("assetsManager.onTaskSuccess", task);
-        };*/
-        assetsManager.onTaskError = function (task) {
-            alert("assetsManager.onTaskError" + "\n" + task);
+            thisPtr._showScene(canvas, engine, scene, currentUrl, meshAssetContainers, particleSystemAssetContainers, textFileAssetContainers);
         };
         
-        /*assetsManager.onTaskSuccessObservable.add(function (task) {
-            console.log("assetsManager.onTaskSuccessObservable", task);
-        });
-        assetsManager.onTaskErrorObservable.add(function (task) {
-            console.log("assetsManager.onTaskErrorObservable", task, task.errorObject.message, task.errorObject.exception);
-        });
-        assetsManager.onProgressObservable.add(function (task) {
-            console.log("assetsManager.onProgressObservable", task);
-        });
-        assetsManager.onTasksDoneObservable.add(function (task) {
-            console.log("assetsManager.onTasksDoneObservable ", task);
-        });*/
-        
-        assetsManager.load();
+        assetsLoader.loadAssets(scene, currentUrl, ["redSpaceFighter.glb", "redStation.glb", "strangeObject.glb", "jupiter.glb"], ["rocket_exhaust.json"], ["maps/passage_of_maerula.json"], onProgressFunction, onFinishFunction);
     }
     
-    private _showScene(canvas: HTMLElement, engine: Engine, scene: Scene, currentUrl: string, meshesInAssetContainers: Record<string, AssetContainer>) {
+    private _showScene(canvas: HTMLElement, engine: Engine, scene: Scene, currentUrl: string, meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>) {
         let mapSidelength = 1000.0;
         
-        let skybox = new Skybox(scene, currentUrl);
-        let ambientLight = new AmbientLight(scene);
-        let gui = new Gui(currentUrl, window.innerWidth, window.innerHeight);
+        let skybox = new SOA.Skybox(scene, currentUrl);
+        let ambientLight = new SOA.AmbientLight(scene);
+        let gui = new SOA.Gui(currentUrl, window.innerWidth, window.innerHeight);
         
-        let mainCamera = new MainCamera(canvas, scene);
+        let mainCamera = new SOA.MainCamera(canvas, scene);
         scene.registerBeforeRender(() => {
             mainCamera.runBeforeRender();
         });
-        let minimap = new Minimap(scene, mainCamera.camera, engine, currentUrl, mapSidelength);
+        let minimap = new SOA.Minimap(scene, mainCamera.camera, engine, currentUrl, mapSidelength);
         scene.activeCameras = [];
         scene.activeCameras.push(mainCamera.camera);
         scene.activeCameras.push(minimap.minimapCamera);
         scene.cameraToUseForPointers = mainCamera.camera;
     
-        let selectedEntities: Entity[] = [];
-        let ground = new Ground(scene, currentUrl, 128, 128, mapSidelength);
+        let selectedEntities: SOA.Entity[] = [];
+        let ground = new SOA.Ground(scene, currentUrl, 128, 128, mapSidelength);
         scene.registerBeforeRender(() => {
             ground.updateRevealerPositions(revealers);
             ground.updateSelectedPositions(selectedEntities);
         });
         
-        let pipeline = new RenderingPipeline(scene, mainCamera.camera);
+        let pipeline = new SOA.RenderingPipeline(scene, mainCamera.camera);
         
-        let meshes: Mesh[] = [];
-        for (let meshName in meshesInAssetContainers) {
-            let assetContainer = meshesInAssetContainers[meshName];
-            let cloneMaterialsAndDontShareThem = true;
-            let instantiatedEntries = assetContainer.instantiateModelsToScene((name) => "p_" + name, cloneMaterialsAndDontShareThem);
-            meshes.push(instantiatedEntries.rootNodes[0] as Mesh);
-        }
-        
-        let entityLoader = new EntityLoader();
-        let revealers = entityLoader.populateScene(canvas, engine, scene, mainCamera.camera, currentUrl, meshes);
+        let mapLoader = new SOA.MapLoader();
+        let revealers = mapLoader.populateScene(canvas, engine, scene, mainCamera.camera, currentUrl, meshAssetContainers, particleSystemAssetContainers, textFileAssetContainers);
         let entities = revealers;
         
         let getAllEntitiesFunction = () => {
             return entities;
         }
-        let selectedEntitiesCallbackFunction = (newlySelectedEntities: Entity[]) => {
+        let selectedEntitiesCallbackFunction = (newlySelectedEntities: SOA.Entity[]) => {
             selectedEntities.length = 0;
             selectedEntities.push(...newlySelectedEntities);
         }
-        let selectionManager = new SelectionManager(engine, scene, mainCamera.camera, getAllEntitiesFunction, selectedEntitiesCallbackFunction, gui.advancedTexture);
+        let selectionManager = new SOA.SelectionManager(engine, scene, mainCamera.camera, getAllEntitiesFunction, selectedEntitiesCallbackFunction, gui.advancedTexture);
         
-        let keyboardInputManager = new KeyboardInputManager();
+        let keyboardInputManager = new SOA.KeyboardInputManager();
         keyboardInputManager.registerCallback("KeyF", "launchFullscreenCaller", this._nop, this._launchFullscreen, null);
         keyboardInputManager.registerCallback("KeyI", "toggleDebugLayerCaller", this._nop, this._toggleDebugLayer, scene);
         
-        let consoleFunctions = new ConsoleFunctions();
+        let consoleFunctions = new SOA.ConsoleFunctions();
         
         /*let unitToSlice = new Unit(scene, new Vector3(0.0, 0.0, 0.0), "unitToSlice", 5.0, currentUrl, MeshBuilder.CreateBox("boxForSlicing", {size: 0.5}, scene));
         let sliceMesh = new SliceMesh();
@@ -262,10 +189,10 @@ export class SquadronsOfAbandonement {
             }
         });*/
         
-        let explosionEffect = new ExplosionEffect(mainCamera.camera, scene, currentUrl);
+        let explosionEffect = new SOA.ExplosionEffect(mainCamera.camera, scene, currentUrl);
         explosionEffect.createExplosionWithShockwave("shockwaveEffect0", new Vector3(0.0, 0.0, 0.0), engine, mainCamera, SquadronsOfAbandonement.project);
         
-        let spaceshipTrail = new SpaceshipTrail("spaceshipTrail0", scene, mainCamera.camera, new Vector3(0.0, 0.0, 0.0), currentUrl, new Color4(0.5, 0.0, 0.0, 0.5), 0.1);
+        let spaceshipTrail = new SOA.SpaceshipTrail("spaceshipTrail0", scene, mainCamera.camera, new Vector3(0.0, 0.0, 0.0), currentUrl, new Color4(0.5, 0.0, 0.0, 0.5), 0.1);
         let k = 0;
         let p = [
             Math.random() * 180 + 20,

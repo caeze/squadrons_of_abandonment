@@ -45,6 +45,7 @@ Material,
 MaterialPluginBase,
 Matrix,
 Mesh,
+MeshAssetTask,
 MeshBuilder,
 NoiseProceduralTexture,
 ParticleHelper,
@@ -63,6 +64,7 @@ SceneLoader,
 ShaderMaterial,
 SphereParticleEmitter,
 StandardMaterial,
+TextFileAssetTask,
 Texture,
 Tools,
 TransformNode,
@@ -79,7 +81,7 @@ WebGPUEngine,
 // ----------- global imports end -----------
 
 export class AmbientLight {
-    public constructor(scene: Scene, intensity: number = 0.5) {
+    public constructor(scene: Scene, intensity: number = 0.35) {
         let hemisphericLight = new HemisphericLight("hemisphericLight", new Vector3(-3000, -3000, -3000), scene);
         hemisphericLight.intensity = intensity;
         hemisphericLight.range = 100000.0;

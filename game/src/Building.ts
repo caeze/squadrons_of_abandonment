@@ -45,6 +45,7 @@ Material,
 MaterialPluginBase,
 Matrix,
 Mesh,
+MeshAssetTask,
 MeshBuilder,
 NoiseProceduralTexture,
 ParticleHelper,
@@ -63,6 +64,7 @@ SceneLoader,
 ShaderMaterial,
 SphereParticleEmitter,
 StandardMaterial,
+TextFileAssetTask,
 Texture,
 Tools,
 TransformNode,
@@ -97,7 +99,7 @@ export class Building extends Entity {
         let minimapIconMeshShaderMaterial = new ShaderMaterial(
             "minimapIconMeshShaderMaterial",
             scene,
-            currentUrl + "/assets/shaders/solidColor", // searches for solidColor.vertex.fx and solidColor.fragment.fx
+            currentUrl + "assets/shaders/solidColor", // searches for solidColor.vertex.fx and solidColor.fragment.fx
             {
                 attributes: ["position"],
                 uniforms: ["worldViewProjection", "color"],

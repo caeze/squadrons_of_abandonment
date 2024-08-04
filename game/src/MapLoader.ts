@@ -45,6 +45,7 @@ Material,
 MaterialPluginBase,
 Matrix,
 Mesh,
+MeshAssetTask,
 MeshBuilder,
 NoiseProceduralTexture,
 ParticleHelper,
@@ -63,6 +64,7 @@ SceneLoader,
 ShaderMaterial,
 SphereParticleEmitter,
 StandardMaterial,
+TextFileAssetTask,
 Texture,
 Tools,
 TransformNode,
@@ -78,32 +80,45 @@ WebGPUEngine,
 } from "@babylonjs/core";
 // ----------- global imports end -----------
 
-import { Sun } from "./Sun";
-import { Gui } from "./Gui";
-import { Minimap } from "./Minimap";
-import { RenderingPipeline } from "./RenderingPipeline";
-import { KeyboardInputManager } from "./KeyboardInputManager";
-import { MainCamera } from "./MainCamera";
-import { SpaceshipTrail } from "./SpaceshipTrail";
-import { RenderingGroupId } from "./RenderingGroupId";
-import { Ground } from "./Ground";
-import { Entity } from "./Entity";
-import { Unit } from "./Unit";
-import { CameraLayerMask } from "./CameraLayerMask";
-import { AmbientLight } from "./AmbientLight";
-import { Skybox } from "./Skybox";
-import { ExplosionEffect, ShockwaveEffectHandler } from "./ExplosionEffect";
-import { SliceMesh } from "./SliceMesh";
-import { ConsoleFunctions } from "./ConsoleFunctions";
-import { SelectionManager } from "./SelectionManager";
+import * as SOA from "./app";
 
-export class EntityLoader {
-	public populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string, meshes: Mesh[]): Unit[] {
-        let sun = new Sun(scene, camera, engine, currentUrl);
+export class MapLoader {
+	public populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string, meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>): SOA.Unit[] {
+        let sun = new SOA.Sun(scene, camera, engine, currentUrl);
+        let jupiter = new SOA.Jupiter(meshAssetContainers["jupiter"]);
         
-        let units: Unit[] = [];
+        let entityMeshes = ["strangeObject", "redSpaceFighter", "redStation"];
+        let meshes: Mesh[] = [];
+        for (let i = 0; i < entityMeshes.length; i++) {
+            let assetContainer = meshAssetContainers[entityMeshes[i]];
+            let cloneMaterialsAndDontShareThem = true;
+            let instantiatedEntries = assetContainer.instantiateModelsToScene((name) => "p_" + name, cloneMaterialsAndDontShareThem);
+            meshes.push(instantiatedEntries.rootNodes[0] as Mesh);
+        }
+        
+        let particleSystems: ParticleSystem[] = [];
+        for (let particleSystemName in particleSystemAssetContainers) {
+            particleSystems.push(particleSystemAssetContainers[particleSystemName]);
+        }
+        
+        let units: SOA.Unit[] = [];
         for (let i = 0; i < meshes.length; i++) {
-            let unit = new Unit(scene, new Vector3(0, 0, 0), "box" + i, 5.0, currentUrl, meshes[i]);
+            let unit = new SOA.Unit(scene, new Vector3(0, 0, 0), "box" + i, 5.0, currentUrl, meshes[i]);
+            let exhaustTransformNode = new TransformNode(unit.mesh.name + "ExhaustTransformNode");
+            exhaustTransformNode.parent = unit.mesh;
+            exhaustTransformNode.position.x = -0.6;
+            exhaustTransformNode.position.y = 0.05;
+            exhaustTransformNode.rotation.z = -Math.PI / 2;
+            let exhaustParticleSystem = particleSystems[0].clone(unit.mesh.name + "ExhaustParticleSystem", exhaustTransformNode);
+            exhaustParticleSystem.emitter = exhaustTransformNode as AbstractMesh;
+            exhaustParticleSystem.isLocal = true;
+            exhaustParticleSystem.renderingGroupId = SOA.RenderingGroupId.MAIN;
+            exhaustParticleSystem.layerMask = SOA.CameraLayerMask.MAIN;
+            exhaustParticleSystem.minSize = 0.4;
+            exhaustParticleSystem.maxSize = 0.4;
+            exhaustParticleSystem.color1 = new Color4(1, 0.5, 0.5, 0.8);
+            exhaustParticleSystem.color2 = new Color4(1, 0, 0, 1);
+            exhaustParticleSystem.start();
             units.push(unit);
         }
         scene.registerBeforeRender(() => {
@@ -117,34 +132,9 @@ export class EntityLoader {
             //units[1].mesh.rotationQuaternion = null;
         });
         
-        const assetsManager = new AssetsManager(scene);
-        const particleFile = assetsManager.addTextFileTask("rocket_particle_system", currentUrl + "/assets/particle_definitions/systems/rocket_exhaust.json");
-        assetsManager.load();
-        
-        assetsManager.onFinish = function (task) {
-            const particleJSON = JSON.parse(particleFile.text);
-            for(let i = 0; i < units.length; i++) {
-                const exhaustParticleSystem = ParticleSystem.Parse(particleJSON, scene, "", false, 1000);
-                let exhaustTransformNode = new TransformNode(units[i].mesh.name + "ExhaustTransformNode");
-                exhaustTransformNode.parent = units[i].mesh;
-                exhaustTransformNode.position.x = -0.6;
-                exhaustTransformNode.position.y = 0.05;
-                exhaustTransformNode.rotation.z = -Math.PI / 2;
-                exhaustParticleSystem.emitter = exhaustTransformNode as AbstractMesh;
-                exhaustParticleSystem.isLocal = true;
-                exhaustParticleSystem.renderingGroupId = RenderingGroupId.MAIN;
-                exhaustParticleSystem.layerMask = CameraLayerMask.MAIN;
-                exhaustParticleSystem.minSize = 0.4;
-                exhaustParticleSystem.maxSize = 0.4;
-                exhaustParticleSystem.color1 = new Color4(1, 0.5, 0.5, 0.8);
-                exhaustParticleSystem.color2 = new Color4(1, 0, 0, 1);
-                exhaustParticleSystem.start();
-            }
-        }
-        
         let originSphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: 0.1 }, scene);
-        originSphere.renderingGroupId = RenderingGroupId.MAIN;
-        originSphere.layerMask = CameraLayerMask.MAIN;
+        originSphere.renderingGroupId = SOA.RenderingGroupId.MAIN;
+        originSphere.layerMask = SOA.CameraLayerMask.MAIN;
         originSphere.isPickable = true;
         
         let xSphere: Mesh = MeshBuilder.CreateSphere("xsphere", { diameter: 0.1 }, scene);
@@ -154,8 +144,8 @@ export class EntityLoader {
         xSphere.material = xSphereMaterial;
         xSphere.position = new Vector3(1, 0, 0);
         xSphere.isPickable = true;
-        xSphere.renderingGroupId = RenderingGroupId.MAIN;
-        xSphere.layerMask = CameraLayerMask.MAIN;
+        xSphere.renderingGroupId = SOA.RenderingGroupId.MAIN;
+        xSphere.layerMask = SOA.CameraLayerMask.MAIN;
         
         let ySphere: Mesh = MeshBuilder.CreateSphere("ysphere", { diameter: 0.1 }, scene);
         let ySphereMaterial = new StandardMaterial("mat", scene);
@@ -164,8 +154,8 @@ export class EntityLoader {
         ySphere.material = ySphereMaterial;
         ySphere.position = new Vector3(0, 1, 0);
         ySphere.isPickable = true;
-        ySphere.renderingGroupId = RenderingGroupId.MAIN;
-        ySphere.layerMask = CameraLayerMask.MAIN;
+        ySphere.renderingGroupId = SOA.RenderingGroupId.MAIN;
+        ySphere.layerMask = SOA.CameraLayerMask.MAIN;
         
         let zSphere: Mesh = MeshBuilder.CreateSphere("zsphere", { diameter: 0.1 }, scene);
         let zSphereMaterial = new StandardMaterial("mat", scene);
@@ -174,8 +164,8 @@ export class EntityLoader {
         zSphere.material = zSphereMaterial;
         zSphere.position = new Vector3(0, 0, 1);
         zSphere.isPickable = true;
-        zSphere.renderingGroupId = RenderingGroupId.MAIN;
-        zSphere.layerMask = CameraLayerMask.MAIN;
+        zSphere.renderingGroupId = SOA.RenderingGroupId.MAIN;
+        zSphere.layerMask = SOA.CameraLayerMask.MAIN;
         
         return units;
     }

@@ -45,6 +45,7 @@ Material,
 MaterialPluginBase,
 Matrix,
 Mesh,
+MeshAssetTask,
 MeshBuilder,
 NoiseProceduralTexture,
 ParticleHelper,
@@ -63,6 +64,7 @@ SceneLoader,
 ShaderMaterial,
 SphereParticleEmitter,
 StandardMaterial,
+TextFileAssetTask,
 Texture,
 Tools,
 TransformNode,
@@ -93,7 +95,7 @@ export class Unit extends Entity {
         /*let spheresMeshGlb = MeshBuilder.CreateSphere("spheresMeshGlb", { diameter: 0.1 }, scene);
         SceneLoader.ImportMesh(
             "",
-            currentUrl + "/assets/models/",
+            currentUrl + "assets/models/",
             "PBR_Spheres.glb",
             scene,
             function(objects: AbstractMesh[]) {
@@ -105,7 +107,7 @@ export class Unit extends Entity {
         /*let jupiter = MeshBuilder.CreateSphere("jupiter", { diameter: 3 }, scene);
         SceneLoader.ImportMesh(
             "",
-            currentUrl + "/assets/models/",
+            currentUrl + "assets/models/",
             "jupiter.glb",
             scene,
             function(objects: AbstractMesh[]) {
@@ -127,7 +129,7 @@ export class Unit extends Entity {
         
         const importPromise = SceneLoader.ImportMeshAsync(
             null,
-            currentUrl + "/assets/models/",
+            currentUrl + "assets/models/",
             "jupiter.glb",
             scene
         );
@@ -138,7 +140,7 @@ export class Unit extends Entity {
         
         const importPromiseFlag = SceneLoader.ImportMeshAsync(
             null,
-            currentUrl + "/assets/models/",
+            currentUrl + "assets/models/",
             "flag.glb",
             scene
         );
@@ -156,7 +158,7 @@ export class Unit extends Entity {
     
     
     
-        /*let importPromise = SceneLoader.ImportMeshAsync(null, currentUrl + "/assets/models/", glbFileName, scene);
+        /*let importPromise = SceneLoader.ImportMeshAsync(null, currentUrl + "assets/models/", glbFileName, scene);
         importPromise.then((result: any) => {
             for(let i = 0; i < result.meshes.length; i++) {
                 result.meshes[i].renderingGroupId = RenderingGroupId.MAIN;
@@ -168,7 +170,7 @@ export class Unit extends Entity {
         });*/
         /*SceneLoader.ImportMesh(
             "",
-            currentUrl + "/assets/models/",
+            currentUrl + "assets/models/",
             "jupiter.glb",
             scene,
             function(objects: AbstractMesh[]) {
@@ -201,7 +203,7 @@ export class Unit extends Entity {
         let minimapIconMeshShaderMaterial = new ShaderMaterial(
             "minimapIconMeshShaderMaterial",
             scene,
-            currentUrl + "/assets/shaders/solidColor", // searches for solidColor.vertex.fx and solidColor.fragment.fx
+            currentUrl + "assets/shaders/solidColor", // searches for solidColor.vertex.fx and solidColor.fragment.fx
             {
                 attributes: ["position"],
                 uniforms: ["worldViewProjection", "color"],

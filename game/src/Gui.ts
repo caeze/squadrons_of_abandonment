@@ -45,6 +45,7 @@ Material,
 MaterialPluginBase,
 Matrix,
 Mesh,
+MeshAssetTask,
 MeshBuilder,
 NoiseProceduralTexture,
 ParticleHelper,
@@ -63,6 +64,7 @@ SceneLoader,
 ShaderMaterial,
 SphereParticleEmitter,
 StandardMaterial,
+TextFileAssetTask,
 Texture,
 Tools,
 TransformNode,
@@ -154,100 +156,100 @@ export class Gui {
         let onClickMenuImageButton = function () {
             alert("onClickMenuImageButton");
         };
-        let menuImageButtonData = new ImageButtonData(onClickMenuImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", -1, 0, 0, -1);
+        let menuImageButtonData = new ImageButtonData(onClickMenuImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", -1, 0, 0, -1);
         this._buttonData["menu"] = menuImageButtonData;
         
         // Define the info messages section.
         let onClickInfoMessage0ImageButton = function () {
             alert("onClickInfoMessage0ImageButton");
         };
-        let infoMessage0ImageButtonData = new ImageButtonData(onClickInfoMessage0ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", 0, buttonSize * 4 + 100, -1, -1, true, "infoMessageTop0", "infoMessageBottom0");
+        let infoMessage0ImageButtonData = new ImageButtonData(onClickInfoMessage0ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", 0, buttonSize * 4 + 100, -1, -1, true, "infoMessageTop0", "infoMessageBottom0");
         this._buttonData["infoMessage0"] = infoMessage0ImageButtonData;
         
         let onClickInfoMessage1ImageButton = function () {
             alert("onClickInfoMessage1ImageButton");
         };
-        let infoMessage1ImageButtonData = new ImageButtonData(onClickInfoMessage1ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", 0, buttonSize * 3 + 100, -1, -1, true, "infoMessageTop1", "infoMessageBottom1");
+        let infoMessage1ImageButtonData = new ImageButtonData(onClickInfoMessage1ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", 0, buttonSize * 3 + 100, -1, -1, true, "infoMessageTop1", "infoMessageBottom1");
         this._buttonData["infoMessage1"] = infoMessage1ImageButtonData;
         
         let onClickInfoMessage2ImageButton = function () {
             alert("onClickInfoMessage2ImageButton");
         };
-        let infoMessage2ImageButtonData = new ImageButtonData(onClickInfoMessage2ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", 0, buttonSize * 2 + 100, -1, -1, true, "infoMessageTop2", "infoMessageBottom2");
+        let infoMessage2ImageButtonData = new ImageButtonData(onClickInfoMessage2ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", 0, buttonSize * 2 + 100, -1, -1, true, "infoMessageTop2", "infoMessageBottom2");
         this._buttonData["infoMessage2"] = infoMessage2ImageButtonData;
         
         let onClickInfoMessage3ImageButton = function () {
             alert("onClickInfoMessage3ImageButton");
         };
-        let infoMessage3ImageButtonData = new ImageButtonData(onClickInfoMessage3ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", 0, buttonSize + 100, -1, -1, true, "infoMessageTop3", "infoMessageBottom3");
+        let infoMessage3ImageButtonData = new ImageButtonData(onClickInfoMessage3ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", 0, buttonSize + 100, -1, -1, true, "infoMessageTop3", "infoMessageBottom3");
         this._buttonData["infoMessage3"] = infoMessage3ImageButtonData;
         
         let onClickInfoMessage4ImageButton = function () {
             alert("onClickInfoMessage4ImageButton");
         };
-        let infoMessage4ImageButtonData = new ImageButtonData(onClickInfoMessage4ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", 0, 100, -1, -1, true, "infoMessageTop4", "infoMessageBottom4");
+        let infoMessage4ImageButtonData = new ImageButtonData(onClickInfoMessage4ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", 0, 100, -1, -1, true, "infoMessageTop4", "infoMessageBottom4");
         this._buttonData["infoMessage4"] = infoMessage4ImageButtonData;
         
         // Define the battlegroups section.
         let onClickBattlegroup0ImageButton = function () {
             alert("onClickBattlegroup0ImageButton");
         };
-        let battlegroup0ImageButtonData = new ImageButtonData(onClickBattlegroup0ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", -1, buttonSize * 6 + 150, 0, -1);
+        let battlegroup0ImageButtonData = new ImageButtonData(onClickBattlegroup0ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", -1, buttonSize * 6 + 150, 0, -1);
         this._buttonData["battlegroup0"] = battlegroup0ImageButtonData;
         
         let onClickBattlegroup1ImageButton = function () {
             alert("onClickBattlegroup1ImageButton");
         };
-        let battlegroup1ImageButtonData = new ImageButtonData(onClickBattlegroup1ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", -1, buttonSize * 5 + 150, 0, -1);
+        let battlegroup1ImageButtonData = new ImageButtonData(onClickBattlegroup1ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", -1, buttonSize * 5 + 150, 0, -1);
         this._buttonData["battlegroup1"] = battlegroup1ImageButtonData;
         
         let onClickBattlegroup2ImageButton = function () {
             alert("onClickBattlegroup2ImageButton");
         };
-        let battlegroup2ImageButtonData = new ImageButtonData(onClickBattlegroup2ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", -1, buttonSize * 4 + 150, 0, -1);
+        let battlegroup2ImageButtonData = new ImageButtonData(onClickBattlegroup2ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", -1, buttonSize * 4 + 150, 0, -1);
         this._buttonData["battlegroup2"] = battlegroup2ImageButtonData;
         
         let onClickBattlegroup3ImageButton = function () {
             alert("onClickBattlegroup3ImageButton");
         };
-        let battlegroup3ImageButtonData = new ImageButtonData(onClickBattlegroup3ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", -1, buttonSize * 3 + 150, 0, -1);
+        let battlegroup3ImageButtonData = new ImageButtonData(onClickBattlegroup3ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", -1, buttonSize * 3 + 150, 0, -1);
         this._buttonData["battlegroup3"] = battlegroup3ImageButtonData;
         
         let onClickBattlegroup4ImageButton = function () {
             alert("onClickBattlegroup4ImageButton");
         };
-        let battlegroup4ImageButtonData = new ImageButtonData(onClickBattlegroup4ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", -1, buttonSize * 2 + 150, 0, -1);
+        let battlegroup4ImageButtonData = new ImageButtonData(onClickBattlegroup4ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", -1, buttonSize * 2 + 150, 0, -1);
         this._buttonData["battlegroup4"] = battlegroup4ImageButtonData;
         
         let onClickBattlegroup5ImageButton = function () {
             alert("onClickBattlegroup5ImageButton");
         };
-        let battlegroup5ImageButtonData = new ImageButtonData(onClickBattlegroup5ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", -1, buttonSize + 150, 0, -1);
+        let battlegroup5ImageButtonData = new ImageButtonData(onClickBattlegroup5ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", -1, buttonSize + 150, 0, -1);
         this._buttonData["battlegroup5"] = battlegroup5ImageButtonData;
         
         let onClickBattlegroup6ImageButton = function () {
             alert("onClickBattlegroup6ImageButton");
         };
-        let battlegroup6ImageButtonData = new ImageButtonData(onClickBattlegroup6ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", -1, 150, 0, -1);
+        let battlegroup6ImageButtonData = new ImageButtonData(onClickBattlegroup6ImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", -1, 150, 0, -1);
         this._buttonData["battlegroup6"] = battlegroup6ImageButtonData;
         
         // Define the map options section.
         let onClickOpenMapImageButton = function () {
             alert("onClickOpenMapImageButton");
         };
-        let openMapImageButtonData = new ImageButtonData(onClickOpenMapImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", 0, -1, -1, minimapSize);
+        let openMapImageButtonData = new ImageButtonData(onClickOpenMapImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", 0, -1, -1, minimapSize);
         this._buttonData["openMap"] = openMapImageButtonData;
         
         let onClickSetMarkerImageButton = function () {
             alert("onClickSetMarkerImageButton");
         };
-        let setMarkerImageButtonData = new ImageButtonData(onClickSetMarkerImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", 0, -1, -1, minimapSize + buttonSize);
+        let setMarkerImageButtonData = new ImageButtonData(onClickSetMarkerImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", 0, -1, -1, minimapSize + buttonSize);
         this._buttonData["setMarker"] = setMarkerImageButtonData;
         
         let onClickChatImageButton = function () {
             alert("onClickChatImageButton");
         };
-        let chatImageButtonData = new ImageButtonData(onClickChatImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "/assets/img/buttons/undefined.png", 0, -1, -1, minimapSize + 2 * buttonSize, false);
+        let chatImageButtonData = new ImageButtonData(onClickChatImageButton, new Vector2(buttonSize, buttonSize), currentUrl + "assets/img/buttons/undefined.png", 0, -1, -1, minimapSize + 2 * buttonSize, false);
         this._buttonData["chat"] = chatImageButtonData;
         
         // Add all buttons to the UI.

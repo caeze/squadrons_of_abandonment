@@ -45,6 +45,7 @@ Material,
 MaterialPluginBase,
 Matrix,
 Mesh,
+MeshAssetTask,
 MeshBuilder,
 NoiseProceduralTexture,
 ParticleHelper,
@@ -63,6 +64,7 @@ SceneLoader,
 ShaderMaterial,
 SphereParticleEmitter,
 StandardMaterial,
+TextFileAssetTask,
 Texture,
 Tools,
 TransformNode,
@@ -162,7 +164,7 @@ export class ExplosionEffect {
 	public createShockwave(name: string, camera: Camera, shockwaveEffectHandler: ShockwaveEffectHandler, disposeAfterMs: number = 2500) {
         // Coordinate system is from screen_bottom_left = [0, 0]
         // to screen_top_right = [1, 1]
-        let postProcess = new PostProcess(name, this._currentUrl + "/assets/shaders/shockwave", ["time", "center"], null, 1, this._camera);
+        let postProcess = new PostProcess(name, this._currentUrl + "assets/shaders/shockwave", ["time", "center"], null, 1, this._camera);
         postProcess.onApply = function (effect: any) {
             shockwaveEffectHandler.tick(effect);
         };

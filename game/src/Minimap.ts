@@ -45,6 +45,7 @@ Material,
 MaterialPluginBase,
 Matrix,
 Mesh,
+MeshAssetTask,
 MeshBuilder,
 NoiseProceduralTexture,
 ParticleHelper,
@@ -63,6 +64,7 @@ SceneLoader,
 ShaderMaterial,
 SphereParticleEmitter,
 StandardMaterial,
+TextFileAssetTask,
 Texture,
 Tools,
 TransformNode,
@@ -97,7 +99,7 @@ export class Minimap {
         this.minimapCamera.orthoRight = -minimapCameraViewport;
         this.minimapCamera.layerMask = CameraLayerMask.MINIMAP;
         this.resize(window.innerWidth, window.innerHeight);
-        let minimapBackgroundLayer = new Layer("minimapBackgroundLayer", currentUrl + "/assets/img/minimapBackground.png", scene, true);
+        let minimapBackgroundLayer = new Layer("minimapBackgroundLayer", currentUrl + "assets/img/minimapBackground.png", scene, true);
         minimapBackgroundLayer.layerMask = CameraLayerMask.MINIMAP;
     }
     
