@@ -85,10 +85,11 @@ import { CameraLayerMask } from "./CameraLayerMask";
 import { Entity } from "./Entity";
 
 export class Ground {
+	private _ground: Mesh;
 	private _groundShaderMaterial: ShaderMaterial;
     
     public constructor(scene: Scene, currentUrl: string, maxRevealers: number, maxEntities: number, mapSidelength: number) {
-        let ground = MeshBuilder.CreatePlane("ground", {size: mapSidelength});
+        this._ground = MeshBuilder.CreatePlane("ground", {size: mapSidelength});
         this._groundShaderMaterial = new ShaderMaterial(
             "groundShaderMaterial",
             scene,
@@ -115,15 +116,19 @@ export class Ground {
                 ],
             }
         );
-        ground.renderingGroupId = RenderingGroupId.GROUND;
-        ground.layerMask = CameraLayerMask.MAIN;
-        ground.alphaIndex = 1;
-        ground.rotation = new Vector3(Math.PI / 2, 0, 0);
-        ground.material = this._groundShaderMaterial;
-        ground.material.forceDepthWrite = true;
-        ground.material.transparencyMode = Material.MATERIAL_ALPHABLEND;
-        ground.material.alpha = 0.0;
+        this._ground.renderingGroupId = RenderingGroupId.MAIN;
+        this._ground.layerMask = CameraLayerMask.MAIN;
+        this._ground.alphaIndex = 1;
+        this._ground.rotation = new Vector3(Math.PI / 2, 0, 0);
+        this._ground.material = this._groundShaderMaterial;
+        this._ground.material.forceDepthWrite = true;
+        this._ground.material.transparencyMode = Material.MATERIAL_ALPHABLEND;
+        this._ground.material.alpha = 0.0;
         this._groundShaderMaterial.setFloat("mapSidelength", mapSidelength);
+    }
+
+	public getGroundMesh(): Mesh {
+	    return this._ground;
     }
 
 	public updateRevealerPositions(entities: Entity[]) {

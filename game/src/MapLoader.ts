@@ -83,8 +83,9 @@ WebGPUEngine,
 import * as SOA from "./app";
 
 export class MapLoader {
-	public populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string, meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>): SOA.Unit[] {
-        let sun = new SOA.Sun(scene, camera, engine, currentUrl);
+	public populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string, meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>, meshToExclude: Mesh): SOA.Unit[] {
+	    // TODO: pull out jupiter and sun from here, only load map related stuff!
+        let sun = new SOA.Sun(scene, camera, engine, currentUrl, meshToExclude);
         let jupiter = new SOA.Jupiter(meshAssetContainers["jupiter"]);
         
         let entityMeshes = ["strangeObject", "redSpaceFighter", "redStation"];

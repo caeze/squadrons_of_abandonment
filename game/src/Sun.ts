@@ -84,7 +84,7 @@ import { RenderingGroupId } from "./RenderingGroupId";
 import { CameraLayerMask } from "./CameraLayerMask";
 
 export class Sun {
-    public constructor(scene: Scene, camera: Camera, engine: Engine, currentUrl: string) {
+    public constructor(scene: Scene, camera: Camera, engine: Engine, currentUrl: string, meshToExclude: Mesh) {
         // Emitter object
         //let sunSurface = Mesh.CreateBox("emitter", 0.01, scene);
         //let sunFlares = Mesh.CreateBox("emitter", 0.01, scene);
@@ -243,7 +243,8 @@ export class Sun {
         coreSphere.layerMask = CameraLayerMask.MAIN;
         flareParticles.layerMask = CameraLayerMask.MAIN;
 
-        let godrays = new VolumetricLightScatteringPostProcess('godrays', 1.0, camera, coreSphere, 100, Texture.BILINEAR_SAMPLINGMODE, engine, false);
+        let godrays = new VolumetricLightScatteringPostProcess('godrays', 1.0, camera, coreSphere, 100, Texture.BILINEAR_SAMPLINGMODE, engine, true);
+        godrays.excludedMeshes = [meshToExclude];
 
         //godrays._volumetricLightScatteringRTT.renderParticles = true;
 

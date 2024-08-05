@@ -148,6 +148,7 @@ export class SquadronsOfAbandonement {
     
         let selectedEntities: SOA.Entity[] = [];
         let ground = new SOA.Ground(scene, currentUrl, 128, 128, mapSidelength);
+        let meshToExclude = ground.getGroundMesh();
         scene.registerBeforeRender(() => {
             ground.updateRevealerPositions(revealers);
             ground.updateSelectedPositions(selectedEntities);
@@ -156,7 +157,7 @@ export class SquadronsOfAbandonement {
         let pipeline = new SOA.RenderingPipeline(scene, mainCamera.camera);
         
         let mapLoader = new SOA.MapLoader();
-        let revealers = mapLoader.populateScene(canvas, engine, scene, mainCamera.camera, currentUrl, meshAssetContainers, particleSystemAssetContainers, textFileAssetContainers);
+        let revealers = mapLoader.populateScene(canvas, engine, scene, mainCamera.camera, currentUrl, meshAssetContainers, particleSystemAssetContainers, textFileAssetContainers, meshToExclude);
         let entities = revealers;
         
         let getAllEntitiesFunction = () => {
