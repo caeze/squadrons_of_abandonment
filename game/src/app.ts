@@ -103,6 +103,7 @@ export * from "./Minimap";
 export * from "./MouseSelectionBoxOnGui";
 export * from "./RenderingGroupId";
 export * from "./RenderingPipeline";
+export * from "./RepairIcon";
 export * from "./SelectionManager";
 export * from "./Skybox";
 export * from "./SliceMesh";

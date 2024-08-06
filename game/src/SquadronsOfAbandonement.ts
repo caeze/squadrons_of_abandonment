@@ -126,8 +126,9 @@ export class SquadronsOfAbandonement {
             thisPtr._showScene(canvas, engine, scene, currentUrl, meshAssetContainers, particleSystemAssetContainers, textFileAssetContainers);
         };
         
-        //assetsLoader.loadAssets(scene, currentUrl, ["redSpaceFighter.glb", "redStation.glb", "strangeObject.glb", "jupiter.glb"], ["rocket_exhaust.json"], ["maps/passage_of_maerula.json"], onProgressFunction, onFinishFunction);
-        assetsLoader.loadAssets(scene, currentUrl, ["moveMarker.glb", "moveMarkerCircularArrow.glb", "wrench.glb", "jupiter.glb"], ["rocket_exhaust.json"], ["maps/passage_of_maerula.json"], onProgressFunction, onFinishFunction);
+        // TODO: load all meshes from the meshes directory and dont specify them here
+        let meshesToLoad = ["redSpaceFighter.glb", "redStation.glb", "strangeObject.glb", "moveMarker.glb", "moveMarkerCircularArrow.glb", "wrench.glb", "jupiter.glb"];
+        assetsLoader.loadAssets(scene, currentUrl, meshesToLoad, ["rocket_exhaust.json"], ["maps/passage_of_maerula.json"], onProgressFunction, onFinishFunction);
     }
     
     private _showScene(canvas: HTMLElement, engine: Engine, scene: Scene, currentUrl: string, meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>) {
@@ -146,6 +147,8 @@ export class SquadronsOfAbandonement {
         scene.activeCameras.push(mainCamera.camera);
         scene.activeCameras.push(minimap.minimapCamera);
         scene.cameraToUseForPointers = mainCamera.camera;
+        
+        let pipeline = new SOA.RenderingPipeline(scene, mainCamera.camera);
     
         let selectedEntities: SOA.Entity[] = [];
         let ground = new SOA.Ground(scene, currentUrl, 128, 128, mapSidelength);
@@ -155,11 +158,32 @@ export class SquadronsOfAbandonement {
             ground.updateSelectedPositions(selectedEntities);
         });
         
-        let pipeline = new SOA.RenderingPipeline(scene, mainCamera.camera);
+        let sun = new SOA.Sun(scene, mainCamera.camera, engine, currentUrl, meshToExclude);
+        let jupiter = new SOA.Jupiter(meshAssetContainers["jupiter"]);
         
         let mapLoader = new SOA.MapLoader();
-        let revealers = mapLoader.populateScene(canvas, engine, scene, mainCamera.camera, currentUrl, meshAssetContainers, particleSystemAssetContainers, textFileAssetContainers, meshToExclude);
+        let revealers = mapLoader.populateScene(canvas, engine, scene, mainCamera.camera, currentUrl, meshAssetContainers, particleSystemAssetContainers, textFileAssetContainers);
         let entities = revealers;
+        
+        let repairIcons = [];
+        for (let i = 0; i < entities.length; i++) {
+            let repairIcon = new SOA.RepairIcon(scene, currentUrl, entities[i].getMainMesh(), meshAssetContainers);
+            repairIcon.showRepairIcon();
+            repairIcons.push(repairIcon);
+        }
+        scene.registerBeforeRender(() => {
+            entities[0].mesh.position.x -= 0.005;
+            entities[0].mesh.rotation.x += 0.005;
+            //entities[0].mesh.rotation.y += 0.005;
+            entities[1].mesh.position.x += 0.005;
+            //entities[1].mesh.rotation.x += 0.005;
+            //entities[1].mesh.rotation.y += 0.005;
+            entities[0].mesh.rotationQuaternion = null;
+            //entities[1].mesh.rotationQuaternion = null;
+            for (let i = 0; i < repairIcons.length; i++) {
+                repairIcons[i].tick();
+            }
+        });
         
         let getAllEntitiesFunction = () => {
             return entities;
@@ -277,6 +301,13 @@ export class SquadronsOfAbandonement {
             
             mainCamera.camera.position = new Vector3(cameraPosition.x + displacementX, cameraPosition.y, cameraPosition.z + displacementZ);
             mainCamera.camera.setTarget(new Vector3(cameraTarget.x + displacementX, cameraTarget.y, cameraTarget.z + displacementZ));
+            
+            if (i > 0.3 && i < 0.6) {
+                repairIcons[1].hideRepairIcon();
+            }
+            if (i > 0.6) {
+                repairIcons[1].showRepairIcon();
+            }
             
             scene.render();
         });

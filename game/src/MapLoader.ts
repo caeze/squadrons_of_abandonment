@@ -84,17 +84,12 @@ WebGPUEngine,
 import * as SOA from "./app";
 
 export class MapLoader {
-	public populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string, meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>, meshToExclude: Mesh): SOA.Unit[] {
-	    // TODO: pull out jupiter and sun from here, only load map related stuff!
-        let sun = new SOA.Sun(scene, camera, engine, currentUrl, meshToExclude);
-        let jupiter = new SOA.Jupiter(meshAssetContainers["jupiter"]);
-        
+	public populateScene(canvas: HTMLElement, engine: Engine, scene: Scene, camera: Camera, currentUrl: string, meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>): SOA.Unit[] {
+        // TODO: only load the meshes initially that belong to the map
+        let assetContainerNames = ["redSpaceFighter", "redStation", "strangeObject"];
         let meshes: Mesh[] = [];
-        for (let assetContainerName in meshAssetContainers) {
-            if (assetContainerName === "jupiter") {
-                continue;
-            }
-            let assetContainer = meshAssetContainers[assetContainerName];
+        for (let i = 0; i < assetContainerNames.length; i++) {
+            let assetContainer = meshAssetContainers[assetContainerNames[i]];
             let cloneMaterialsAndDontShareThem = true;
             let instantiatedEntries = assetContainer.instantiateModelsToScene((name) => "p_" + name, cloneMaterialsAndDontShareThem);
             meshes.push(instantiatedEntries.rootNodes[0] as Mesh);
@@ -104,11 +99,6 @@ export class MapLoader {
         for (let particleSystemName in particleSystemAssetContainers) {
             particleSystems.push(particleSystemAssetContainers[particleSystemName]);
         }
-        
-        const gl = new GlowLayer("glow", scene);
-        gl.customEmissiveColorSelector = function (mesh, subMesh, material, result) {
-            result.set(0.0, 1.0, 1.0, 0.5);
-        };
                 
         let units: SOA.Unit[] = [];
         for (let i = 0; i < meshes.length; i++) {
@@ -128,40 +118,12 @@ export class MapLoader {
             exhaustParticleSystem.color1 = new Color4(1.0, 0.5, 0.5, 0.8);
             exhaustParticleSystem.color2 = new Color4(1.0, 0.0, 0.0, 1.0);
             exhaustParticleSystem.start();
-            let color = new Color4(0.0, 1.0, 1.0, 0.75);
-            let shaderMaterial = new ShaderMaterial(
-                name + "ShaderMaterial",
-                scene,
-                currentUrl + "assets/shaders/solidColor", // searches for solidColor.vertex.fx and solidColor.fragment.fx
-                {
-                    attributes: ["position"],
-                    uniforms: ["worldViewProjection", "color"],
-                }
-            );
-            shaderMaterial.setFloats("color", [color.r, color.g, color.b, color.a]);
-            shaderMaterial.forceDepthWrite = true;
-            shaderMaterial.transparencyMode = Material.MATERIAL_ALPHABLEND;
-            shaderMaterial.alpha = 0.0;
-            unit.getMainMesh().alphaIndex = 0;
-            unit.getMainMesh().material = shaderMaterial;
             unit.getMainMesh().renderingGroupId = SOA.RenderingGroupId.MAIN;
             unit.getMainMesh().layerMask = SOA.CameraLayerMask.MAIN;
-            unit.mesh.alphaIndex = 0;
             unit.mesh.renderingGroupId = SOA.RenderingGroupId.MAIN;
             unit.mesh.layerMask = SOA.CameraLayerMask.MAIN;
             units.push(unit);
-            gl.addIncludedOnlyMesh(unit.getMainMesh());
         }
-        scene.registerBeforeRender(() => {
-            units[0].mesh.position.x -= 0.005;
-            units[0].mesh.rotation.x += 0.005;
-            //units[0].mesh.rotation.y += 0.005;
-            units[1].mesh.position.x += 0.005;
-            //units[1].mesh.rotation.x += 0.005;
-            //units[1].mesh.rotation.y += 0.005;
-            units[0].mesh.rotationQuaternion = null;
-            //units[1].mesh.rotationQuaternion = null;
-        });
         
         let originSphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: 0.1 }, scene);
         originSphere.renderingGroupId = SOA.RenderingGroupId.MAIN;
