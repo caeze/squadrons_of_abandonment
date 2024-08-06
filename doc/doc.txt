@@ -29,5 +29,6 @@ Imperial Warriors
 Valkyries
 Republican Hunters
 Bird names for units (Hawk, Falcon, ...)
+Gluon Torpedo (or some other sub-atomar particles)
 
 Inspiration: Star Wars, CoH, Star Fox, Stargate, Star Trek

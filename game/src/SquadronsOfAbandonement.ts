@@ -126,7 +126,8 @@ export class SquadronsOfAbandonement {
             thisPtr._showScene(canvas, engine, scene, currentUrl, meshAssetContainers, particleSystemAssetContainers, textFileAssetContainers);
         };
         
-        assetsLoader.loadAssets(scene, currentUrl, ["redSpaceFighter.glb", "redStation.glb", "strangeObject.glb", "jupiter.glb"], ["rocket_exhaust.json"], ["maps/passage_of_maerula.json"], onProgressFunction, onFinishFunction);
+        //assetsLoader.loadAssets(scene, currentUrl, ["redSpaceFighter.glb", "redStation.glb", "strangeObject.glb", "jupiter.glb"], ["rocket_exhaust.json"], ["maps/passage_of_maerula.json"], onProgressFunction, onFinishFunction);
+        assetsLoader.loadAssets(scene, currentUrl, ["moveMarker.glb", "moveMarkerCircularArrow.glb", "wrench.glb", "jupiter.glb"], ["rocket_exhaust.json"], ["maps/passage_of_maerula.json"], onProgressFunction, onFinishFunction);
     }
     
     private _showScene(canvas: HTMLElement, engine: Engine, scene: Scene, currentUrl: string, meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>) {

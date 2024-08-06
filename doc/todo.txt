@@ -5,7 +5,6 @@ TODO:
 
 
 
-// TODO: put selection circle on its own layer with own shader to make sun work with it
 // TODO: Use WEB GPU
 
 

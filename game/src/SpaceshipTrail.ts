@@ -111,7 +111,7 @@ export class SpaceshipTrail {
         shaderMaterial.alpha = 0.0;
         this._trailMesh.renderingGroupId = RenderingGroupId.MAIN;
         this._trailMesh.layerMask = CameraLayerMask.MAIN;
-        this._trailMesh.alphaIndex = 1;
+        this._trailMesh.alphaIndex = 0;
         this._trailMesh.material = shaderMaterial;
 	}
 
