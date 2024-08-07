@@ -5,6 +5,10 @@ TODO:
 
 
 
+// crowd nav https://playground.babylonjs.com/#X5XCVT#240
+
+
+
 // TODO: Use WEB GPU
 
 
@@ -53,6 +57,7 @@ trackable lables for unit names and icons? https://playground.babylonjs.com/#XCP
 
 
 // show billboard and strange visibility of cubes - cool
+// 3d text
 https://playground.babylonjs.com/#HSVQL
 https://playground.babylonjs.com/#HSVQL#52
 
