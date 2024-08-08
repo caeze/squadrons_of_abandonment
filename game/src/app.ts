@@ -101,6 +101,7 @@ export * from "./MainCamera";
 export * from "./MapLoader";
 export * from "./Minimap";
 export * from "./MouseSelectionBoxOnGui";
+export * from "./MoveMarker";
 export * from "./RenderingGroupId";
 export * from "./RenderingPipeline";
 export * from "./RepairIcon";

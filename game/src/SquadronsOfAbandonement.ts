@@ -171,6 +171,9 @@ export class SquadronsOfAbandonement {
             repairIcon.showRepairIcon();
             repairIcons.push(repairIcon);
         }
+        
+        let moveMarker = new SOA.MoveMarker(scene, currentUrl, meshAssetContainers);
+        
         scene.registerBeforeRender(() => {
             entities[0].mesh.position.x -= 0.005;
             entities[0].mesh.rotation.x += 0.005;
@@ -183,6 +186,7 @@ export class SquadronsOfAbandonement {
             for (let i = 0; i < repairIcons.length; i++) {
                 repairIcons[i].tick();
             }
+            moveMarker.tick();
         });
         
         let getAllEntitiesFunction = () => {
@@ -263,6 +267,7 @@ export class SquadronsOfAbandonement {
         let divFps = document.getElementById("fps");
         
         let i = 0;
+        let shown = false;
         engine.runRenderLoop(() => {
             // here all updating stuff must be updated
             i += 0.001;
@@ -302,10 +307,14 @@ export class SquadronsOfAbandonement {
             mainCamera.camera.position = new Vector3(cameraPosition.x + displacementX, cameraPosition.y, cameraPosition.z + displacementZ);
             mainCamera.camera.setTarget(new Vector3(cameraTarget.x + displacementX, cameraTarget.y, cameraTarget.z + displacementZ));
             
-            if (i > 0.3 && i < 0.6) {
+            if (i > 0.1 && i < 0.2) {
                 repairIcons[1].hideRepairIcon();
+                if (!shown) {
+                    moveMarker.showMoveMarker(new Vector3(1.0, 0.0, 2.0));
+                    shown=true;
+                }
             }
-            if (i > 0.6) {
+            if (i > 0.2) {
                 repairIcons[1].showRepairIcon();
             }
             

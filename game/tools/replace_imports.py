@@ -10,6 +10,7 @@ InputText,
 Rectangle,
 TextBlock,"""
 core_imports = """AbstractMesh,
+Angle,
 ArcRotateCamera,
 ArcRotateCameraPointersInput,
 AssetContainer,

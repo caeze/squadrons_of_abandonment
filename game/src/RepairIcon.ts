@@ -158,6 +158,4 @@ export class RepairIcon {
 	private _getMainMesh(): Mesh {
         return this._wrenchMesh.getChildren()[0] as Mesh;
     }
-    
-    
 }
