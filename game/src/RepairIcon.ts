@@ -1,104 +1,22 @@
-// ------------- global imports -------------
-import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
-import "@babylonjs/loaders/glTF";
-import {
-AdvancedDynamicTexture,
-Button,
-Container,
-Control,
-InputText,
-Rectangle,
-TextBlock,
-} from "@babylonjs/gui/2D";
-import {
-AbstractMesh,
-ArcRotateCamera,
-ArcRotateCameraPointersInput,
-AssetContainer,
-AssetsManager,
-BoundingInfo,
-BoxParticleEmitter,
-Camera,
-Color3,
-Color4,
-ColorCurves,
-Constants,
-CSG,
-CubeTexture,
-DefaultLoadingScreen,
-DefaultRenderingPipeline,
-DepthOfFieldEffectBlurLevel,
-DirectionalLight,
-Effect,
-Engine,
-FreeCamera,
-GlowLayer,
-HemisphericLight,
-HighlightLayer,
-ImageProcessingPostProcess,
-InstancedMesh,
-IParticleSystem,
-Layer,
-LensFlare,
-LensFlareSystem,
-Material,
-MaterialPluginBase,
-Matrix,
-Mesh,
-MeshAssetTask,
-MeshBuilder,
-NoiseProceduralTexture,
-ParticleHelper,
-ParticleSystem,
-ParticleSystemSet,
-PassPostProcess,
-Plane,
-PointLight,
-PointerEventTypes,
-PostProcess,
-Quaternion,
-RegisterMaterialPlugin,
-RenderTargetTexture,
-Scene,
-SceneLoader,
-ShaderMaterial,
-SphereParticleEmitter,
-StandardMaterial,
-TextFileAssetTask,
-Texture,
-Tools,
-TransformNode,
-UniversalCamera,
-Vector2,
-Vector3,
-Vector4,
-VertexBuffer,
-VertexData,
-Viewport,
-VolumetricLightScatteringPostProcess,
-WebGPUEngine,
-} from "@babylonjs/core";
-// ----------- global imports end -----------
-
-import * as SOA from "./app";
+import * as BABYLON from "./import/babylonImports";
+import * as SOA from "./import/soaImports";
 
 export class RepairIcon {
 
-    private _wrenchMesh: Mesh;
-    private _wrenchTransformNode: TransformNode;
-    private _glowLayer: GlowLayer;
+    private _wrenchMesh: BABYLON.Mesh;
+    private _wrenchTransformNode: BABYLON.TransformNode;
+    private _glowLayer: BABYLON.GlowLayer;
     
-	public constructor(scene: Scene, currentUrl: string, parentMesh: Mesh, meshAssetContainers: Record<string, AssetContainer>) {
+	public constructor(scene: BABYLON.Scene, currentUrl: string, parentMesh: BABYLON.Mesh, meshAssetContainers: Record<string, BABYLON.AssetContainer>) {
         let wrenchAssetName = "wrench";
         let assetContainer = meshAssetContainers[wrenchAssetName];
         let cloneMaterialsAndDontShareThem = true;
         let instantiatedEntries = assetContainer.instantiateModelsToScene((name) => parentMesh.name + "_" + name, cloneMaterialsAndDontShareThem);
-        this._wrenchMesh = instantiatedEntries.rootNodes[0] as Mesh;
+        this._wrenchMesh = instantiatedEntries.rootNodes[0] as BABYLON.Mesh;
         
-        let wrenchColor = new Color4(0.0, 1.0, 1.0, 1.0);
+        let wrenchColor = new BABYLON.Color4(0.0, 1.0, 1.0, 1.0);
         
-        let shaderMaterial = new ShaderMaterial(
+        let shaderMaterial = new BABYLON.ShaderMaterial(
             name + "ShaderMaterial",
             scene,
             currentUrl + "assets/shaders/solidColor", // searches for solidColor.vertex.fx and solidColor.fragment.fx
@@ -109,7 +27,7 @@ export class RepairIcon {
         );
         shaderMaterial.setFloats("color", [wrenchColor.r, wrenchColor.g, wrenchColor.b, wrenchColor.a]);
         shaderMaterial.forceDepthWrite = true;
-        shaderMaterial.transparencyMode = Material.MATERIAL_ALPHABLEND;
+        shaderMaterial.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
         shaderMaterial.alpha = 0.0;
         this._getMainMesh().alphaIndex = 0;
         this._getMainMesh().material = shaderMaterial;
@@ -119,14 +37,14 @@ export class RepairIcon {
         this._wrenchMesh.renderingGroupId = SOA.RenderingGroupId.MAIN;
         this._wrenchMesh.layerMask = SOA.CameraLayerMask.MAIN;
         
-        this._glowLayer = new GlowLayer(parentMesh.name + "WrenchGlowLayer", scene);
+        this._glowLayer = new BABYLON.GlowLayer(parentMesh.name + "WrenchGlowLayer", scene);
         this._glowLayer.customEmissiveColorSelector = function (mesh, subMesh, material, result) {
             result.set(wrenchColor.r, wrenchColor.g, wrenchColor.b, 0.6);
         };
         this._glowLayer.addIncludedOnlyMesh(this._getMainMesh());
         this._glowLayer.renderingGroupId = SOA.RenderingGroupId.MAIN;
         
-        this._wrenchTransformNode = new TransformNode(parentMesh.name + "WrenchTransformNode");
+        this._wrenchTransformNode = new BABYLON.TransformNode(parentMesh.name + "WrenchTransformNode");
         this._wrenchTransformNode.parent = parentMesh;
         this._wrenchTransformNode.position.y = 0.5;
         this._wrenchTransformNode.rotation.x = -Math.PI / 4.0;
@@ -155,7 +73,7 @@ export class RepairIcon {
         this._wrenchTransformNode.rotation.y -= dt;
     }
     
-	private _getMainMesh(): Mesh {
-        return this._wrenchMesh.getChildren()[0] as Mesh;
+	private _getMainMesh(): BABYLON.Mesh {
+        return this._wrenchMesh.getChildren()[0] as BABYLON.Mesh;
     }
 }

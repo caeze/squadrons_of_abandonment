@@ -85,7 +85,6 @@ import { MouseSelectionBoxOnGui } from "./MouseSelectionBoxOnGui";
 import { SquadronsOfAbandonement } from "./SquadronsOfAbandonement";
 
 export class SelectionManager {
-    private _getAllEntitiesFunction: () => Entity[];
     private _selectedEntitiesCallbackFunction: (entities: Entity[]) => void;
     private _pickInScenePosition: (position: Vector2) => Entity[];
     private _pickInSceneBox: (topLeftPosition: Vector2, bottomRightPosition: Vector2) => Entity[];
@@ -93,7 +92,6 @@ export class SelectionManager {
     private _lastMousePosition: Vector2;
     
     public constructor(engine: Engine, scene: Scene, camera: Camera, getAllEntitiesFunction: () => Entity[], selectedEntitiesCallbackFunction: (entities: Entity[]) => void, advancedTexture: AdvancedDynamicTexture) {
-        this._getAllEntitiesFunction = getAllEntitiesFunction;
         this._selectedEntitiesCallbackFunction = selectedEntitiesCallbackFunction;
         this._pickInScenePosition = (position: Vector2) => {
             return this._pickInScenePositionImpl(scene, camera, position, getAllEntitiesFunction());

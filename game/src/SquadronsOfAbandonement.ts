@@ -1,86 +1,5 @@
-// ------------- global imports -------------
-import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
-import "@babylonjs/loaders/glTF";
-import {
-AdvancedDynamicTexture,
-Button,
-Container,
-Control,
-InputText,
-Rectangle,
-TextBlock,
-} from "@babylonjs/gui/2D";
-import {
-AbstractMesh,
-ArcRotateCamera,
-ArcRotateCameraPointersInput,
-AssetContainer,
-AssetsManager,
-BoundingInfo,
-BoxParticleEmitter,
-Camera,
-Color3,
-Color4,
-ColorCurves,
-Constants,
-CSG,
-CubeTexture,
-DefaultLoadingScreen,
-DefaultRenderingPipeline,
-DepthOfFieldEffectBlurLevel,
-DirectionalLight,
-Effect,
-Engine,
-FreeCamera,
-HemisphericLight,
-HighlightLayer,
-ImageProcessingPostProcess,
-InstancedMesh,
-IParticleSystem,
-Layer,
-LensFlare,
-LensFlareSystem,
-Material,
-MaterialPluginBase,
-Matrix,
-Mesh,
-MeshAssetTask,
-MeshBuilder,
-NoiseProceduralTexture,
-ParticleHelper,
-ParticleSystem,
-ParticleSystemSet,
-PassPostProcess,
-Plane,
-PointLight,
-PointerEventTypes,
-PostProcess,
-Quaternion,
-RegisterMaterialPlugin,
-RenderTargetTexture,
-Scene,
-SceneLoader,
-ShaderMaterial,
-SphereParticleEmitter,
-StandardMaterial,
-TextFileAssetTask,
-Texture,
-Tools,
-TransformNode,
-UniversalCamera,
-Vector2,
-Vector3,
-Vector4,
-VertexBuffer,
-VertexData,
-Viewport,
-VolumetricLightScatteringPostProcess,
-WebGPUEngine,
-} from "@babylonjs/core";
-// ----------- global imports end -----------
-
-import * as SOA from "./app";
+import * as BABYLON from "./import/babylonImports";
+import * as SOA from "./import/soaImports";
 
 export class SquadronsOfAbandonement {
 	public constructor() {
@@ -98,13 +17,13 @@ export class SquadronsOfAbandonement {
         document.body.appendChild(canvas);
         document.body.style.cssText = "margin: 0; padding: 0; height: 100%; overflow: hidden;";
         
-        ParticleHelper.BaseAssetsUrl = currentUrl + "assets/particle_definitions";
-        ParticleSystemSet.BaseAssetsUrl = currentUrl + "assets/particle_definitions";
-        DefaultLoadingScreen.DefaultLogoUrl = currentUrl + "assets/img/squadronsOfAbandonementLogo.png";
+        BABYLON.ParticleHelper.BaseAssetsUrl = currentUrl + "assets/particle_definitions";
+        BABYLON.ParticleSystemSet.BaseAssetsUrl = currentUrl + "assets/particle_definitions";
+        BABYLON.DefaultLoadingScreen.DefaultLogoUrl = currentUrl + "assets/img/squadronsOfAbandonementLogo.png";
 
-        let engine = new Engine(canvas, true);
+        let engine = new BABYLON.Engine(canvas, true);
         engine.setHardwareScalingLevel(1 / window.devicePixelRatio);
-        let scene = new Scene(engine);
+        let scene = new BABYLON.Scene(engine);
         
         let assetsLoader = new SOA.AssetsLoader();
         
@@ -114,7 +33,7 @@ export class SquadronsOfAbandonement {
             engine.loadingUIBackgroundColor = "#000000";
         };
         let thisPtr = this;
-        let onFinishFunction = function (meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>) {
+        let onFinishFunction = function (meshAssetContainers: Record<string, BABYLON.AssetContainer>, particleSystemAssetContainers: Record<string, BABYLON.ParticleSystem>, textFileAssetContainers: Record<string, string>) {
             /*for (let i = 0; i < assetContainer.meshes.length; i++) {
                 let mesh = assetContainer.meshes[i];
                 let meshNameWithoutSuffix = mesh.name.substring(0, mesh.name.lastIndexOf("_"));
@@ -131,7 +50,7 @@ export class SquadronsOfAbandonement {
         assetsLoader.loadAssets(scene, currentUrl, meshesToLoad, ["rocket_exhaust.json"], ["maps/passage_of_maerula.json"], onProgressFunction, onFinishFunction);
     }
     
-    private _showScene(canvas: HTMLElement, engine: Engine, scene: Scene, currentUrl: string, meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>) {
+    private _showScene(canvas: HTMLElement, engine: BABYLON.Engine, scene: BABYLON.Scene, currentUrl: string, meshAssetContainers: Record<string, BABYLON.AssetContainer>, particleSystemAssetContainers: Record<string, BABYLON.ParticleSystem>, textFileAssetContainers: Record<string, string>) {
         let mapSidelength = 1000.0;
         
         let skybox = new SOA.Skybox(scene, currentUrl);
@@ -165,7 +84,7 @@ export class SquadronsOfAbandonement {
         let revealers = mapLoader.populateScene(canvas, engine, scene, mainCamera.camera, currentUrl, meshAssetContainers, particleSystemAssetContainers, textFileAssetContainers);
         let entities = revealers;
         
-        let repairIcons = [];
+        let repairIcons: SOA.RepairIcon[] = [];
         for (let i = 0; i < entities.length; i++) {
             let repairIcon = new SOA.RepairIcon(scene, currentUrl, entities[i].getMainMesh(), meshAssetContainers);
             repairIcon.showRepairIcon();
@@ -186,7 +105,6 @@ export class SquadronsOfAbandonement {
             for (let i = 0; i < repairIcons.length; i++) {
                 repairIcons[i].tick();
             }
-            moveMarker.tick();
         });
         
         let getAllEntitiesFunction = () => {
@@ -220,9 +138,9 @@ export class SquadronsOfAbandonement {
         });*/
         
         let explosionEffect = new SOA.ExplosionEffect(mainCamera.camera, scene, currentUrl);
-        explosionEffect.createExplosionWithShockwave("shockwaveEffect0", new Vector3(0.0, 0.0, 0.0), engine, mainCamera, SquadronsOfAbandonement.project);
+        explosionEffect.createExplosionWithShockwave("shockwaveEffect0", new BABYLON.Vector3(0.0, 0.0, 0.0), engine, mainCamera, SquadronsOfAbandonement.project);
         
-        let spaceshipTrail = new SOA.SpaceshipTrail("spaceshipTrail0", scene, mainCamera.camera, new Vector3(0.0, 0.0, 0.0), currentUrl, new Color4(0.5, 0.0, 0.0, 0.5), 0.1);
+        let spaceshipTrail = new SOA.SpaceshipTrail("spaceshipTrail0", scene, mainCamera.camera, new BABYLON.Vector3(0.0, 0.0, 0.0), currentUrl, new BABYLON.Color4(0.5, 0.0, 0.0, 0.5), 0.1);
         let k = 0;
         let p = [
             Math.random() * 180 + 20,
@@ -234,7 +152,7 @@ export class SquadronsOfAbandonement {
         ]
         scene.onBeforeRenderObservable.add(
             () => {
-                let newPosition = new Vector3();
+                let newPosition = new BABYLON.Vector3();
                 newPosition.x = 5 * (Math.sin(k / p[0]) + Math.cos(k / p[3]));
                 newPosition.y = 5 * (Math.sin(k / p[1]) + Math.cos(k / p[4]));
                 newPosition.z = 5 * (Math.sin(k / p[2]) + Math.cos(k / p[5]));
@@ -246,15 +164,18 @@ export class SquadronsOfAbandonement {
         scene.onPointerObservable.add((eventData: any) => {
             let mousePositionX = scene.pointerX;
             let mousePositionY = scene.pointerY;
-            let mousePosition = new Vector2(mousePositionX, mousePositionY);
+            let mousePosition = new BABYLON.Vector2(mousePositionX, mousePositionY);
             let eventDataType = eventData.type;
             let mouseButtonId = eventData.event.button;
             selectionManager.onMouseMove(mousePosition, eventDataType, mouseButtonId);
+            if (eventDataType === BABYLON.PointerEventTypes.POINTERDOWN && mouseButtonId == 0) {
+                let fastCheck = false;
+                let pickResult = scene.pick(mousePositionX, mousePositionY, undefined, fastCheck, mainCamera.camera);
+                if (pickResult.hit && pickResult.pickedMesh != null, pickResult.pickedPoint != null) {
+                    moveMarker.showMoveMarker(scene, pickResult.pickedPoint);
+                }
+            }
         });
-        
-        /*document.addEventListener("click", (e: Event) => {
-            console.log(e);
-        });*/
         
         window.addEventListener("resize", function() {
             canvas.style.width = window.innerWidth + "px";
@@ -267,7 +188,6 @@ export class SquadronsOfAbandonement {
         let divFps = document.getElementById("fps");
         
         let i = 0;
-        let shown = false;
         engine.runRenderLoop(() => {
             // here all updating stuff must be updated
             i += 0.001;
@@ -293,26 +213,22 @@ export class SquadronsOfAbandonement {
             if (keyboardInputManager.isPressed("KeyD")) {
                 displacementX += displacement;
             }
-            let cameraAngleDegrees = Tools.ToDegrees(mainCamera.camera.alpha) % 360.0 + 90.0;
+            let cameraAngleDegrees = BABYLON.Tools.ToDegrees(mainCamera.camera.alpha) % 360.0 + 90.0;
             while (cameraAngleDegrees < 0.0) {
                 cameraAngleDegrees += 360.0;
             }
-            let cameraQuaternion = Quaternion.FromEulerAngles(0.0, 0.0, Tools.ToRadians(cameraAngleDegrees));
-            let matrix = new Matrix();
+            let cameraQuaternion = BABYLON.Quaternion.FromEulerAngles(0.0, 0.0, BABYLON.Tools.ToRadians(cameraAngleDegrees));
+            let matrix = new BABYLON.Matrix();
             cameraQuaternion.toRotationMatrix(matrix);
-            let displacementVec2 = Vector2.Transform(new Vector2(displacementX, displacementZ), matrix);
+            let displacementVec2 = BABYLON.Vector2.Transform(new BABYLON.Vector2(displacementX, displacementZ), matrix);
             displacementX = displacementVec2.x;
             displacementZ = displacementVec2.y;
             
-            mainCamera.camera.position = new Vector3(cameraPosition.x + displacementX, cameraPosition.y, cameraPosition.z + displacementZ);
-            mainCamera.camera.setTarget(new Vector3(cameraTarget.x + displacementX, cameraTarget.y, cameraTarget.z + displacementZ));
+            mainCamera.camera.position = new BABYLON.Vector3(cameraPosition.x + displacementX, cameraPosition.y, cameraPosition.z + displacementZ);
+            mainCamera.camera.setTarget(new BABYLON.Vector3(cameraTarget.x + displacementX, cameraTarget.y, cameraTarget.z + displacementZ));
             
             if (i > 0.1 && i < 0.2) {
                 repairIcons[1].hideRepairIcon();
-                if (!shown) {
-                    moveMarker.showMoveMarker(new Vector3(1.0, 0.0, 2.0));
-                    shown=true;
-                }
             }
             if (i > 0.2) {
                 repairIcons[1].showRepairIcon();
@@ -342,29 +258,28 @@ export class SquadronsOfAbandonement {
     private _nop(data: any) {
     }
     
-    public static project(worldPosition: Vector3, engine: Engine, camera: Camera): [Vector2, number] {
+    public static project(worldPosition: BABYLON.Vector3, engine: BABYLON.Engine, camera: BABYLON.Camera): [BABYLON.Vector2, number] {
         // Coordinate system is from screen_top_left = [0, 0]
         // to screen_bottom_right = [screen_width, screen_height]
-        let vector3 = Vector3.Project(
+        let vector3 = BABYLON.Vector3.Project(
             worldPosition,
-            Matrix.Identity(),
+            BABYLON.Matrix.Identity(),
             camera.getTransformationMatrix(),
             camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()),
         );
-        let screenPos = new Vector2(vector3.x, vector3.y);
+        let screenPos = new BABYLON.Vector2(vector3.x, vector3.y);
         let depth = vector3.z;
         return [screenPos, depth];
     }
     
-    public static unproject(screenPosition: Vector2, depth: number, engine: Engine, scene: Scene): Vector3 {
-        // TODO: test if this works
-        return Vector3.Unproject(
-            new Vector3(screenPosition.x, screenPosition.y, depth),
+    public static unproject(screenPosition: BABYLON.Vector2, depth: number, engine: BABYLON.Engine, camera: BABYLON.Camera): BABYLON.Vector3 {
+        return BABYLON.Vector3.Unproject(
+            new BABYLON.Vector3(screenPosition.x, screenPosition.y, depth),
             engine.getRenderWidth(),
             engine.getRenderHeight(),
-            Matrix.Identity(),
-            scene.getViewMatrix(),
-            scene.getProjectionMatrix()
+            BABYLON.Matrix.Identity(),
+            camera.getViewMatrix(),
+            camera.getProjectionMatrix()
         );
     }
 }

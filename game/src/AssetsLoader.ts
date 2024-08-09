@@ -1,98 +1,17 @@
-// ------------- global imports -------------
-import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
-import "@babylonjs/loaders/glTF";
-import {
-AdvancedDynamicTexture,
-Button,
-Container,
-Control,
-InputText,
-Rectangle,
-TextBlock,
-} from "@babylonjs/gui/2D";
-import {
-AbstractMesh,
-ArcRotateCamera,
-ArcRotateCameraPointersInput,
-AssetContainer,
-AssetsManager,
-BoundingInfo,
-BoxParticleEmitter,
-Camera,
-Color3,
-Color4,
-ColorCurves,
-Constants,
-CSG,
-CubeTexture,
-DefaultLoadingScreen,
-DefaultRenderingPipeline,
-DepthOfFieldEffectBlurLevel,
-DirectionalLight,
-Effect,
-Engine,
-FreeCamera,
-HemisphericLight,
-HighlightLayer,
-ImageProcessingPostProcess,
-InstancedMesh,
-IParticleSystem,
-Layer,
-LensFlare,
-LensFlareSystem,
-Material,
-MaterialPluginBase,
-Matrix,
-Mesh,
-MeshAssetTask,
-MeshBuilder,
-NoiseProceduralTexture,
-ParticleHelper,
-ParticleSystem,
-ParticleSystemSet,
-PassPostProcess,
-Plane,
-PointLight,
-PointerEventTypes,
-PostProcess,
-Quaternion,
-RegisterMaterialPlugin,
-RenderTargetTexture,
-Scene,
-SceneLoader,
-ShaderMaterial,
-SphereParticleEmitter,
-StandardMaterial,
-TextFileAssetTask,
-Texture,
-Tools,
-TransformNode,
-UniversalCamera,
-Vector2,
-Vector3,
-Vector4,
-VertexBuffer,
-VertexData,
-Viewport,
-VolumetricLightScatteringPostProcess,
-WebGPUEngine,
-} from "@babylonjs/core";
-// ----------- global imports end -----------
-
-import * as SOA from "./app";
+import * as BABYLON from "./import/babylonImports";
+import * as SOA from "./import/soaImports";
 
 export class AssetsLoader {
-    public loadAssets(scene: Scene, currentUrl: string, glbFileNames: string[], particleSystemFileNames: string[], textFileNames: string[], onProgressFunction: (remainingCount: number, totalCount: number, lastFinishedTask: any) => void, onFinishFunction: (meshAssetContainers: Record<string, AssetContainer>, particleSystemAssetContainers: Record<string, ParticleSystem>, textFileAssetContainers: Record<string, string>) => void) {
-        let assetsManager = new AssetsManager(scene);
-        let meshAssetContainers: Record<string, AssetContainer> = {};
-        let particleSystemAssetContainers: Record<string, ParticleSystem> = {};
+    public loadAssets(scene: BABYLON.Scene, currentUrl: string, glbFileNames: string[], particleSystemFileNames: string[], textFileNames: string[], onProgressFunction: (remainingCount: number, totalCount: number, lastFinishedTask: any) => void, onFinishFunction: (meshAssetContainers: Record<string, BABYLON.AssetContainer>, particleSystemAssetContainers: Record<string, BABYLON.ParticleSystem>, textFileAssetContainers: Record<string, string>) => void) {
+        let assetsManager = new BABYLON.AssetsManager(scene);
+        let meshAssetContainers: Record<string, BABYLON.AssetContainer> = {};
+        let particleSystemAssetContainers: Record<string, BABYLON.ParticleSystem> = {};
         let textFileAssetContainers: Record<string, string> = {};
         
         for(let i = 0; i < glbFileNames.length; i++) {
             let meshTask = assetsManager.addMeshTask("meshTask" + i, "", currentUrl + "assets/models/", glbFileNames[i]);
-            meshTask.onSuccess = function (task: MeshAssetTask) {
-                let assetContainer = new AssetContainer(scene);
+            meshTask.onSuccess = function (task: BABYLON.MeshAssetTask) {
+                let assetContainer = new BABYLON.AssetContainer(scene);
                 let loadedMeshes = task.loadedMeshes;
                 let loadedMeshName = task.sceneFilename.toString().replace(".glb", "");
                 for(let j = 0; j < loadedMeshes.length; j++) {
@@ -105,7 +24,7 @@ export class AssetsLoader {
                 assetContainer.removeAllFromScene();
                 meshAssetContainers[loadedMeshName] = assetContainer;
             };
-            meshTask.onError = function (task: MeshAssetTask, message: any, exception: any) {
+            meshTask.onError = function (task: BABYLON.MeshAssetTask, message: any, exception: any) {
                 alert("meshTask.onError" + "\n" + message + "\n" + exception + "\n" + i);
             };
         }
@@ -114,23 +33,23 @@ export class AssetsLoader {
         for(let i = 0; i < particleSystemFileNames.length; i++) {
             let particleSystemTask = assetsManager.addTextFileTask("particleSystemTask" + i, currentUrl + "assets/particle_definitions/systems/" + particleSystemFileNames[i]);
             let particleSystemName = particleSystemFileNames[i].replace(".json", "");
-            particleSystemTask.onSuccess = function (task: TextFileAssetTask) {
-                let assetContainer = new AssetContainer(scene);
-                let particleSystem = ParticleSystem.Parse(JSON.parse(task.text), scene, "", false, 1000);
-                particleSystem.emitter = new TransformNode("particleSystemTaskTransformNode" + i) as AbstractMesh;
+            particleSystemTask.onSuccess = function (task: BABYLON.TextFileAssetTask) {
+                let assetContainer = new BABYLON.AssetContainer(scene);
+                let particleSystem = BABYLON.ParticleSystem.Parse(JSON.parse(task.text), scene, "", false, 1000);
+                particleSystem.emitter = new BABYLON.TransformNode("particleSystemTaskTransformNode" + i) as BABYLON.AbstractMesh;
                 particleSystemAssetContainers[particleSystemName] = particleSystem;
             };
-            particleSystemTask.onError = function (task: TextFileAssetTask, message: any, exception: any) {
+            particleSystemTask.onError = function (task: BABYLON.TextFileAssetTask, message: any, exception: any) {
                 alert("particleSystemTask.onError" + "\n" + message + "\n" + exception);
             };
         }
         
         for(let i = 0; i < textFileNames.length; i++) {
             let textFileTask = assetsManager.addTextFileTask("rocketParticleSystemTask", currentUrl + "assets/" + textFileNames[i]);
-            textFileTask.onSuccess = function (task: TextFileAssetTask) {
+            textFileTask.onSuccess = function (task: BABYLON.TextFileAssetTask) {
                 textFileAssetContainers[textFileNames[i]] = task.text;
             };
-            textFileTask.onError = function (task: TextFileAssetTask, message: any, exception: any) {
+            textFileTask.onError = function (task: BABYLON.TextFileAssetTask, message: any, exception: any) {
                 alert("textFileTask.onError" + "\n" + message + "\n" + exception);
             };
         }
