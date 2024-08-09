@@ -294,9 +294,21 @@ export class SquadronsOfAbandonement {
         );
     }
 
-    public static getFirstHitEntity(pickingInfoList: BABYLON.Nullable<BABYLON.PickingInfo[]>, orderOfReturnValues: SOA.EntityId[]): SOA.Entity[] {
-        let retMap: SOA.Entity[] = [];
+    public static getHitEntitiesByDistance(pickingInfoList: BABYLON.PickingInfo[], entityTypeOfInterest: SOA.EntityType, getAllEntitiesFunction: () => SOA.Entity[]): SOA.Entity[] {
+        // TODO: test if this works
+        // TODO: performance of this?
         let retList: SOA.Entity[] = [];
+        let allEntities = getAllEntitiesFunction();
+        var pickingInfoListSorted: BABYLON.PickingInfo[] = pickingInfoList.sort((p0, p1) => p0.distance - p1.distance);
+        for (let i = 0; i < pickingInfoListSorted.length; i++) {
+            let pickedMeshId = pickingInfoListSorted[i].pickedMesh?.uniqueId;
+            for (let j = 0; j < allEntities.length; i++) {
+                let entity = allEntities[j];
+                if (entity.getMainMesh().uniqueId == pickedMeshId && entity.entityType == entityTypeOfInterest) {
+                    retList.push(entity);
+                }
+            }
+        }
         return retList;
     }
 }

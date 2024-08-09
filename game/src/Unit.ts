@@ -102,7 +102,7 @@ export class Unit extends Entity {
             }
         );*/
         super(mesh, radius);
-        //super(mesh, SOA.EntityId.UNIT, radius);
+        //super(mesh, SOA.EntityType.UNIT, radius);
 
         //let result = await this._loadMeshes(scene, currentUrl, glbFileName);
         //let meshes = result.meshes;

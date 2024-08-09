@@ -7,7 +7,7 @@ import { Entity } from "./Entity";
 export class Emplacement extends Entity {
     public constructor(scene: BABYLON.Scene, initialPosition: BABYLON.Vector3, name: string, radius: number, currentUrl: string, mesh: BABYLON.Mesh) {
         super(mesh, radius);
-        //super(mesh, SOA.EntityId.EMPLACEMENT, radius);
+        //super(mesh, SOA.EntityType.EMPLACEMENT, radius);
         this.mesh.renderingGroupId = SOA.RenderingGroupId.MAIN;
         this.mesh.layerMask = SOA.CameraLayerMask.MAIN;
         this.mesh.position = initialPosition;

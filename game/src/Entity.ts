@@ -4,12 +4,12 @@ import * as SOA from "./import/soaImports";
 
 export class Entity {
     public mesh: BABYLON.Mesh;
-    public entityId: SOA.EntityId;
+    public entityType: SOA.EntityType;
     public radius: number;
 
     public constructor(mesh: BABYLON.Mesh, radius: number) {
         this.mesh = mesh;
-        this.entityId = SOA.EntityId.BUILDING;
+        this.entityType = SOA.EntityType.BUILDING;
         this.radius = radius;
     }
 
