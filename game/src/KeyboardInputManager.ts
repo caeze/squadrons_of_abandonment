@@ -1,90 +1,7 @@
-// ------------- global imports -------------
-import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
-import "@babylonjs/loaders/glTF";
-import {
-AdvancedDynamicTexture,
-Button,
-Container,
-Control,
-InputText,
-Rectangle,
-TextBlock,
-} from "@babylonjs/gui/2D";
-import {
-AbstractMesh,
-ArcRotateCamera,
-ArcRotateCameraPointersInput,
-AssetContainer,
-AssetsManager,
-BoundingInfo,
-BoxParticleEmitter,
-Camera,
-Color3,
-Color4,
-ColorCurves,
-Constants,
-CSG,
-CubeTexture,
-DefaultLoadingScreen,
-DefaultRenderingPipeline,
-DepthOfFieldEffectBlurLevel,
-DirectionalLight,
-Effect,
-Engine,
-FreeCamera,
-HemisphericLight,
-HighlightLayer,
-ImageProcessingPostProcess,
-InstancedMesh,
-IParticleSystem,
-Layer,
-LensFlare,
-LensFlareSystem,
-Material,
-MaterialPluginBase,
-Matrix,
-Mesh,
-MeshAssetTask,
-MeshBuilder,
-NoiseProceduralTexture,
-ParticleHelper,
-ParticleSystem,
-ParticleSystemSet,
-PassPostProcess,
-Plane,
-PointLight,
-PointerEventTypes,
-PostProcess,
-Quaternion,
-RegisterMaterialPlugin,
-RenderTargetTexture,
-Scene,
-SceneLoader,
-ShaderMaterial,
-SphereParticleEmitter,
-StandardMaterial,
-TextFileAssetTask,
-Texture,
-Tools,
-TransformNode,
-UniversalCamera,
-Vector2,
-Vector3,
-Vector4,
-VertexBuffer,
-VertexData,
-Viewport,
-VolumetricLightScatteringPostProcess,
-WebGPUEngine,
-} from "@babylonjs/core";
-// ----------- global imports end -----------
+import * as BABYLON from "./import/babylonImports";
+import * as BABYLON_GUI from "./import/babylonGuiImports";
+import * as SOA from "./import/soaImports";
 
-/**
- * A class managing keyboard input.
- *
- * It holds the state of all keyboard keys. Moreover, events are fired on key state changes.
- */
 export class KeyboardInputManager {
 
     readonly KEY_CODES = [
@@ -189,7 +106,7 @@ export class KeyboardInputManager {
         for (let code of this.KEY_CODES) {
             this._data[code] = {};
         }
-        
+
         window.addEventListener("keydown", (ev) => {
             if (this.KEY_CODES.includes(ev.code)) {
                 if (!this._keyPressed[ev.code]) {
@@ -215,34 +132,17 @@ export class KeyboardInputManager {
             }
         });
     }
-    
-    /**
-     * Get if a key is currently pressed.
-     * @param keyCode
-     */
+
     public isPressed(keyCode: string): boolean {
         return this._keyPressed[keyCode];
     }
-    
-    /**
-     * Register a callback.
-     * @param keyCode The keyboard code of the wanted key button
-     * @param callerId A unique ID of the one registering this callback
-     * @param callbackFunctionPressed The function to be called when the key is pressed
-     * @param callbackFunctionReleased The function to be called when the key is released
-     * @param data Some data that can be passed to the functions
-     */
+
     public registerCallback(keyCode: string, callerId: string, callbackFunctionPressed: (data: any) => void, callbackFunctionReleased: (data: any) => void, data: any) {
         this._callbackFunctionsPressed[keyCode][callerId] = callbackFunctionPressed;
         this._callbackFunctionsReleased[keyCode][callerId] = callbackFunctionReleased;
         this._data[keyCode][callerId] = data;
     }
-    
-    /**
-     * Unregister a callback.
-     * @param keyCode The keyboard code of the wanted key button
-     * @param callerId A unique ID of the one registering this callback
-     */
+
     public unregisterCallback(keyCode: string, callerId: string) {
         delete this._callbackFunctionsPressed[keyCode][callerId];
         delete this._callbackFunctionsReleased[keyCode][callerId];

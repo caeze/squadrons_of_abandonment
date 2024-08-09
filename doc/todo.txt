@@ -2,8 +2,8 @@ TODO:
 =====
  - explositon shockwave effeect
  - gui
-
-
+ - condense down jupiter with blender to one flat model
+ - setTimeout should be replaced by babylon method everywhere
 
 // crowd nav https://playground.babylonjs.com/#X5XCVT#240
 

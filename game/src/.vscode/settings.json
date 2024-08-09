@@ -1,0 +1,7 @@
+{
+    "python.formatting.provider": "black",
+    "editor.rulers": [80, 120],
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 1000,
+    "editor.formatOnSave": true,
+}

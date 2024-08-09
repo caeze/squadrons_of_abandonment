@@ -1,89 +1,11 @@
-// ------------- global imports -------------
-import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
-import "@babylonjs/loaders/glTF";
-import {
-AdvancedDynamicTexture,
-Button,
-Container,
-Control,
-InputText,
-Rectangle,
-TextBlock,
-} from "@babylonjs/gui/2D";
-import {
-AbstractMesh,
-ArcRotateCamera,
-ArcRotateCameraPointersInput,
-AssetContainer,
-AssetsManager,
-BoundingInfo,
-BoxParticleEmitter,
-Camera,
-Color3,
-Color4,
-ColorCurves,
-Constants,
-CSG,
-CubeTexture,
-DefaultLoadingScreen,
-DefaultRenderingPipeline,
-DepthOfFieldEffectBlurLevel,
-DirectionalLight,
-Effect,
-Engine,
-FreeCamera,
-HemisphericLight,
-HighlightLayer,
-ImageProcessingPostProcess,
-InstancedMesh,
-IParticleSystem,
-Layer,
-LensFlare,
-LensFlareSystem,
-Material,
-MaterialPluginBase,
-Matrix,
-Mesh,
-MeshAssetTask,
-MeshBuilder,
-NoiseProceduralTexture,
-ParticleHelper,
-ParticleSystem,
-ParticleSystemSet,
-PassPostProcess,
-Plane,
-PointLight,
-PointerEventTypes,
-PostProcess,
-Quaternion,
-RegisterMaterialPlugin,
-RenderTargetTexture,
-Scene,
-SceneLoader,
-ShaderMaterial,
-SphereParticleEmitter,
-StandardMaterial,
-TextFileAssetTask,
-Texture,
-Tools,
-TransformNode,
-UniversalCamera,
-Vector2,
-Vector3,
-Vector4,
-VertexBuffer,
-VertexData,
-Viewport,
-VolumetricLightScatteringPostProcess,
-WebGPUEngine,
-} from "@babylonjs/core";
-// ----------- global imports end -----------
+import * as BABYLON from "./import/babylonImports";
+import * as BABYLON_GUI from "./import/babylonGuiImports";
+import * as SOA from "./import/soaImports";
 
 export class RenderingPipeline {
-    public constructor(scene: Scene, mainCamera: Camera) {
+    public constructor(scene: BABYLON.Scene, mainCamera: BABYLON.Camera) {
         // https://doc.babylonjs.com/api/classes/babylon.defaultrenderingpipeline
-        let defaultPipeline = new DefaultRenderingPipeline(
+        let defaultPipeline = new BABYLON.DefaultRenderingPipeline(
             "DefaultRenderingPipeline",
             false, // is HDR?
             scene,
@@ -102,7 +24,7 @@ export class RenderingPipeline {
                 let vignetteStrength = 0.9;
                 defaultPipeline.imageProcessing.vignetteWeight = 10;
                 defaultPipeline.imageProcessing.vignetteStretch = 2;
-                defaultPipeline.imageProcessing.vignetteColor = new Color4(vignetteStrength, vignetteStrength, vignetteStrength, vignetteStrength);
+                defaultPipeline.imageProcessing.vignetteColor = new BABYLON.Color4(vignetteStrength, vignetteStrength, vignetteStrength, vignetteStrength);
                 defaultPipeline.imageProcessing.vignetteEnabled = true;
                 /* color grading */
                 //defaultPipeline.imageProcessing.colorGradingEnabled = false; // false by default
@@ -121,7 +43,7 @@ export class RenderingPipeline {
                 /* color curves */
                 defaultPipeline.imageProcessing.colorCurvesEnabled = false; // false by default
                 if (defaultPipeline.imageProcessing.colorCurvesEnabled) {
-                    let curve = new ColorCurves();
+                    let curve = new BABYLON.ColorCurves();
                     curve.globalDensity = 0; // 0 by default
                     curve.globalExposure = 0; // 0 by default
                     curve.globalHue = 30; // 30 by default

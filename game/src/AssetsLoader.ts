@@ -1,4 +1,5 @@
 import * as BABYLON from "./import/babylonImports";
+import * as BABYLON_GUI from "./import/babylonGuiImports";
 import * as SOA from "./import/soaImports";
 
 export class AssetsLoader {
@@ -7,18 +8,18 @@ export class AssetsLoader {
         let meshAssetContainers: Record<string, BABYLON.AssetContainer> = {};
         let particleSystemAssetContainers: Record<string, BABYLON.ParticleSystem> = {};
         let textFileAssetContainers: Record<string, string> = {};
-        
-        for(let i = 0; i < glbFileNames.length; i++) {
+
+        for (let i = 0; i < glbFileNames.length; i++) {
             let meshTask = assetsManager.addMeshTask("meshTask" + i, "", currentUrl + "assets/models/", glbFileNames[i]);
             meshTask.onSuccess = function (task: BABYLON.MeshAssetTask) {
                 let assetContainer = new BABYLON.AssetContainer(scene);
                 let loadedMeshes = task.loadedMeshes;
                 let loadedMeshName = task.sceneFilename.toString().replace(".glb", "");
-                for(let j = 0; j < loadedMeshes.length; j++) {
+                for (let j = 0; j < loadedMeshes.length; j++) {
                     loadedMeshes[j].name = loadedMeshName + "_" + j;
                     loadedMeshes[j].renderingGroupId = SOA.RenderingGroupId.MAIN;
                     loadedMeshes[j].layerMask = SOA.CameraLayerMask.MAIN;
-                    loadedMeshes[j].isPickable = true;
+                    loadedMeshes[j].isPickable = false;
                     assetContainer.meshes.push(loadedMeshes[j]);
                 }
                 assetContainer.removeAllFromScene();
@@ -28,9 +29,9 @@ export class AssetsLoader {
                 alert("meshTask.onError" + "\n" + message + "\n" + exception + "\n" + i);
             };
         }
-        
-        
-        for(let i = 0; i < particleSystemFileNames.length; i++) {
+
+
+        for (let i = 0; i < particleSystemFileNames.length; i++) {
             let particleSystemTask = assetsManager.addTextFileTask("particleSystemTask" + i, currentUrl + "assets/particle_definitions/systems/" + particleSystemFileNames[i]);
             let particleSystemName = particleSystemFileNames[i].replace(".json", "");
             particleSystemTask.onSuccess = function (task: BABYLON.TextFileAssetTask) {
@@ -43,8 +44,8 @@ export class AssetsLoader {
                 alert("particleSystemTask.onError" + "\n" + message + "\n" + exception);
             };
         }
-        
-        for(let i = 0; i < textFileNames.length; i++) {
+
+        for (let i = 0; i < textFileNames.length; i++) {
             let textFileTask = assetsManager.addTextFileTask("rocketParticleSystemTask", currentUrl + "assets/" + textFileNames[i]);
             textFileTask.onSuccess = function (task: BABYLON.TextFileAssetTask) {
                 textFileAssetContainers[textFileNames[i]] = task.text;
@@ -53,7 +54,7 @@ export class AssetsLoader {
                 alert("textFileTask.onError" + "\n" + message + "\n" + exception);
             };
         }
-        
+
         assetsManager.onProgress = onProgressFunction;
         assetsManager.onFinish = function (tasks: any) {
             onFinishFunction(meshAssetContainers, particleSystemAssetContainers, textFileAssetContainers);
@@ -64,7 +65,7 @@ export class AssetsLoader {
         assetsManager.onTaskError = function (task) {
             alert("assetsManager.onTaskError" + "\n" + task);
         };
-        
+
         /*assetsManager.onTaskSuccessObservable.add(function (task) {
             console.log("assetsManager.onTaskSuccessObservable", task);
         });
@@ -77,7 +78,7 @@ export class AssetsLoader {
         assetsManager.onTasksDoneObservable.add(function (task) {
             console.log("assetsManager.onTasksDoneObservable ", task);
         });*/
-        
+
         assetsManager.load();
     }
 }

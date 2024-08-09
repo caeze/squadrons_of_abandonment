@@ -1,111 +1,30 @@
-// ------------- global imports -------------
-import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
-import "@babylonjs/loaders/glTF";
-import {
-AdvancedDynamicTexture,
-Button,
-Container,
-Control,
-InputText,
-Rectangle,
-TextBlock,
-} from "@babylonjs/gui/2D";
-import {
-AbstractMesh,
-ArcRotateCamera,
-ArcRotateCameraPointersInput,
-AssetContainer,
-AssetsManager,
-BoundingInfo,
-BoxParticleEmitter,
-Camera,
-Color3,
-Color4,
-ColorCurves,
-Constants,
-CSG,
-CubeTexture,
-DefaultLoadingScreen,
-DefaultRenderingPipeline,
-DepthOfFieldEffectBlurLevel,
-DirectionalLight,
-Effect,
-Engine,
-FreeCamera,
-HemisphericLight,
-HighlightLayer,
-ImageProcessingPostProcess,
-InstancedMesh,
-IParticleSystem,
-Layer,
-LensFlare,
-LensFlareSystem,
-Material,
-MaterialPluginBase,
-Matrix,
-Mesh,
-MeshAssetTask,
-MeshBuilder,
-NoiseProceduralTexture,
-ParticleHelper,
-ParticleSystem,
-ParticleSystemSet,
-PassPostProcess,
-Plane,
-PointLight,
-PointerEventTypes,
-PostProcess,
-Quaternion,
-RegisterMaterialPlugin,
-RenderTargetTexture,
-Scene,
-SceneLoader,
-ShaderMaterial,
-SphereParticleEmitter,
-StandardMaterial,
-TextFileAssetTask,
-Texture,
-Tools,
-TransformNode,
-UniversalCamera,
-Vector2,
-Vector3,
-Vector4,
-VertexBuffer,
-VertexData,
-Viewport,
-VolumetricLightScatteringPostProcess,
-WebGPUEngine,
-} from "@babylonjs/core";
-// ----------- global imports end -----------
-
-import { RenderingGroupId } from "./RenderingGroupId";
-import { CameraLayerMask } from "./CameraLayerMask";
+import * as BABYLON from "./import/babylonImports";
+import * as BABYLON_GUI from "./import/babylonGuiImports";
+import * as SOA from "./import/soaImports";
 
 export class Minimap {
-    public minimapCamera: UniversalCamera;
+    public minimapCamera: BABYLON.UniversalCamera;
 
-    public constructor(scene: Scene, camera: Camera, engine: Engine, currentUrl: string, mapSidelength: number) {
-        this.minimapCamera = new UniversalCamera("minimapCamera", new Vector3(0, 20, 0), scene);
-        this.minimapCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+    public constructor(scene: BABYLON.Scene, camera: BABYLON.Camera, engine: BABYLON.Engine, currentUrl: string, mapSidelength: number) {
+        this.minimapCamera = new BABYLON.UniversalCamera("minimapCamera", new BABYLON.Vector3(0, 20, 0), scene);
+        this.minimapCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
         this.minimapCamera.minZ = 0.1;
-        this.minimapCamera.setTarget(Vector3.Zero());
+        this.minimapCamera.setTarget(BABYLON.Vector3.Zero());
         let minimapCameraViewportMarginFactor = 1.05;
         let minimapCameraViewport = mapSidelength / 2.0 * minimapCameraViewportMarginFactor;
         this.minimapCamera.orthoTop = -minimapCameraViewport;
         this.minimapCamera.orthoBottom = minimapCameraViewport;
         this.minimapCamera.orthoLeft = minimapCameraViewport;
         this.minimapCamera.orthoRight = -minimapCameraViewport;
-        this.minimapCamera.layerMask = CameraLayerMask.MINIMAP;
+        this.minimapCamera.layerMask = SOA.CameraLayerMask.MINIMAP;
         this.resize(window.innerWidth, window.innerHeight);
-        let minimapBackgroundLayer = new Layer("minimapBackgroundLayer", currentUrl + "assets/img/minimapBackground.png", scene, true);
-        minimapBackgroundLayer.layerMask = CameraLayerMask.MINIMAP;
+        let minimapBackgroundLayer = new BABYLON.Layer("minimapBackgroundLayer", currentUrl + "assets/img/minimapBackground.png", scene, true);
+        minimapBackgroundLayer.layerMask = SOA.CameraLayerMask.MINIMAP;
     }
-    
+
     public resize(windowInnerWidthPx: number, windowInnerHeightPx: number) {
         let targetWidthPx = 300;
         let targetHeightPx = 300;
-        this.minimapCamera.viewport = new Viewport(0.0, 0.0, targetWidthPx / windowInnerWidthPx, targetHeightPx / windowInnerHeightPx);
+        this.minimapCamera.viewport = new BABYLON.Viewport(0.0, 0.0, targetWidthPx / windowInnerWidthPx, targetHeightPx / windowInnerHeightPx);
     }
 }

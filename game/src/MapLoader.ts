@@ -1,8 +1,9 @@
 import * as BABYLON from "./import/babylonImports";
+import * as BABYLON_GUI from "./import/babylonGuiImports";
 import * as SOA from "./import/soaImports";
 
 export class MapLoader {
-	public populateScene(canvas: HTMLElement, engine: BABYLON.Engine, scene: BABYLON.Scene, camera: BABYLON.Camera, currentUrl: string, meshAssetContainers: Record<string, BABYLON.AssetContainer>, particleSystemAssetContainers: Record<string, BABYLON.ParticleSystem>, textFileAssetContainers: Record<string, string>): SOA.Unit[] {
+    public populateScene(canvas: HTMLElement, engine: BABYLON.Engine, scene: BABYLON.Scene, camera: BABYLON.Camera, currentUrl: string, meshAssetContainers: Record<string, BABYLON.AssetContainer>, particleSystemAssetContainers: Record<string, BABYLON.ParticleSystem>, textFileAssetContainers: Record<string, string>): SOA.Unit[] {
         // TODO: only load the meshes initially that belong to the map
         let assetContainerNames = ["redSpaceFighter", "redStation", "strangeObject"];
         let meshes: BABYLON.Mesh[] = [];
@@ -12,12 +13,12 @@ export class MapLoader {
             let instantiatedEntries = assetContainer.instantiateModelsToScene((name) => "p_" + name, cloneMaterialsAndDontShareThem);
             meshes.push(instantiatedEntries.rootNodes[0] as BABYLON.Mesh);
         }
-        
+
         let particleSystems: BABYLON.ParticleSystem[] = [];
         for (let particleSystemName in particleSystemAssetContainers) {
             particleSystems.push(particleSystemAssetContainers[particleSystemName]);
         }
-                
+
         let units: SOA.Unit[] = [];
         for (let i = 0; i < meshes.length; i++) {
             let unit = new SOA.Unit(scene, new BABYLON.Vector3(0, 0, 0), "box" + i, 5.0, currentUrl, meshes[i]);
@@ -42,12 +43,12 @@ export class MapLoader {
             unit.mesh.layerMask = SOA.CameraLayerMask.MAIN;
             units.push(unit);
         }
-        
+
         let originSphere: BABYLON.Mesh = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 0.1 }, scene);
         originSphere.renderingGroupId = SOA.RenderingGroupId.MAIN;
         originSphere.layerMask = SOA.CameraLayerMask.MAIN;
         originSphere.isPickable = true;
-        
+
         let xSphere: BABYLON.Mesh = BABYLON.MeshBuilder.CreateSphere("xsphere", { diameter: 0.1 }, scene);
         let xSphereMaterial = new BABYLON.StandardMaterial("mat", scene);
         xSphereMaterial.alpha = 1;
@@ -57,7 +58,7 @@ export class MapLoader {
         xSphere.isPickable = true;
         xSphere.renderingGroupId = SOA.RenderingGroupId.MAIN;
         xSphere.layerMask = SOA.CameraLayerMask.MAIN;
-        
+
         let ySphere: BABYLON.Mesh = BABYLON.MeshBuilder.CreateSphere("ysphere", { diameter: 0.1 }, scene);
         let ySphereMaterial = new BABYLON.StandardMaterial("mat", scene);
         ySphereMaterial.alpha = 1;
@@ -67,7 +68,7 @@ export class MapLoader {
         ySphere.isPickable = true;
         ySphere.renderingGroupId = SOA.RenderingGroupId.MAIN;
         ySphere.layerMask = SOA.CameraLayerMask.MAIN;
-        
+
         let zSphere: BABYLON.Mesh = BABYLON.MeshBuilder.CreateSphere("zsphere", { diameter: 0.1 }, scene);
         let zSphereMaterial = new BABYLON.StandardMaterial("mat", scene);
         zSphereMaterial.alpha = 1;
@@ -77,7 +78,7 @@ export class MapLoader {
         zSphere.isPickable = true;
         zSphere.renderingGroupId = SOA.RenderingGroupId.MAIN;
         zSphere.layerMask = SOA.CameraLayerMask.MAIN;
-        
+
         return units;
     }
 }
